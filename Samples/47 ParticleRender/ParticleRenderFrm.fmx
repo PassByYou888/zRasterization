@@ -1,0 +1,26 @@
+object ParticleRenderForm: TParticleRenderForm
+  Left = 0
+  Top = 0
+  Caption = 'Particle Renderer demo. create by.qq600585'
+  ClientHeight = 688
+  ClientWidth = 710
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object pb: TPaintBox
+    Align = Client
+    ClipChildren = True
+    ClipParent = True
+    Size.Width = 710.000000000000000000
+    Size.Height = 688.000000000000000000
+    Size.PlatformDefault = False
+    OnPaint = pbPaint
+  end
+  object fpsTimer: TTimer
+    Interval = 1
+    OnTimer = fpsTimerTimer
+    Left = 112
+    Top = 136
+  end
+end
