@@ -5,6 +5,7 @@
 - ZR设计思路借鉴过GR32,Agg,OpenCV
 - ZR自然渲染引擎
 - 如果只是需要Z系光栅支持技术体系,在项目引入ZR即可
+- 工具链包含24个附加工具
 
 # zRasterization已被pascal rewrite技术完成重构
 
