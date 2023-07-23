@@ -1,0 +1,76 @@
+object PictureBrowseForm: TPictureBrowseForm
+  Left = 0
+  Top = 0
+  Caption = 'Picture Browse tool.'
+  ClientHeight = 729
+  ClientWidth = 1286
+  Position = ScreenCenter
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnClose = FormClose
+  DesignerMasterStyle = 0
+  object topLayout: TLayout
+    Align = MostTop
+    Size.Width = 1286.000000000000000000
+    Size.Height = 33.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object PathEdit: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Align = Client
+      TabOrder = 1
+      Margins.Left = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Size.Width = 1276.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      StyledSettings = [Family, Style, FontColor]
+      OnChange = PathEditChange
+      object BrowseEditButton: TEditButton
+        CanFocus = False
+        Cursor = crArrow
+        Size.Width = 28.000000000000000000
+        Size.Height = 29.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = '..'
+        OnClick = BrowseEditButtonClick
+      end
+    end
+  end
+  object FileListLayout: TLayout
+    Align = Client
+    Size.Width = 1286.000000000000000000
+    Size.Height = 696.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    object ListBox: TListBox
+      Align = Client
+      ClipChildren = True
+      Size.Width = 1286.000000000000000000
+      Size.Height = 696.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      DisableFocusEffect = True
+      DefaultItemStyles.ItemStyle = ''
+      DefaultItemStyles.GroupHeaderStyle = ''
+      DefaultItemStyles.GroupFooterStyle = ''
+      Viewport.Width = 1282.000000000000000000
+      Viewport.Height = 692.000000000000000000
+    end
+  end
+  object StopButton: TButton
+    Align = Center
+    StyledSettings = [Family, Style, FontColor]
+    Size.Width = 177.000000000000000000
+    Size.Height = 73.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'Stop'
+    TextSettings.Font.Size = 24.000000000000000000
+    OnClick = StopButtonClick
+  end
+end

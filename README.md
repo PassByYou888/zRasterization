@@ -1,3 +1,10 @@
+# 光栅技术是计算机统计学的数据底座
+
+- ZR有能力做作为计算机图形学的数据源
+- ZR自带应用光环
+- ZR设计思路借鉴过GR32,Agg,OpenCV
+- ZR自然渲染引擎
+- 如果只是需要Z系光栅支持技术体系,在项目引入ZR即可
 
 # zRasterization已被pascal rewrite技术完成重构
 
@@ -17,9 +24,9 @@ pascal rewrite的工作步骤简单说明
 
 # zRasterization 没有更多说明了
 
-no document
+- 一直没空编写说明
 
-no demo
 
-by.qq600585
+
+**by.qq600585**
 

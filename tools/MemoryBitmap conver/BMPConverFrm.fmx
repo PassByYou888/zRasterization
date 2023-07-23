@@ -1,0 +1,344 @@
+object BMPConverForm: TBMPConverForm
+  Left = 0
+  Top = 0
+  Caption = 'Rasterization Conver tool.'
+  ClientHeight = 588
+  ClientWidth = 1490
+  Position = ScreenCenter
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object converbmp32Button: TButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    Position.X = 16.000000000000000000
+    Position.Y = 403.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'conver to .bmp(32bit)'
+    OnClick = converbmp32ButtonClick
+  end
+  object outputDirLayout: TLayout
+    Anchors = [akLeft, akRight, akBottom]
+    Position.X = 200.000000000000000000
+    Position.Y = 365.000000000000000000
+    Size.Width = 696.000000000000000000
+    Size.Height = 35.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    object DestDirEdit: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Anchors = [akLeft, akTop, akRight]
+      TabOrder = 4
+      Position.X = 104.000000000000000000
+      Position.Y = 1.000000000000000000
+      Size.Width = 585.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+      StyledSettings = [Family, Style, FontColor]
+      object seldirEditButton: TEditButton
+        CanFocus = False
+        Cursor = crArrow
+        Size.Width = 28.000000000000000000
+        Size.Height = 28.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = '...'
+        OnClick = seldirEditButtonClick
+      end
+    end
+    object Label1: TLabel
+      Align = Left
+      Anchors = [akLeft, akBottom]
+      AutoSize = True
+      Margins.Left = 5.000000000000000000
+      Position.X = 5.000000000000000000
+      Size.Width = 87.000000000000000000
+      Size.Height = 35.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.WordWrap = False
+      Text = 'output directory'
+    end
+  end
+  object AddFileButton: TButton
+    Position.X = 8.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 33.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Add File'
+    OnClick = AddFileButtonClick
+  end
+  object ClearButton: TButton
+    Position.X = 168.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 33.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Clear'
+    OnClick = ClearButtonClick
+  end
+  object ListBox: TListBox
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Position.X = 8.000000000000000000
+    Position.Y = 56.000000000000000000
+    Size.Width = 888.000000000000000000
+    Size.Height = 303.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    CanFocus = False
+    DisableFocusEffect = True
+    DefaultItemStyles.ItemStyle = ''
+    DefaultItemStyles.GroupHeaderStyle = ''
+    DefaultItemStyles.GroupFooterStyle = ''
+    Viewport.Width = 884.000000000000000000
+    Viewport.Height = 299.000000000000000000
+  end
+  object OpenDialog: TOpenDialog
+    Options = [ofHideReadOnly, ofAllowMultiSelect, ofFileMustExist, ofEnableSizing]
+    Left = 296
+    Top = 288
+  end
+  object converseqButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 16.000000000000000000
+    Position.Y = 447.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Text = 'conver to .seq'
+    OnClick = converseqButtonClick
+  end
+  object converjlsButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 16.000000000000000000
+    Position.Y = 491.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 12
+    Text = 'conver to .jls'
+    OnClick = converjlsButtonClick
+  end
+  object RadioButton_JLS8: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'JLS'
+    Position.X = 192.000000000000000000
+    Position.Y = 508.000000000000000000
+    Size.Width = 73.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 13
+    Text = 'JLS8'
+  end
+  object RadioButton_JLS24: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'JLS'
+    IsChecked = True
+    Position.X = 264.000000000000000000
+    Position.Y = 508.000000000000000000
+    Size.Width = 73.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 14
+    Text = 'JLS24'
+  end
+  object converyv12Button: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 400.000000000000000000
+    Position.Y = 403.000000000000000000
+    Size.Width = 153.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Text = 'conver to .yv12'
+    OnClick = converyv12ButtonClick
+  end
+  object converbmp24Button: TButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    Position.X = 200.000000000000000000
+    Position.Y = 403.000000000000000000
+    Size.Width = 193.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Text = 'conver to .bmp(24bit)'
+    OnClick = converbmp24ButtonClick
+  end
+  object SameDirCheckBox: TCheckBox
+    Anchors = [akLeft, akBottom]
+    IsChecked = True
+    Position.X = 15.000000000000000000
+    Position.Y = 368.000000000000000000
+    Size.Width = 210.000000000000000000
+    Size.Height = 27.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    Text = 'convert to same directory'
+  end
+  object converHalfYUVButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 560.000000000000000000
+    Position.Y = 403.000000000000000000
+    Size.Width = 161.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 10
+    Text = 'conver to .hyuv'
+    OnClick = converHalfYUVButtonClick
+  end
+  object converQuartYUVButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 728.000000000000000000
+    Position.Y = 403.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 11
+    Text = 'conver to .qyuv'
+    OnClick = converQuartYUVButtonClick
+  end
+  object converJpegButton: TButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    Position.X = 16.000000000000000000
+    Position.Y = 539.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 15
+    Text = 'conver to .jpg'
+    OnClick = converJpegButtonClick
+  end
+  object RadioButton_Jpeg_YCbCrA: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'jpg'
+    IsChecked = True
+    Position.X = 192.000000000000000000
+    Position.Y = 548.000000000000000000
+    Size.Width = 73.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 16
+    Text = 'YCbCrA'
+  end
+  object RadioButton_Jpeg_YCbCr: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'jpg'
+    Position.X = 272.000000000000000000
+    Position.Y = 548.000000000000000000
+    Size.Width = 65.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 17
+    Text = 'YCbCr'
+  end
+  object RadioButton_Jpeg_Gray: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'jpg'
+    Position.X = 416.000000000000000000
+    Position.Y = 548.000000000000000000
+    Size.Width = 57.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 19
+    Text = 'Gray'
+  end
+  object qualilyLayout: TLayout
+    Anchors = [akLeft, akBottom]
+    Position.X = 552.000000000000000000
+    Position.Y = 537.000000000000000000
+    Size.Width = 169.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 21
+    object Label2: TLabel
+      Align = Left
+      StyledSettings = [Family, Style, FontColor]
+      Size.Width = 97.000000000000000000
+      Size.Height = 41.000000000000000000
+      Size.PlatformDefault = False
+      Text = 'qualily(10..100)'
+      TabOrder = 0
+    end
+    object JpegQualilyEdit: TEdit
+      Touch.InteractiveGestures = [LongTap, DoubleTap]
+      Align = Center
+      TabOrder = 1
+      Text = '90'
+      Size.Width = 48.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+    end
+  end
+  object RadioButton_Jpeg_GrayA: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'jpg'
+    Position.X = 344.000000000000000000
+    Position.Y = 548.000000000000000000
+    Size.Width = 65.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 18
+    Text = 'GrayA'
+  end
+  object RadioButton_Jpeg_CMYK: TRadioButton
+    Anchors = [akLeft, akBottom]
+    StyledSettings = [Family, Style, FontColor]
+    GroupName = 'jpg'
+    Position.X = 480.000000000000000000
+    Position.Y = 548.000000000000000000
+    Size.Width = 65.000000000000000000
+    Size.Height = 19.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 20
+    Text = 'CMYK'
+  end
+  object fpsTimer: TTimer
+    Interval = 10
+    OnTimer = fpsTimerTimer
+    Left = 296
+    Top = 352
+  end
+  object pb: TPaintBox
+    Anchors = [akTop, akRight, akBottom]
+    ClipChildren = True
+    ClipParent = True
+    Position.X = 911.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 569.000000000000000000
+    Size.Height = 562.000000000000000000
+    Size.PlatformDefault = False
+    OnMouseDown = pbMouseDown
+    OnMouseMove = pbMouseMove
+    OnMouseUp = pbMouseUp
+    OnMouseWheel = pbMouseWheel
+    OnPaint = pbPaint
+  end
+  object converPNGButton: TButton
+    Anchors = [akLeft, akBottom]
+    Position.X = 200.000000000000000000
+    Position.Y = 447.000000000000000000
+    Size.Width = 193.000000000000000000
+    Size.Height = 41.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 7
+    Text = 'conver to .png'
+    OnClick = converPNGButtonClick
+  end
+end

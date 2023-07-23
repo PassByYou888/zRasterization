@@ -1,0 +1,41 @@
+object LogForm: TLogForm
+  Left = 0
+  Top = 40
+  BorderIcons = [biSystemMenu, biMaximize]
+  Caption = 'Log window'
+  ClientHeight = 259
+  ClientWidth = 783
+  Position = MainFormCenter
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnClose = FormClose
+  OnKeyUp = FormKeyUp
+  Top = 40
+  DesignerMasterStyle = 0
+  object Memo: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    StyledSettings = [FontColor]
+    TextSettings.Font.Family = 'Consolas'
+    TextSettings.Font.StyleExt = {00070000000000000004000000}
+    Align = Client
+    Size.Width = 783.000000000000000000
+    Size.Height = 259.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    OnPainting = MemoPainting
+    Viewport.Width = 779.000000000000000000
+    Viewport.Height = 255.000000000000000000
+  end
+  object ProgressBar: TProgressBar
+    Align = Top
+    Orientation = Horizontal
+    Size.Width = 750.000000000000000000
+    Size.Height = 23.000000000000000000
+    Size.PlatformDefault = False
+    Visible = False
+  end
+end

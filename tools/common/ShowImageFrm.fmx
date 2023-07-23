@@ -1,0 +1,34 @@
+object ShowImageForm: TShowImageForm
+  Left = 0
+  Top = 0
+  Caption = 'Image.'
+  ClientHeight = 600
+  ClientWidth = 600
+  Position = MainFormCenter
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnClose = FormClose
+  OnKeyUp = FormKeyUp
+  DesignerMasterStyle = 0
+  object bkTimer: TTimer
+    Interval = 20
+    OnTimer = bkTimerTimer
+    Left = 288
+    Top = 288
+  end
+  object pb: TPaintBox
+    Align = Client
+    ClipChildren = True
+    ClipParent = True
+    Size.Width = 600.000000000000000000
+    Size.Height = 600.000000000000000000
+    Size.PlatformDefault = False
+    OnMouseDown = pbMouseDown
+    OnMouseMove = pbMouseMove
+    OnMouseUp = pbMouseUp
+    OnMouseWheel = pbMouseWheel
+    OnPaint = pbPaint
+  end
+end

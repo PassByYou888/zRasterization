@@ -99,6 +99,45 @@
         <Projects Include="48 LayoutRender\LayourRender.dproj">
             <Dependencies/>
         </Projects>
+        <Projects Include="_131_PostPoolTech\_131_PostExecuteTech.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_129_ZDB2_Thread_App_Demo\_129_ZDB2_Thread_App_Demo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_127_MatchedAlgorithm\_127_MatchedAlgorithm.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_119_BigList_PK_List\_119_BigList_PK_List.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_118_SaveMyDocument\_118_SaveMyDocument.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_117_ZDB2_Json_DB\_117_ZDB2_Json_DB.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_116_RealtimeDataFrameEncoder\_116_RealtimeDataFrameEncoder.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_115_SequenceAnimation\_115_SqeurnceAni.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_114_OrderStructForThread\_114_OrderStructForThread.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_113_OrderStruct\_113_OrderStructDemo.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_109_BulletText\_109_BulletText.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_136_TextDataEngine\_136_TextDataEngine.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="_135_StringReplaceTech\_135_StringReplaceTech.dproj">
+            <Dependencies/>
+        </Projects>
     </ItemGroup>
     <ProjectExtensions>
         <Borland.Personality>Default.Personality.12</Borland.Personality>
@@ -395,14 +434,131 @@
     <Target Name="LayourRender:Make">
         <MSBuild Projects="48 LayoutRender\LayourRender.dproj" Targets="Make"/>
     </Target>
+    <Target Name="_131_PostExecuteTech">
+        <MSBuild Projects="_131_PostPoolTech\_131_PostExecuteTech.dproj"/>
+    </Target>
+    <Target Name="_131_PostExecuteTech:Clean">
+        <MSBuild Projects="_131_PostPoolTech\_131_PostExecuteTech.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_131_PostExecuteTech:Make">
+        <MSBuild Projects="_131_PostPoolTech\_131_PostExecuteTech.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_129_ZDB2_Thread_App_Demo">
+        <MSBuild Projects="_129_ZDB2_Thread_App_Demo\_129_ZDB2_Thread_App_Demo.dproj"/>
+    </Target>
+    <Target Name="_129_ZDB2_Thread_App_Demo:Clean">
+        <MSBuild Projects="_129_ZDB2_Thread_App_Demo\_129_ZDB2_Thread_App_Demo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_129_ZDB2_Thread_App_Demo:Make">
+        <MSBuild Projects="_129_ZDB2_Thread_App_Demo\_129_ZDB2_Thread_App_Demo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_127_MatchedAlgorithm">
+        <MSBuild Projects="_127_MatchedAlgorithm\_127_MatchedAlgorithm.dproj"/>
+    </Target>
+    <Target Name="_127_MatchedAlgorithm:Clean">
+        <MSBuild Projects="_127_MatchedAlgorithm\_127_MatchedAlgorithm.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_127_MatchedAlgorithm:Make">
+        <MSBuild Projects="_127_MatchedAlgorithm\_127_MatchedAlgorithm.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_119_BigList_PK_List">
+        <MSBuild Projects="_119_BigList_PK_List\_119_BigList_PK_List.dproj"/>
+    </Target>
+    <Target Name="_119_BigList_PK_List:Clean">
+        <MSBuild Projects="_119_BigList_PK_List\_119_BigList_PK_List.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_119_BigList_PK_List:Make">
+        <MSBuild Projects="_119_BigList_PK_List\_119_BigList_PK_List.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_118_SaveMyDocument">
+        <MSBuild Projects="_118_SaveMyDocument\_118_SaveMyDocument.dproj"/>
+    </Target>
+    <Target Name="_118_SaveMyDocument:Clean">
+        <MSBuild Projects="_118_SaveMyDocument\_118_SaveMyDocument.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_118_SaveMyDocument:Make">
+        <MSBuild Projects="_118_SaveMyDocument\_118_SaveMyDocument.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_117_ZDB2_Json_DB">
+        <MSBuild Projects="_117_ZDB2_Json_DB\_117_ZDB2_Json_DB.dproj"/>
+    </Target>
+    <Target Name="_117_ZDB2_Json_DB:Clean">
+        <MSBuild Projects="_117_ZDB2_Json_DB\_117_ZDB2_Json_DB.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_117_ZDB2_Json_DB:Make">
+        <MSBuild Projects="_117_ZDB2_Json_DB\_117_ZDB2_Json_DB.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_116_RealtimeDataFrameEncoder">
+        <MSBuild Projects="_116_RealtimeDataFrameEncoder\_116_RealtimeDataFrameEncoder.dproj"/>
+    </Target>
+    <Target Name="_116_RealtimeDataFrameEncoder:Clean">
+        <MSBuild Projects="_116_RealtimeDataFrameEncoder\_116_RealtimeDataFrameEncoder.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_116_RealtimeDataFrameEncoder:Make">
+        <MSBuild Projects="_116_RealtimeDataFrameEncoder\_116_RealtimeDataFrameEncoder.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_115_SqeurnceAni">
+        <MSBuild Projects="_115_SequenceAnimation\_115_SqeurnceAni.dproj"/>
+    </Target>
+    <Target Name="_115_SqeurnceAni:Clean">
+        <MSBuild Projects="_115_SequenceAnimation\_115_SqeurnceAni.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_115_SqeurnceAni:Make">
+        <MSBuild Projects="_115_SequenceAnimation\_115_SqeurnceAni.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_114_OrderStructForThread">
+        <MSBuild Projects="_114_OrderStructForThread\_114_OrderStructForThread.dproj"/>
+    </Target>
+    <Target Name="_114_OrderStructForThread:Clean">
+        <MSBuild Projects="_114_OrderStructForThread\_114_OrderStructForThread.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_114_OrderStructForThread:Make">
+        <MSBuild Projects="_114_OrderStructForThread\_114_OrderStructForThread.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_113_OrderStructDemo">
+        <MSBuild Projects="_113_OrderStruct\_113_OrderStructDemo.dproj"/>
+    </Target>
+    <Target Name="_113_OrderStructDemo:Clean">
+        <MSBuild Projects="_113_OrderStruct\_113_OrderStructDemo.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_113_OrderStructDemo:Make">
+        <MSBuild Projects="_113_OrderStruct\_113_OrderStructDemo.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_109_BulletText">
+        <MSBuild Projects="_109_BulletText\_109_BulletText.dproj"/>
+    </Target>
+    <Target Name="_109_BulletText:Clean">
+        <MSBuild Projects="_109_BulletText\_109_BulletText.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_109_BulletText:Make">
+        <MSBuild Projects="_109_BulletText\_109_BulletText.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_136_TextDataEngine">
+        <MSBuild Projects="_136_TextDataEngine\_136_TextDataEngine.dproj"/>
+    </Target>
+    <Target Name="_136_TextDataEngine:Clean">
+        <MSBuild Projects="_136_TextDataEngine\_136_TextDataEngine.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_136_TextDataEngine:Make">
+        <MSBuild Projects="_136_TextDataEngine\_136_TextDataEngine.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="_135_StringReplaceTech">
+        <MSBuild Projects="_135_StringReplaceTech\_135_StringReplaceTech.dproj"/>
+    </Target>
+    <Target Name="_135_StringReplaceTech:Clean">
+        <MSBuild Projects="_135_StringReplaceTech\_135_StringReplaceTech.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="_135_StringReplaceTech:Make">
+        <MSBuild Projects="_135_StringReplaceTech\_135_StringReplaceTech.dproj" Targets="Make"/>
+    </Target>
     <Target Name="Build">
-        <CallTarget Targets="DrawEngine4FMXBitmap;zExpressionSupport;TriangleOptimization;TextDraw;PolygonScaleAndExtract;ParallelCompressor;NumTrans;MemoryMapping;GeometryIntersect;FillColor;FFMPEG_ReaderDemo;MemoryRasterMoreFont;zDrawEngine_HelloWorld;PascalCodeDependencyAnslysis;memoryRasterProjection;yuv2Video;SoftRenderer;Render2Video;BoxColorDetector;BuildInPictureDriver;HoughRotationDetectAndCalibrate;MorphGalaxiesDetection;MorphologySegmentation;ParallelDemo;RasterizationFormatDemo;RectRotationProjection;RotationDemo;Wildcard;ApproximatePolygon;MemoryRasterScale;ParticleRender;LayourRender"/>
+        <CallTarget Targets="DrawEngine4FMXBitmap;zExpressionSupport;TriangleOptimization;TextDraw;PolygonScaleAndExtract;ParallelCompressor;NumTrans;MemoryMapping;GeometryIntersect;FillColor;FFMPEG_ReaderDemo;MemoryRasterMoreFont;zDrawEngine_HelloWorld;PascalCodeDependencyAnslysis;memoryRasterProjection;yuv2Video;SoftRenderer;Render2Video;BoxColorDetector;BuildInPictureDriver;HoughRotationDetectAndCalibrate;MorphGalaxiesDetection;MorphologySegmentation;ParallelDemo;RasterizationFormatDemo;RectRotationProjection;RotationDemo;Wildcard;ApproximatePolygon;MemoryRasterScale;ParticleRender;LayourRender;_131_PostExecuteTech;_129_ZDB2_Thread_App_Demo;_127_MatchedAlgorithm;_119_BigList_PK_List;_118_SaveMyDocument;_117_ZDB2_Json_DB;_116_RealtimeDataFrameEncoder;_115_SqeurnceAni;_114_OrderStructForThread;_113_OrderStructDemo;_109_BulletText;_136_TextDataEngine;_135_StringReplaceTech"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="DrawEngine4FMXBitmap:Clean;zExpressionSupport:Clean;TriangleOptimization:Clean;TextDraw:Clean;PolygonScaleAndExtract:Clean;ParallelCompressor:Clean;NumTrans:Clean;MemoryMapping:Clean;GeometryIntersect:Clean;FillColor:Clean;FFMPEG_ReaderDemo:Clean;MemoryRasterMoreFont:Clean;zDrawEngine_HelloWorld:Clean;PascalCodeDependencyAnslysis:Clean;memoryRasterProjection:Clean;yuv2Video:Clean;SoftRenderer:Clean;Render2Video:Clean;BoxColorDetector:Clean;BuildInPictureDriver:Clean;HoughRotationDetectAndCalibrate:Clean;MorphGalaxiesDetection:Clean;MorphologySegmentation:Clean;ParallelDemo:Clean;RasterizationFormatDemo:Clean;RectRotationProjection:Clean;RotationDemo:Clean;Wildcard:Clean;ApproximatePolygon:Clean;MemoryRasterScale:Clean;ParticleRender:Clean;LayourRender:Clean"/>
+        <CallTarget Targets="DrawEngine4FMXBitmap:Clean;zExpressionSupport:Clean;TriangleOptimization:Clean;TextDraw:Clean;PolygonScaleAndExtract:Clean;ParallelCompressor:Clean;NumTrans:Clean;MemoryMapping:Clean;GeometryIntersect:Clean;FillColor:Clean;FFMPEG_ReaderDemo:Clean;MemoryRasterMoreFont:Clean;zDrawEngine_HelloWorld:Clean;PascalCodeDependencyAnslysis:Clean;memoryRasterProjection:Clean;yuv2Video:Clean;SoftRenderer:Clean;Render2Video:Clean;BoxColorDetector:Clean;BuildInPictureDriver:Clean;HoughRotationDetectAndCalibrate:Clean;MorphGalaxiesDetection:Clean;MorphologySegmentation:Clean;ParallelDemo:Clean;RasterizationFormatDemo:Clean;RectRotationProjection:Clean;RotationDemo:Clean;Wildcard:Clean;ApproximatePolygon:Clean;MemoryRasterScale:Clean;ParticleRender:Clean;LayourRender:Clean;_131_PostExecuteTech:Clean;_129_ZDB2_Thread_App_Demo:Clean;_127_MatchedAlgorithm:Clean;_119_BigList_PK_List:Clean;_118_SaveMyDocument:Clean;_117_ZDB2_Json_DB:Clean;_116_RealtimeDataFrameEncoder:Clean;_115_SqeurnceAni:Clean;_114_OrderStructForThread:Clean;_113_OrderStructDemo:Clean;_109_BulletText:Clean;_136_TextDataEngine:Clean;_135_StringReplaceTech:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="DrawEngine4FMXBitmap:Make;zExpressionSupport:Make;TriangleOptimization:Make;TextDraw:Make;PolygonScaleAndExtract:Make;ParallelCompressor:Make;NumTrans:Make;MemoryMapping:Make;GeometryIntersect:Make;FillColor:Make;FFMPEG_ReaderDemo:Make;MemoryRasterMoreFont:Make;zDrawEngine_HelloWorld:Make;PascalCodeDependencyAnslysis:Make;memoryRasterProjection:Make;yuv2Video:Make;SoftRenderer:Make;Render2Video:Make;BoxColorDetector:Make;BuildInPictureDriver:Make;HoughRotationDetectAndCalibrate:Make;MorphGalaxiesDetection:Make;MorphologySegmentation:Make;ParallelDemo:Make;RasterizationFormatDemo:Make;RectRotationProjection:Make;RotationDemo:Make;Wildcard:Make;ApproximatePolygon:Make;MemoryRasterScale:Make;ParticleRender:Make;LayourRender:Make"/>
+        <CallTarget Targets="DrawEngine4FMXBitmap:Make;zExpressionSupport:Make;TriangleOptimization:Make;TextDraw:Make;PolygonScaleAndExtract:Make;ParallelCompressor:Make;NumTrans:Make;MemoryMapping:Make;GeometryIntersect:Make;FillColor:Make;FFMPEG_ReaderDemo:Make;MemoryRasterMoreFont:Make;zDrawEngine_HelloWorld:Make;PascalCodeDependencyAnslysis:Make;memoryRasterProjection:Make;yuv2Video:Make;SoftRenderer:Make;Render2Video:Make;BoxColorDetector:Make;BuildInPictureDriver:Make;HoughRotationDetectAndCalibrate:Make;MorphGalaxiesDetection:Make;MorphologySegmentation:Make;ParallelDemo:Make;RasterizationFormatDemo:Make;RectRotationProjection:Make;RotationDemo:Make;Wildcard:Make;ApproximatePolygon:Make;MemoryRasterScale:Make;ParticleRender:Make;LayourRender:Make;_131_PostExecuteTech:Make;_129_ZDB2_Thread_App_Demo:Make;_127_MatchedAlgorithm:Make;_119_BigList_PK_List:Make;_118_SaveMyDocument:Make;_117_ZDB2_Json_DB:Make;_116_RealtimeDataFrameEncoder:Make;_115_SqeurnceAni:Make;_114_OrderStructForThread:Make;_113_OrderStructDemo:Make;_109_BulletText:Make;_136_TextDataEngine:Make;_135_StringReplaceTech:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>

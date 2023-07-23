@@ -1,0 +1,245 @@
+object SampleEditorForm: TSampleEditorForm
+  Left = 0
+  Top = 0
+  Caption = 'Morphology Expression editor.'
+  ClientHeight = 702
+  ClientWidth = 1465
+  Position = MainFormCenter
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnClose = FormClose
+  DesignerMasterStyle = 0
+  object Timer: TTimer
+    Interval = 10
+    OnTimer = TimerTimer
+    Left = 321
+    Top = 41
+  end
+  object AllLayout: TLayout
+    Align = Client
+    Size.Width = 1465.000000000000000000
+    Size.Height = 702.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    object leftLayout: TLayout
+      Align = Left
+      Size.Width = 337.000000000000000000
+      Size.Height = 702.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Layout1: TLayout
+        Align = MostTop
+        Size.Width = 337.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object RunButton: TButton
+          Action = Action_Run
+          Align = Left
+          Enabled = True
+          StyledSettings = [Family, Size]
+          ImageIndex = -1
+          Size.Width = 57.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 2
+          TextSettings.Font.StyleExt = {00070000000000000004000000}
+          TextSettings.FontColor = claLime
+        end
+        object Button1: TButton
+          Action = Action_ScriptHelp
+          Align = MostRight
+          Enabled = True
+          ImageIndex = -1
+          Position.X = 286.000000000000000000
+          Size.Width = 51.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          TextSettings.FontColor = claLime
+        end
+        object HelpFilterEdit: TEdit
+          Touch.InteractiveGestures = [LongTap, DoubleTap]
+          Align = Right
+          TabOrder = 1
+          Position.X = 101.000000000000000000
+          Position.Y = 2.000000000000000000
+          Margins.Left = 5.000000000000000000
+          Margins.Top = 2.000000000000000000
+          Margins.Right = 5.000000000000000000
+          Margins.Bottom = 2.000000000000000000
+          Size.Width = 180.000000000000000000
+          Size.Height = 21.000000000000000000
+          Size.PlatformDefault = False
+          OnKeyUp = HelpFilterEditKeyUp
+        end
+      end
+      object ScriptMemo: TMemo
+        Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+        DataDetectorTypes = []
+        Lines.Strings = (
+          'L('#39'main'#39'),main')
+        StyledSettings = [Size, FontColor]
+        TextSettings.Font.Family = 'Consolas'
+        TextSettings.Font.StyleExt = {00070000000000000004000000}
+        Align = Top
+        Position.Y = 25.000000000000000000
+        Size.Width = 337.000000000000000000
+        Size.Height = 200.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Viewport.Width = 333.000000000000000000
+        Viewport.Height = 196.000000000000000000
+      end
+      object ScriptResultListBox: TListBox
+        Align = Client
+        Size.Width = 337.000000000000000000
+        Size.Height = 469.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        AlternatingRowBackground = True
+        DisableFocusEffect = True
+        DefaultItemStyles.ItemStyle = ''
+        DefaultItemStyles.GroupHeaderStyle = ''
+        DefaultItemStyles.GroupFooterStyle = ''
+        Viewport.Width = 333.000000000000000000
+        Viewport.Height = 465.000000000000000000
+      end
+      object ScriptSplitter: TSplitter
+        Align = Top
+        Cursor = crVSplit
+        MinSize = 20.000000000000000000
+        Position.Y = 225.000000000000000000
+        ShowGrip = False
+        Size.Width = 337.000000000000000000
+        Size.Height = 8.000000000000000000
+        Size.PlatformDefault = False
+      end
+    end
+    object cliLayout: TLayout
+      Align = Client
+      Size.Width = 1120.000000000000000000
+      Size.Height = 702.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      object cliTopLayout: TLayout
+        Align = Top
+        Size.Width = 1120.000000000000000000
+        Size.Height = 25.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object Button3: TButton
+          Action = Action_SaveAs
+          Align = Left
+          Enabled = True
+          ImageIndex = -1
+          Position.X = 365.000000000000000000
+          Size.Width = 59.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          TextSettings.FontColor = claLime
+        end
+        object CheckBox_ShowPixelInfo: TCheckBox
+          Align = Left
+          IsChecked = True
+          Margins.Left = 15.000000000000000000
+          Position.X = 183.000000000000000000
+          Size.Width = 86.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 3
+          Text = 'Pixel Info'
+          OnChange = CheckBox_ShowPixelInfoChange
+        end
+        object CheckBox_ShowHistogramInfo: TCheckBox
+          Align = Left
+          Position.X = 269.000000000000000000
+          Size.Width = 96.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 2
+          Text = 'Histogram'
+          OnChange = CheckBox_ShowHistogramInfoChange
+        end
+        object Button5: TButton
+          Action = Action_BuildMorphPicture
+          Align = MostLeft
+          Enabled = True
+          ImageIndex = -1
+          Size.Width = 168.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          TextSettings.FontColor = claLime
+        end
+      end
+      object viewerPB: TPaintBox
+        Align = Client
+        ClipChildren = True
+        ClipParent = True
+        Size.Width = 1120.000000000000000000
+        Size.Height = 677.000000000000000000
+        Size.PlatformDefault = False
+        OnMouseDown = viewerPBMouseDown
+        OnMouseMove = viewerPBMouseMove
+        OnMouseUp = viewerPBMouseUp
+        OnMouseWheel = viewerPBMouseWheel
+        OnPaint = viewerPBPaint
+        object OpenPictureDialog: TOpenDialog
+          Filter = 'all picture|*.bmp;*.yv12;*.seq;*.jls;*.jpg;*.jpeg;*.png'
+          Options = [ofNoValidate, ofAllowMultiSelect, ofPathMustExist, ofFileMustExist, ofEnableSizing]
+          Left = 321
+          Top = 201
+        end
+      end
+    end
+    object leftSplitter: TSplitter
+      Align = Left
+      Cursor = crHSplit
+      MinSize = 20.000000000000000000
+      Position.X = 337.000000000000000000
+      ShowGrip = False
+      Size.Width = 8.000000000000000000
+      Size.Height = 702.000000000000000000
+      Size.PlatformDefault = False
+    end
+  end
+  object SavePictureDialog: TSaveDialog
+    DefaultExt = '.bmp'
+    Filter = 'all picture|*.bmp;*.yv12;*.seq;*.jls;*.jpg;*.jpeg;*.png'
+    Left = 321
+    Top = 273
+  end
+  object ActionList: TActionList
+    Left = 321
+    Top = 121
+    object Action_Run: TAction
+      Text = 'Run'
+      ShortCut = 120
+      OnExecute = Action_RunExecute
+    end
+    object Action_ScriptHelp: TAction
+      Text = 'Help'
+      ShortCut = 112
+      OnExecute = Action_ScriptHelpExecute
+    end
+    object Action_OpenNewEditor: TAction
+      Text = 'Open Editor (F3)'
+      ShortCut = 114
+    end
+    object Action_SaveAs: TAction
+      Text = 'Save'
+      OnExecute = Action_SaveAsExecute
+    end
+    object Action_Finish: TAction
+      Text = 'Finish'
+    end
+    object Action_BuildMorphPicture: TAction
+      Text = 'Extract Pixel Morph.'
+      OnExecute = Action_BuildMorphPictureExecute
+    end
+  end
+end
