@@ -88,11 +88,11 @@ var
   d: TDrawEngine;
 begin
   d := TDrawEngine.Create;
-  d.ZRization.UsedAgg := usedAggCheckBox.IsChecked;
-  d.ZRization.SetSize(RectV2(0, 0, Image.width, Image.height));
+  d.ZR_.UsedAgg := usedAggCheckBox.IsChecked;
+  d.ZR_.SetSize(RectV2(0, 0, Image.width, Image.height));
   // d.Rasterization.Memory.Vertex.DrawTriangleEdge:=True;
   Render(d);
-  MemoryBitmapToBitmap(d.ZRization.Memory, Image.Bitmap);
+  MemoryBitmapToBitmap(d.ZR_.Memory, Image.Bitmap);
   DisposeObject(d);
 end;
 

@@ -17,7 +17,7 @@ uses ZR.Core,
 type
   TZDB2_List_Raster = class;
   TZDB2_Raster = class;
-  TZDB2_Big_List_Raster_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_Raster>;
+  TZDB2_Big_List_Raster_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_Raster>;
 
   TZDB2_Raster = class
   private

@@ -18,7 +18,7 @@ uses ZR.Core,
 type
   TZDB2_List_ObjectDataManager = class;
   TZDB2_ObjectDataManager = class;
-  TZDB2_Big_List_ObjectDataManager_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_ObjectDataManager>;
+  TZDB2_Big_List_ObjectDataManager_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_ObjectDataManager>;
 
   TZDB2_ObjectDataManager = class
   private

@@ -34,7 +34,7 @@ type
     procedure LoadFromStream(stream: TMS64);
   end;
 
-  TZDB2_FI_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_FI>;
+  TZDB2_FI_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_FI>;
   TZDB2_FI_Hash_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TPascalString_Big_Hash_Pair_Pool<TZDB2_FI>;
 
   TZDB2_FI_Hash = class(TZDB2_FI_Hash_Decl)

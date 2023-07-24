@@ -3917,11 +3917,11 @@ begin
       FDrawEngineMap := TDrawEngine.Create;
   d := TDrawEngine(FDrawEngineMap);
 
-  if (d.ZRization.Memory.Width <> Width) or (d.ZRization.Memory.Height <> Height) or (d.ZRization.Memory.FBits <> FBits) then
+  if (d.ZR_.Memory.Width <> Width) or (d.ZR_.Memory.Height <> Height) or (d.ZR_.Memory.FBits <> FBits) then
     begin
-      d.ZRization.SetWorkMemory(Self);
-      d.ZRization.UsedAgg := True;
-      d.ZRization.Memory.Font := Font;
+      d.ZR_.SetWorkMemory(Self);
+      d.ZR_.UsedAgg := True;
+      d.ZR_.Memory.Font := Font;
       d.ViewOptions := [];
     end;
   d.SetSize(Self);
@@ -4576,19 +4576,19 @@ begin
     // yv12 format
   else if hflag = $8D46 then
     begin
-      YV12ToZRization(stream, Self);
+      YV12ToZR_(stream, Self);
       exit;
     end
     // half yuv format
   else if hflag = $8D47 then
     begin
-      HalfYUVToZRization(stream, Self);
+      HalfYUVToZR_(stream, Self);
       exit;
     end
     // quart yuv format
   else if hflag = $8D48 then
     begin
-      QuartYUVToZRization(stream, Self);
+      QuartYUVToZR_(stream, Self);
       exit;
     end
     // grapscale
@@ -4859,7 +4859,7 @@ var
 begin
   hflag := $8D46; // yv12 format
   stream.Write(hflag, 2);
-  ZRizationToYV12(True, Self, stream);
+  ZR_ToYV12(True, Self, stream);
 end;
 
 procedure TMZR.SaveToFastYV12Stream(stream: TCore_Stream);
@@ -4868,7 +4868,7 @@ var
 begin
   hflag := $8D46; // yv12 format
   stream.Write(hflag, 2);
-  ZRizationToYV12(False, Self, stream);
+  ZR_ToYV12(False, Self, stream);
 end;
 
 procedure TMZR.SaveToHalfYUVStream(stream: TCore_Stream);
@@ -4877,7 +4877,7 @@ var
 begin
   hflag := $8D47; // half yuv format
   stream.Write(hflag, 2);
-  ZRizationToHalfYUV(True, Self, stream);
+  ZR_ToHalfYUV(True, Self, stream);
 end;
 
 procedure TMZR.SaveToFastHalfYUVStream(stream: TCore_Stream);
@@ -4886,7 +4886,7 @@ var
 begin
   hflag := $8D47; // yu12 format
   stream.Write(hflag, 2);
-  ZRizationToHalfYUV(False, Self, stream);
+  ZR_ToHalfYUV(False, Self, stream);
 end;
 
 procedure TMZR.SaveToQuartYUVStream(stream: TCore_Stream);
@@ -4895,7 +4895,7 @@ var
 begin
   hflag := $8D48; // quart yuv format
   stream.Write(hflag, 2);
-  ZRizationToQuartYUV(True, Self, stream);
+  ZR_ToQuartYUV(True, Self, stream);
 end;
 
 procedure TMZR.SaveToFastQuartYUVStream(stream: TCore_Stream);
@@ -4904,7 +4904,7 @@ var
 begin
   hflag := $8D48; // quart yuv format
   stream.Write(hflag, 2);
-  ZRizationToQuartYUV(False, Self, stream);
+  ZR_ToQuartYUV(False, Self, stream);
 end;
 
 procedure TMZR.SaveToJpegYCbCrAStream(stream: TCore_Stream; Quality: TJpegQuality);

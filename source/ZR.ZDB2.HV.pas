@@ -17,7 +17,7 @@ uses ZR.Core,
 type
   TZDB2_List_HashVariant = class;
   TZDB2_HashVariant = class;
-  TZDB2_Big_List_HashVariant_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_HashVariant>;
+  TZDB2_Big_List_HashVariant_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_HashVariant>;
 
   TZDB2_HashVariant = class
   private

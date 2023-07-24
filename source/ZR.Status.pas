@@ -249,21 +249,21 @@ type
 
   PNo_Ln_Text = ^TNo_Ln_Text;
 
-  TEvent_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PEvent_Struct__>;
+  TEvent_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PEvent_Struct__>;
 
   TEvent_Pool__ = class(TEvent_Pool___Decl)
   public
     procedure DoFree(var Data: PEvent_Struct__); override;
   end;
 
-  TText_Queue_Data_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PText_Queue_Data>;
+  TText_Queue_Data_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PText_Queue_Data>;
 
   TText_Queue_Data_Pool__ = class(TText_Queue_Data_Pool___Decl)
   public
     procedure DoFree(var Data: PText_Queue_Data); override;
   end;
 
-  TNo_Ln_Text_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PNo_Ln_Text>;
+  TNo_Ln_Text_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PNo_Ln_Text>;
 
   TNo_Ln_Text_Pool__ = class(TNo_Ln_Text_Pool___Decl)
   public

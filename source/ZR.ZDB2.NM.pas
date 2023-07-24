@@ -17,7 +17,7 @@ uses ZR.Core,
 type
   TZDB2_List_NM = class;
   TZDB2_NM = class;
-  TZDB2_Big_List_NM_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_NM>;
+  TZDB2_Big_List_NM_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_NM>;
 
   TZDB2_NM = class
   private

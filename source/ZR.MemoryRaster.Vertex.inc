@@ -95,7 +95,7 @@ begin
   Result := RColorF(R, G, B, A);
 end;
 
-procedure TZRVertex.ZRizeTriangle(const FS: TFragmentSampling; const sc: TRColor; const tex: TMZR; const SamplerTri, RenderTri: TTriangle);
+procedure TZRVertex.ZR_Triangle(const FS: TFragmentSampling; const sc: TRColor; const tex: TMZR; const SamplerTri, RenderTri: TTriangle);
 
 {$IFDEF Parallel}
 type
@@ -167,7 +167,7 @@ var
         Result := (Result - 15) div 16;
   end;
 
-  procedure ZRizationSetup;
+  procedure ZR_Setup;
   var
     x1, x2, x3, y1, y2, y3, c1, c2, c3: Int64;
   begin
@@ -244,7 +244,7 @@ var
 begin
   // prepare pixel rasterization
   Window.ReadyBits();
-  ZRizationSetup;
+  ZR_Setup;
 
   // init triangle interpolation
   Determinant := ComputeDeterminant;
@@ -397,7 +397,7 @@ begin
       SwapVec2(nRenderTri[1], nRenderTri[2]);
 
   try
-    ZRizeTriangle(TFragmentSampling.fsSolid, Sampler, nil, ZeroTriangle, TriRound(TriMul(nRenderTri, Window.Size0)));
+    ZR_Triangle(TFragmentSampling.fsSolid, Sampler, nil, ZeroTriangle, TriRound(TriMul(nRenderTri, Window.Size0)));
     if TZRVertex.DebugTriangle then
         Window.DrawTriangle(RenderTri, True, TZRVertex.DebugTriangleColor, False);
   except
@@ -435,7 +435,7 @@ begin
 
   try
     Sampler.ReadyBits();
-    ZRizeTriangle(F, RColor(0, 0, 0), Sampler, nSamplerTri, nRenderTri);
+    ZR_Triangle(F, RColor(0, 0, 0), Sampler, nSamplerTri, nRenderTri);
     if TZRVertex.DebugTriangle then
         Window.DrawTriangle(RenderTri, True, TZRVertex.DebugTriangleColor, False);
   except

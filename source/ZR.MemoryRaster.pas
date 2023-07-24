@@ -178,7 +178,7 @@ type
     rsGrayscale, rsColor255, rsPNG
     );
 
-  TOnGetZRizationMemory = procedure(Sender: TMZR) of object;
+  TOnGetZR_Memory = procedure(Sender: TMZR) of object;
 
   TRColors_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TRColor>;
   TRColors = TRColors_Decl;
@@ -776,7 +776,7 @@ type
 {$ENDREGION 'MemoryRaster'}
 {$REGION 'Serialized'}
 
-  TZR_Serialized_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TC_BigList<TZRSerialized>;
+  TZR_Serialized_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TC_ZR_BL<TZRSerialized>;
 
   TZRSerialized = class
   protected
@@ -904,7 +904,7 @@ type
     ComputeBlend: TSamplerBlend;
 
     { fill triangle }
-    procedure ZRizeTriangle(const FS: TFragmentSampling; const sc: TRColor; const tex: TMZR; const SamplerTri, RenderTri: TTriangle);
+    procedure ZR_Triangle(const FS: TFragmentSampling; const sc: TRColor; const tex: TMZR; const SamplerTri, RenderTri: TTriangle);
     { fragment }
     procedure FillFragment(const FS: TFragmentSampling; const sc: TRColor; const tex: TMZR;
       const bitDst, j, start_x, frag_count: Int64; var attr_v, attr_u: TBilerpConsts);
@@ -1934,20 +1934,20 @@ function DocumentRotationDetected_AVG(var BestLines: THoughLineArry): TGeoFloat;
 {
   YV12
 }
-procedure YV12ToZRization(sour: TCore_Stream; dest: TMZR);
-procedure ZRizationToYV12(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
+procedure YV12ToZR_(sour: TCore_Stream; dest: TMZR);
+procedure ZR_ToYV12(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
 
 {
   Half YV12
 }
-procedure HalfYUVToZRization(sour: TCore_Stream; dest: TMZR);
-procedure ZRizationToHalfYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
+procedure HalfYUVToZR_(sour: TCore_Stream; dest: TMZR);
+procedure ZR_ToHalfYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
 
 {
   quart YV12
 }
-procedure QuartYUVToZRization(sour: TCore_Stream; dest: TMZR);
-procedure ZRizationToQuartYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
+procedure QuartYUVToZR_(sour: TCore_Stream; dest: TMZR);
+procedure ZR_ToQuartYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
 
 {
   byte raster

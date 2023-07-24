@@ -89,7 +89,7 @@ begin
   loadtk := GetTimeTick - tk;
 
   d := TDrawEngine.Create;
-  d.ZRization.SetWorkMemory(nMR);
+  d.ZR_.SetWorkMemory(nMR);
   d.ViewOptions := [];
 
   d.BeginCaptureShadow(Vec2(1, 1), 0.9);
@@ -146,7 +146,7 @@ begin
   loadtk := GetTimeTick - tk;
 
   d := TDrawEngine.Create;
-  d.ZRization.SetWorkMemory(nMR);
+  d.ZR_.SetWorkMemory(nMR);
   d.ViewOptions := [];
 
   d.BeginCaptureShadow(Vec2(1, 1), 0.9);

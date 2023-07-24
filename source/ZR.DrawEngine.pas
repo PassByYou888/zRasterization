@@ -106,7 +106,7 @@ type
 
   TDETexture = class;
 
-  TDETexture_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TDETexture>;
+  TDETexture_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TDETexture>;
 
   TDETexture = class(TSequenceMemoryZR)
   private
@@ -327,7 +327,7 @@ type
 {$REGION 'UI base'}
 
   TDrawEngine_UIBase = class;
-  TDrawEngine_UI_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TDrawEngine_UIBase>;
+  TDrawEngine_UI_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TDrawEngine_UIBase>;
 
   TDrawEngine_UIClick = procedure(Sender: TDrawEngine_UIBase) of object;
 
@@ -490,7 +490,7 @@ type
     procedure Render(D: TDrawEngine; InScene: Boolean); override;
   end;
 
-  TBullet_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TBullet_Base>;
+  TBullet_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TBullet_Base>;
 
   TBullet_Pool = class(TBullet_Pool_Decl)
   public
@@ -508,7 +508,7 @@ type
 
 {$ENDREGION 'Bullet'}
 {$REGION 'Sequence Animation'}
-  TSequence_Animation_Base_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TSequenceAnimationBase>;
+  TSequence_Animation_Base_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TSequenceAnimationBase>;
   TSequence_Animation_Play_Mode = (sapmLoop, sapmPlayOne);
 
   TSequenceAnimationBase = class(TCore_Object)
@@ -551,7 +551,7 @@ type
 {$ENDREGION 'Sequence Animation'}
 {$REGION 'Particle'}
 
-  TParticles_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TParticles>;
+  TParticles_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TParticles>;
 
   TParticle_Data = record
     Source: TSequenceAnimationBase;
@@ -565,7 +565,7 @@ type
     CurrentTime: Double;
   end;
 
-  TParticle_Data_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TParticle_Data>;
+  TParticle_Data_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TParticle_Data>;
 
   TParticles = class(TCore_Object)
   private
@@ -645,7 +645,7 @@ type
     Ptr_QueueStruct__: Pointer;
   end;
 
-  TDrawEngine_Pool_Data_List_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TDrawEngine_Pool_Data>;
+  TDrawEngine_Pool_Data_List_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TDrawEngine_Pool_Data>;
 
   TDrawEngine_Pool_Data_List = class(TDrawEngine_Pool_Data_List_Decl)
   public
@@ -802,7 +802,7 @@ type
 {$REGION 'Text'}
 
   TScroll_Text_Data_Source = class;
-  TScroll_Text_Data_Source_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TScroll_Text_Data_Source>;
+  TScroll_Text_Data_Source_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TScroll_Text_Data_Source>;
 
   TScroll_Text_Data_Source = class(TCore_Object)
   private
@@ -1294,7 +1294,7 @@ type
     property CadencerEngine: TCadencer read FCadencerEng;
 
     { build-in rasterization }
-    property ZRization: TDrawEngine_Raster read FRasterization;
+    property ZR_: TDrawEngine_Raster read FRasterization;
     { draw interface }
     property DrawInterface: TDrawEngineInterface read FDrawInterface write SetDrawInterface;
     procedure SetDrawInterfaceAsDefault;

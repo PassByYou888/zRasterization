@@ -580,7 +580,7 @@ type
   PMD5 = ^TMD5;
   TMD5 = array [0 .. 15] of Byte;
   TMD5_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TMD5>;
-  TMD5_Big_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TMD5>;
+  TMD5_Big_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TMD5>;
   TArrayMD5 = array of TMD5;
   TMD5_Pair_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBig_Hash_Pair_Pool<TMD5, TMD5>;
 

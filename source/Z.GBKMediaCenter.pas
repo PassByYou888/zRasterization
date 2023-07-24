@@ -3,7 +3,7 @@
 { ****************************************************************************** }
 unit Z.GBKMediaCenter;
 
-{$I ..\ZR.Define.inc}
+{$I ZR.Define.inc}
 
 interface
 

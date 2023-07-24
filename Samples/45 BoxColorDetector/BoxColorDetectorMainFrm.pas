@@ -107,8 +107,8 @@ begin
     规则框体检测：规则框体是指框体的4个角点都在平行线上
   }
   d := TDrawEngine.Create;
-  d.ZRization.Memory.SetSize(raster.Width, raster.Height, RColor(0, 0, 0));
-  d.ZRization.UsedAgg := True;
+  d.ZR_.Memory.SetSize(raster.Width, raster.Height, RColor(0, 0, 0));
+  d.ZR_.UsedAgg := True;
   d.SetSize;
   d.ViewOptions := [];
 
@@ -140,7 +140,7 @@ begin
   disposeObject(MorphBin);
   disposeObject(rl);
   disposeObject(RCLines);
-  MemoryBitmapToBitmap(d.ZRization.Memory, outImage.Bitmap);
+  MemoryBitmapToBitmap(d.ZR_.Memory, outImage.Bitmap);
   disposeObject(d);
 end;
 
@@ -164,8 +164,8 @@ begin
     所有可能出现的框体，它都能检测出来
   }
   d := TDrawEngine.Create;
-  d.ZRization.Memory.SetSize(raster.Width, raster.Height, RColor(0, 0, 0));
-  d.ZRization.UsedAgg := False;
+  d.ZR_.Memory.SetSize(raster.Width, raster.Height, RColor(0, 0, 0));
+  d.ZR_.UsedAgg := False;
   d.SetSize;
   d.ViewOptions := [];
 
@@ -197,7 +197,7 @@ begin
   disposeObject(MorphBin);
   disposeObject(rl);
   disposeObject(RCLines);
-  MemoryBitmapToBitmap(d.ZRization.Memory, outImage.Bitmap);
+  MemoryBitmapToBitmap(d.ZR_.Memory, outImage.Bitmap);
   disposeObject(d);
 end;
 

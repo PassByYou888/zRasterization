@@ -20,7 +20,7 @@ const
 type
   TMTVector = array [0 .. MT19937N - 1] of Integer;
   PMD19937Core = ^TMT19937Core;
-  TMT19937_Pool_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PMD19937Core>;
+  TMT19937_Pool_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PMD19937Core>;
 
   TMT19937_Pool__ = class(TMT19937_Pool_Decl__)
   public

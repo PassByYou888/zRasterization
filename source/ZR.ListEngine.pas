@@ -1106,14 +1106,14 @@ type
 {$ENDREGION 'TBackcall_Pool'}
 {$REGION 'Generics decl'}
 
-  TStringBigList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<SystemString>;
+  TStringBigList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<SystemString>;
 
   TStringBigList = class(TStringBigList_Decl)
   public
     procedure DoFree(var Data: SystemString); override;
   end;
 
-  TPascalStringBigList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TPascalString>;
+  TPascalStringBigList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPascalString>;
 
   TPascalStringBigList = class(TPascalStringBigList_Decl)
   public

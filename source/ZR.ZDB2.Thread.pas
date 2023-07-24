@@ -26,12 +26,12 @@ type
   TZDB2_Th_Engine = class;
   TZDB2_Th_Engine_Static_Copy_Tech = class;
   TZDB2_Th_Engine_Dynamic_Copy_Tech = class;
-  TZDB2_Th_Engine_Data_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Marshal_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Data_Instance_Recycle_Tool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Data_Link_Recycle_Tool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Static_Copy_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Static_Copy_Tech>;
-  TZDB2_Th_Engine_Dynamic_Copy_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Dynamic_Copy_Tech>;
+  TZDB2_Th_Engine_Data_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Marshal_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_Instance_Recycle_Tool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_Link_Recycle_Tool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Static_Copy_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Static_Copy_Tech>;
+  TZDB2_Th_Engine_Dynamic_Copy_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Dynamic_Copy_Tech>;
 
   TZDB2_Th_Engine_Get_Mem64_Data_Event_Bridge = class
   public
@@ -141,7 +141,7 @@ type
     procedure Update_State_Loading_Error; // if loading error then remove it.
   end;
 
-  TZDB2_Th_Engine_Data_List = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_List = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_Th_Engine_Data>;
 
   TZDB2_Th_Engine_Data_Class = class of TZDB2_Th_Engine_Data;
 
@@ -277,7 +277,7 @@ type
     procedure Progress();
   end;
 
-  TZDB2_Th_Engine_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine>;
+  TZDB2_Th_Engine_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine>;
 
   TZDB2_Th_Engine_Pool = class(TZDB2_Th_Engine_Pool_Decl)
   public
@@ -341,7 +341,7 @@ type
     procedure Wait_P(On_Wait: TOn_Wait_P);
   end;
 
-  TZDB2_Th_Engine_Marshal_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Engine_Marshal>;
+  TZDB2_Th_Engine_Marshal_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Marshal>;
 
   // TZDB2_Th_Engine_Marshal is a parallel marshal manager.
   TZDB2_Th_Engine_Marshal = class(TCore_InterfacedObject) // all methods is thread safe.
@@ -1384,7 +1384,7 @@ type
     FileTime_: TDateTime;
   end;
 
-  TFileTime_Sort_Tool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TFile_Time_Info>;
+  TFileTime_Sort_Tool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TFile_Time_Info>;
 
 var
   Reserve_: Word;
@@ -1739,7 +1739,7 @@ type
     FileTime_: TDateTime;
   end;
 
-  TFileTime_Sort_Tool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TFile_Time_Info>;
+  TFileTime_Sort_Tool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TFile_Time_Info>;
 
 var
   db_path: U_String;

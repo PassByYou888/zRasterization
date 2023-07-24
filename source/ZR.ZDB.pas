@@ -65,13 +65,13 @@ type
     Field_Pos, Item_Pos: Int64;
   end;
 
-  TItem_Pos_Info_List = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TItem_Pos_Info>;
+  TItem_Pos_Info_List = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TItem_Pos_Info>;
 
   TPair_Item_Pos_Info = record
     info1, info2: TItem_Pos_Info;
   end;
 
-  TPair_Item_Pos_Info_List = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TPair_Item_Pos_Info>;
+  TPair_Item_Pos_Info_List = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair_Item_Pos_Info>;
 
 {$IFDEF FPC}
   TZDB_Import_Proc = procedure(Sender: TObjectDataManager; sourFile: SystemString; Field_Pos, Item_Pos: Int64) is nested;

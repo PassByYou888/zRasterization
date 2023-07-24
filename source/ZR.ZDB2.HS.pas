@@ -17,7 +17,7 @@ uses ZR.Core,
 type
   TZDB2_List_HashString = class;
   TZDB2_HashString = class;
-  TZDB2_Big_List_HashString_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_HashString>;
+  TZDB2_Big_List_HashString_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_HashString>;
 
   TZDB2_HashString = class
   private

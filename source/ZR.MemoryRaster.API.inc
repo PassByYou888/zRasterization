@@ -3234,7 +3234,7 @@ begin
   Result := NormalizeDegAngle(SumAngles / length(BestLines));
 end;
 
-procedure YV12ToZRization(sour: TCore_Stream; dest: TMZR);
+procedure YV12ToZR_(sour: TCore_Stream; dest: TMZR);
 var
   head: TYV12Head;
   nStream: TMS64;
@@ -3285,7 +3285,7 @@ begin
       DisposeObject(nStream);
 end;
 
-procedure ZRizationToYV12(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
+procedure ZR_ToYV12(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
 var
   head: TYV12Head;
   memsiz: NativeUInt;
@@ -3325,17 +3325,17 @@ type
     width, height: Integer;
   end;
 
-procedure HalfYUVToZRization(sour: TCore_Stream; dest: TMZR);
+procedure HalfYUVToZR_(sour: TCore_Stream; dest: TMZR);
 var
   oriSiz: TOriginSize;
 begin
   if sour.read(oriSiz, SizeOf(oriSiz)) <> SizeOf(oriSiz) then
       Exit;
-  YV12ToZRization(sour, dest);
+  YV12ToZR_(sour, dest);
   dest.Zoom(oriSiz.width, oriSiz.height);
 end;
 
-procedure ZRizationToHalfYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
+procedure ZR_ToHalfYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
 var
   oriSiz: TOriginSize;
   n: TMZR;
@@ -3346,21 +3346,21 @@ begin
 
   n := TMZR.Create;
   n.ZoomFrom(sour, sour.width shr 1, sour.height shr 1);
-  ZRizationToYV12(Compressed, n, dest);
+  ZR_ToYV12(Compressed, n, dest);
   DisposeObject(n);
 end;
 
-procedure QuartYUVToZRization(sour: TCore_Stream; dest: TMZR);
+procedure QuartYUVToZR_(sour: TCore_Stream; dest: TMZR);
 var
   oriSiz: TOriginSize;
 begin
   if sour.read(oriSiz, SizeOf(oriSiz)) <> SizeOf(oriSiz) then
       Exit;
-  YV12ToZRization(sour, dest);
+  YV12ToZR_(sour, dest);
   dest.Zoom(oriSiz.width, oriSiz.height);
 end;
 
-procedure ZRizationToQuartYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
+procedure ZR_ToQuartYUV(Compressed: Boolean; sour: TMZR; dest: TCore_Stream);
 var
   oriSiz: TOriginSize;
   n: TMZR;
@@ -3374,7 +3374,7 @@ begin
   n.ZoomFrom(sour, sour.width shr 1, sour.height shr 1);
   // smooth level 2
   n.Zoom(n.width shr 1, n.height shr 1);
-  ZRizationToYV12(Compressed, n, dest);
+  ZR_ToYV12(Compressed, n, dest);
   DisposeObject(n);
 end;
 

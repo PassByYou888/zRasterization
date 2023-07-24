@@ -3,7 +3,7 @@
 constructor TPair_Pool{$IFNDEF FPC}<T1_, T2_>{$ENDIF FPC}.Create;
 begin
   inherited Create;
-  List := TPair_BigList__.Create;
+  List := TPair_ZR_BL__.Create;
   List.FOnFree := {$IFDEF FPC}@{$ENDIF FPC}DoFree;
   List.FOnAdd := {$IFDEF FPC}@{$ENDIF FPC}DoAdd;
 end;
@@ -34,7 +34,7 @@ end;
 constructor TPair_Third_Pool{$IFNDEF FPC}<T1_, T2_, T3_>{$ENDIF FPC}.Create;
 begin
   inherited Create;
-  List := TPair_BigList__.Create;
+  List := TPair_ZR_BL__.Create;
   List.FOnFree := {$IFDEF FPC}@{$ENDIF FPC}DoFree;
   List.FOnAdd := {$IFDEF FPC}@{$ENDIF FPC}DoAdd;
 end;
@@ -66,7 +66,7 @@ end;
 constructor TPair_Fourth_Pool{$IFNDEF FPC}<T1_, T2_, T3_, T4_>{$ENDIF FPC}.Create;
 begin
   inherited Create;
-  List := TPair_BigList__.Create;
+  List := TPair_ZR_BL__.Create;
   List.FOnFree := {$IFDEF FPC}@{$ENDIF FPC}DoFree;
   List.FOnAdd := {$IFDEF FPC}@{$ENDIF FPC}DoAdd;
 end;
@@ -99,7 +99,7 @@ end;
 constructor TPair_Five_Pool{$IFNDEF FPC}<T1_, T2_, T3_, T4_, T5_>{$ENDIF FPC}.Create;
 begin
   inherited Create;
-  List := TPair_BigList__.Create;
+  List := TPair_ZR_BL__.Create;
   List.FOnFree := {$IFDEF FPC}@{$ENDIF FPC}DoFree;
   List.FOnAdd := {$IFDEF FPC}@{$ENDIF FPC}DoAdd;
 end;
@@ -416,7 +416,7 @@ end;
 
 procedure TBig_Hash_Pair_Pool{$IFNDEF FPC}<TKey_, TValue_>{$ENDIF FPC}.Remove(p: PPair_Pool_Value__);
 var
-  inst_: TValue_Pair_Pool__.TPair_BigList__;
+  inst_: TValue_Pair_Pool__.TPair_ZR_BL__;
 begin
   inst_ := p^.Instance___;
   inst_.Remove_P(p);
@@ -1088,7 +1088,7 @@ end;
 
 procedure TCritical_Big_Hash_Pair_Pool{$IFNDEF FPC}<TKey_, TValue_>{$ENDIF FPC}.Remove(p: PPair_Pool_Value__);
 var
-  inst_: TValue_Pair_Pool__.TPair_BigList__;
+  inst_: TValue_Pair_Pool__.TPair_ZR_BL__;
 begin
   FCritical__.Lock;
   try

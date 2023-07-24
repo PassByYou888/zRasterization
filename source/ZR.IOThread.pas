@@ -104,7 +104,7 @@ type
 
   TThread_Event_Pool__ = class;
 
-  TThread_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TThread_Event_Pool__>;
+  TThread_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TThread_Event_Pool__>;
 
   TThread_Pool = class(TThread_Pool_Decl)
   private

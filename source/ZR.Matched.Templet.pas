@@ -13,7 +13,7 @@ type
   {$IFDEF FPC}generic{$ENDIF FPC}
   TBidirectional_Matched<T1_> = class(TCore_Object)
   public type
-    TData_Pool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<T1_>;
+    TData_Pool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<T1_>;
     TPair_Pool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TPair_Pool<T1_, T1_>;
   public
     Primary_Pool, Second_Pool: TData_Pool___;
@@ -29,7 +29,7 @@ type
   {$IFDEF FPC}generic{$ENDIF FPC}
   TBidirectional_Matched_D<T1_> = class(TCore_Object)
   public type
-    TData_Pool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<T1_>;
+    TData_Pool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<T1_>;
     TPair_Pool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TPair_Pool<T1_, T1_>;
   public
     Primary_Pool, Second_Pool: TData_Pool___;

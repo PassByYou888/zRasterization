@@ -371,13 +371,13 @@ type
 {$EndRegion 'OrderStruct'}
 {$REGION 'BigList'}
   {$IFDEF FPC}generic{$ENDIF FPC}
-  TBigList<T_> = class(TCore_Object)
+  TZR_BL<T_> = class(TCore_Object)
   public type
 
     P_ = ^T_;
     PQueueStruct = ^TQueueStruct;
     PPQueueStruct = ^PQueueStruct;
-    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<T_>;
+    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<T_>;
 
     TQueueStruct = record
       Data: T_;
@@ -534,13 +534,13 @@ type
   end;
 
   {$IFDEF FPC}generic{$ENDIF FPC}
-  TCritical_BigList<T_> = class(TCore_Object)
+  TCritical_ZR_BL<T_> = class(TCore_Object)
   public type
 
     P_ = ^T_;
     PQueueStruct = ^TQueueStruct;
     PPQueueStruct = ^PQueueStruct;
-    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<T_>;
+    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<T_>;
 
     TQueueStruct = record
       Data: T_;
@@ -700,15 +700,15 @@ type
   end;
 
 {$IFDEF FPC}
-  generic TC_BigList<T_> = class(specialize TCritical_BigList<T_>);
+  generic TC_ZR_BL<T_> = class(specialize TCritical_ZR_BL<T_>);
 {$ELSE FPC}
-  TC_BigList<T_> = class(TCritical_BigList<T_>);
+  TC_ZR_BL<T_> = class(TCritical_ZR_BL<T_>);
 {$ENDIF FPC}
 
 {$IFDEF FPC}
-  generic TBig_Object_List<T_: TCore_Object> = class(specialize TBigList<T_>)
+  generic TBig_Object_List<T_: TCore_Object> = class(specialize TZR_BL<T_>)
 {$ELSE FPC}
-  TBig_Object_List<T_: class> = class(TBigList<T_>)
+  TBig_Object_List<T_: class> = class(TZR_BL<T_>)
 {$ENDIF FPC}
   public
     AutoFreeObject: Boolean;
@@ -717,9 +717,9 @@ type
   end;
 
 {$IFDEF FPC}
-  generic TCritical_Big_Object_List<T_: TCore_Object> = class(specialize TCritical_BigList<T_>)
+  generic TCritical_Big_Object_List<T_: TCore_Object> = class(specialize TCritical_ZR_BL<T_>)
 {$ELSE FPC}
-  TCritical_Big_Object_List<T_: class> = class(TCritical_BigList<T_>)
+  TCritical_Big_Object_List<T_: class> = class(TCritical_ZR_BL<T_>)
 {$ENDIF FPC}
   public
     AutoFreeObject: Boolean;
@@ -745,11 +745,11 @@ type
     end;
 
     PPair = ^TPair;
-    TPair_BigList__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TPair>;
-    PPair__ = TPair_BigList__.PQueueStruct;
+    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
-    List: TPair_BigList__;
-    property L: TPair_BigList__ read List;
+    List: TPair_ZR_BL__;
+    property L: TPair_ZR_BL__ read List;
     constructor Create;
     destructor Destroy; override;
     procedure DoFree(var Data: TPair); virtual;
@@ -768,11 +768,11 @@ type
     end;
 
     PPair = ^TPair;
-    TPair_BigList__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TPair>;
-    PPair__ = TPair_BigList__.PQueueStruct;
+    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
-    List: TPair_BigList__;
-    property L: TPair_BigList__ read List;
+    List: TPair_ZR_BL__;
+    property L: TPair_ZR_BL__ read List;
     constructor Create;
     destructor Destroy; override;
     procedure DoFree(var Data: TPair); virtual;
@@ -792,11 +792,11 @@ type
     end;
 
     PPair = ^TPair;
-    TPair_BigList__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TPair>;
-    PPair__ = TPair_BigList__.PQueueStruct;
+    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
-    List: TPair_BigList__;
-    property L: TPair_BigList__ read List;
+    List: TPair_ZR_BL__;
+    property L: TPair_ZR_BL__ read List;
     constructor Create;
     destructor Destroy; override;
     procedure DoFree(var Data: TPair); virtual;
@@ -817,11 +817,11 @@ type
     end;
 
     PPair = ^TPair;
-    TPair_BigList__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TPair>;
-    PPair__ = TPair_BigList__.PQueueStruct;
+    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
-    List: TPair_BigList__;
-    property L: TPair_BigList__ read List;
+    List: TPair_ZR_BL__;
+    property L: TPair_ZR_BL__ read List;
     constructor Create;
     destructor Destroy; override;
     procedure DoFree(var Data: TPair); virtual;
@@ -839,7 +839,7 @@ type
     PPair_Pool_Value__ = TValue_Pair_Pool__.PPair__;
     TPair = TValue_Pair_Pool__.TPair;
     TKey_Hash_Buffer = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TValue_Pair_Pool__>;
-    TPool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PPair_Pool_Value__>;
+    TPool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PPair_Pool_Value__>;
     TPool_Queue_Ptr___ = TPool___.PQueueStruct;
     TRepeat___ = TPool___.TRepeat___;
     TInvert_Repeat___ = TPool___.TInvert_Repeat___;
@@ -924,7 +924,7 @@ type
     PPair_Pool_Value__ = TValue_Pair_Pool__.PPair__;
     TPair = TValue_Pair_Pool__.TPair;
     TKey_Hash_Buffer = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TValue_Pair_Pool__>;
-    TPool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PPair_Pool_Value__>;
+    TPool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PPair_Pool_Value__>;
     TPool_Queue_Ptr___ = TPool___.PQueueStruct;
     TRepeat___ = TPool___.TRepeat___;
     TInvert_Repeat___ = TPool___.TInvert_Repeat___;
@@ -1124,7 +1124,7 @@ type
   TRun_Thread_P = reference to procedure(ThSender: TCompute);
   TRun_Thread_P_NP = reference to procedure();
   {$ENDIF FPC}
-  TCoreCompute_Thread_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TCompute>;
+  TCoreCompute_Thread_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TCompute>;
 
   TCompute = class(TCore_Thread)
   private

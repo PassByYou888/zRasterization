@@ -30,7 +30,7 @@ type
   end;
 
   TMy_Struct_List = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<Integer>;
-  TMy_Struct_BigList = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<Integer>;
+  TMy_Struct_BigList = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<Integer>;
 
 var
   BigList_PK_List_Form: TBigList_PK_List_Form;

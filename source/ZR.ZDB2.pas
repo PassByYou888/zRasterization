@@ -44,7 +44,7 @@ type
     FlushThisCacheToFile: Boolean;
   end;
 
-  TZDB2_ID_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<Integer>;
+  TZDB2_ID_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<Integer>;
   TZDB2_ID_List = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<Integer>;
   TZDB2_BlockPtrList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<PZDB2_Block>;
 
@@ -164,7 +164,7 @@ type
 
   PZDB2_Core_SpaceState = ^TZDB2_SpaceState;
 
-  TZDB2_Core_Space_Info_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<SystemString>;
+  TZDB2_Core_Space_Info_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<SystemString>;
 
   TZDB2_Core_Space_Info = class(TZDB2_Core_Space_Info_Decl)
   public

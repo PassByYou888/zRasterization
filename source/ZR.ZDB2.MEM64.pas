@@ -17,7 +17,7 @@ uses ZR.Core,
 type
   TZDB2_List_Mem64 = class;
   TZDB2_Mem64 = class;
-  TZDB2_Big_List_Mem64_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_Mem64>;
+  TZDB2_Big_List_Mem64_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_Mem64>;
 
   TZDB2_Mem64 = class
   private

@@ -1,6 +1,6 @@
 type
   PComputeDispatchData = ^TComputeDispatch;
-  TCompute_Dispatch_Queue_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<PComputeDispatchData>;
+  TCompute_Dispatch_Queue_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PComputeDispatchData>;
 
   TComputeDispatch = record
     OnRun_C: TRun_Thread_C;

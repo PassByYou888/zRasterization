@@ -338,7 +338,7 @@ type
   TZDB2_Th_CMD_Queue = {$IFDEF FPC}specialize {$ENDIF FPC} TCriticalOrderStruct<TZDB2_Th_CMD>;
 {$ENDREGION 'Command_Queue'}
 {$REGION 'Command_Dispatch'}
-  TZDB2_Th_Queue_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_BigList<TZDB2_Th_Queue>;
+  TZDB2_Th_Queue_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Queue>;
 
   TZDB2_Th_Queue = class
   private

@@ -17,7 +17,7 @@ uses ZR.Core,
 type
   TZDB2_List_Json = class;
   TZDB2_Json = class;
-  TZDB2_Big_List_Json_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TBigList<TZDB2_Json>;
+  TZDB2_Big_List_Json_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_Json>;
 
   TZDB2_Json = class
   private
