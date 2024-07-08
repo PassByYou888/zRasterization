@@ -4,6 +4,7 @@
 
 unit ZR.ZDB.ItemStream_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

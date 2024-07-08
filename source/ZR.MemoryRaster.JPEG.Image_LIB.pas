@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.Image_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -276,7 +277,7 @@ type
     property OnCreateMap: TCreateMapEvent read FOnCreateMap write FOnCreateMap;
   end;
 
-  TJpegSaveOptions = class(TCore_Object)
+  TJpegSaveOptions = class(TCore_Object_Intermediate)
   private
     FOwner: TJpegImage;
     FQuality: TJpegQuality;
@@ -355,8 +356,8 @@ begin
   if not Assigned(FLossless) then
     begin
       FLossless := TLosslessOperation.Create(Self);
-      FLossless.OnBeforeLossless := {$IFDEF FPC}@{$ENDIF FPC}BeforeLosslessUpdate;
-      FLossless.OnAfterLossless := {$IFDEF FPC}@{$ENDIF FPC}AfterLosslessUpdate;
+      FLossless.OnBeforeLossless := BeforeLosslessUpdate;
+      FLossless.OnAfterLossless := AfterLosslessUpdate;
     end;
   Result := FLossless;
 end;
@@ -1545,8 +1546,8 @@ begin
       Marker := Markers[i];
 
       // write the marker tag
-      Stream.Write(cFF, 1);
-      Stream.Write(Marker.MarkerTag, 1);
+      Stream.WriteUInt8(cFF);
+      Stream.WriteUInt8(Marker.MarkerTag);
 {$IFDEF JPEG_Debug}
       DoDebugOut(Self, wsInfo, PFormat('Saving marker %s', [Marker.MarkerName.Text]));
 {$ENDIF JPEG_Debug}
@@ -1558,11 +1559,10 @@ begin
             Marker.SaveToStream(MS);
             MarkerSize := MS.Size + 2;
             SwappedSize := Swap(MarkerSize);
-            MS.Position := 0;
             // write the marker size
-            Stream.Write(SwappedSize, 2);
+            Stream.WriteUInt16(SwappedSize);
             // write the marker
-            Stream.CopyFrom(MS, MS.Size);
+            Stream.WritePtr(MS.Memory, MS.Size);
           finally
               MS.Free;
           end;
@@ -1574,12 +1574,14 @@ begin
 {$IFDEF JPEG_Debug}
           DoDebugOut(Self, wsInfo, PFormat('Saving coder stream (%d bytes)', [FCoderStream.Size]));
 {$ENDIF JPEG_Debug}
-          FCoderStream.Position := 0;
-          Stream.CopyFrom(FCoderStream, FCoderStream.Size);
+          Stream.WritePtr(FCoderStream.Memory, FCoderStream.Size);
           // bring position back to 0 for future load/saves
           FCoderStream.Position := 0;
         end;
     end;
+  // write EOI marker,fixed by.qq600585
+  Stream.WriteUInt8(cFF);
+  Stream.WriteUInt8(mkEOI);
 end;
 
 procedure TJpegImage.SaveBitmapStripByStrip(Width_, Height_: integer);

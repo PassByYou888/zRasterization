@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.BulletMovementEngine;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -44,9 +45,9 @@ type
     Angle: TGeoFloat;
   end;
 
-  TBulletMovementStepHistory = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TStepHistoryData>;
+  TBulletMovementStepHistory = TOrderStruct<TStepHistoryData>;
 
-  TBulletMovementEngine = class(TCore_Object)
+  TBulletMovementEngine = class(TCore_Object_Intermediate)
   private
     FOnInterface: IBulletMovementInterface;
     FSteps: array of TBulletMovementStepData;
@@ -75,7 +76,7 @@ type
     destructor Destroy; override;
 
     procedure Start(To_: TVec2); overload;
-    procedure Start(Paths_: TVec2List); overload;
+    procedure Start(Paths_: TV2L); overload;
     procedure Start; overload;
     procedure stop;
     procedure Pause;
@@ -169,7 +170,7 @@ begin
     end;
 end;
 
-procedure TBulletMovementEngine.Start(Paths_: TVec2List);
+procedure TBulletMovementEngine.Start(Paths_: TV2L);
 var
   i: Integer;
 begin

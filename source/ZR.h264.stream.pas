@@ -3,12 +3,12 @@
 { ****************************************************************************** }
 unit ZR.h264.stream;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses
-  ZR.h264.Util, ZR.h264.Types, ZR.h264.Common, ZR.h264.VLC, ZR.h264.BitStream, ZR.h264.tables, ZR.PascalStrings, ZR.UPascalStrings;
+uses ZR.Core, ZR.h264.Util, ZR.h264.Types, ZR.h264.Common, ZR.h264.VLC, ZR.h264.BitStream, ZR.h264.tables, ZR.PascalStrings, ZR.UPascalStrings;
 
 type
   // SPS
@@ -43,7 +43,7 @@ type
 
   { TH264Stream }
 
-  TH264Stream = class
+  TH264Stream = class(TCore_Object_Intermediate)
   private
     sps: sps_t;
     pps: pps_t;
@@ -125,7 +125,7 @@ uses ZR.Status;
 const
   // type codes
   NAL_NOIDR = 1; // Coded slice of a non-IDR picture
-  NAL_IDR = 5;   // non-partitioned
+  NAL_IDR = 5; // non-partitioned
   NAL_SEI = 6;
   NAL_SPS = 7;
   NAL_PPS = 8;
@@ -280,11 +280,11 @@ begin
   // SPS
   b := TBitStreamWriter.Create(@rbsp);
 
-  b.write(66, 8);    // profile_idc u(8) (annex A)
-  b.write(1);        // constraint_set0_flag u(1)
-  b.write(0);        // constraint_set1_flag u(1)
-  b.write(0);        // constraint_set2_flag u(1)
-  b.write(0, 5);     // reserved_zero_5bits /* equal to 0 */ 0 u(5)
+  b.write(66, 8); // profile_idc u(8) (annex A)
+  b.write(1); // constraint_set0_flag u(1)
+  b.write(0); // constraint_set1_flag u(1)
+  b.write(0); // constraint_set2_flag u(1)
+  b.write(0, 5); // reserved_zero_5bits /* equal to 0 */ 0 u(5)
   b.write(level, 8); // level_idc 0 u(8)
 
   write_ue_code(b, 0); // seq_parameter_set_id 0 ue(v)
@@ -297,18 +297,18 @@ begin
   // log2_max_pic_order_cnt_lsb_minus4
   write_ue_code(b, sps.num_ref_frames);
   // num_ref_frames  ue(v)
-  b.write(0);                          // gaps_in_frame_num_value_allowed_flag 0 u(1)
-  write_ue_code(b, sps.mb_width - 1);  // pic_width_in_mbs_minus1 0 ue(v)
+  b.write(0); // gaps_in_frame_num_value_allowed_flag 0 u(1)
+  write_ue_code(b, sps.mb_width - 1); // pic_width_in_mbs_minus1 0 ue(v)
   write_ue_code(b, sps.mb_height - 1); // pic_height_in_map_units_minus1 0 ue(v)
-  b.write(1);                          // frame_mbs_only_flag         u(1)
-  b.write(0);                          // direct_8x8_inference_flag   u(1)
+  b.write(1); // frame_mbs_only_flag         u(1)
+  b.write(0); // direct_8x8_inference_flag   u(1)
 
   // cropping
   if ((sps.width or sps.height) and $F) = 0 then
       b.write(0) // frame_cropping_flag         u(1)
   else
     begin
-      b.write(1);          // offsets:
+      b.write(1); // offsets:
       write_ue_code(b, 0); // left, right
       write_ue_code(b, (sps.mb_width * 16 - sps.width) div 2);
       write_ue_code(b, 0); // top, bottom
@@ -325,13 +325,13 @@ begin
       b.write(0); // chroma_loc_info_present_flag
       b.write(1); // timing_info_present_flag
       // if( timing_info_present_flag )
-      b.write(1, 32);  // num_units_in_tick
+      b.write(1, 32); // num_units_in_tick
       b.write(50, 32); // time_scale
-      b.write(1);      // fixed_frame_rate_flag
-      b.write(0);      // nal_hrd_parameters_present_flag
-      b.write(0);      // vcl_hrd_parameters_present_flag
-      b.write(0);      // pic_struct_present_flag
-      b.write(0);      // bitstream_restriction_flag
+      b.write(1); // fixed_frame_rate_flag
+      b.write(0); // nal_hrd_parameters_present_flag
+      b.write(0); // vcl_hrd_parameters_present_flag
+      b.write(0); // pic_struct_present_flag
+      b.write(0); // bitstream_restriction_flag
     end
   else
       b.write(0);
@@ -349,13 +349,13 @@ begin
   else
       b.write(0);
   // entropy_coding_mode_flag  u(1)
-  b.write(0);          // pic_order_present_flag    u(1)
+  b.write(0); // pic_order_present_flag    u(1)
   write_ue_code(b, 0); // num_slice_groups_minus1   ue(v)
 
   write_ue_code(b, sps.num_ref_frames - 1); // num_ref_idx_l0_active_minus1 ue(v)
-  write_ue_code(b, 0);                      // num_ref_idx_l1_active_minus1 ue(v)
-  b.write(0);                               // weighted_pred_flag  u(1)
-  b.write(0, 2);                            // weighted_bipred_idc u(2)
+  write_ue_code(b, 0); // num_ref_idx_l1_active_minus1 ue(v)
+  b.write(0); // weighted_pred_flag  u(1)
+  b.write(0, 2); // weighted_bipred_idc u(2)
 
   write_se_code(b, pps.qp - 26);
   // pic_init_qp_minus26 /* relative to 26 */ 1 se(v)
@@ -364,8 +364,8 @@ begin
   // chroma_qp_index_offset [-12.. 12] se(v)
 
   b.write(pps.deblocking_filter_control_present_flag); // deblocking_filter_control_present_flag 1 u(1)
-  b.write(0);                                          // constrained_intra_pred_flag    u(1)
-  b.write(0);                                          // redundant_pic_cnt_present_flag u(1)
+  b.write(0); // constrained_intra_pred_flag    u(1)
+  b.write(0); // redundant_pic_cnt_present_flag u(1)
 
   // T-REC-H.264-200503
   {
@@ -436,9 +436,9 @@ begin
   else
       nal_unit_type := NAL_NOIDR;
 
-  write_ue_code(bs, 0);           // first_mb_in_slice   ue(v)
+  write_ue_code(bs, 0); // first_mb_in_slice   ue(v)
   write_ue_code(bs, slice.type_); // slice_type          ue(v)
-  write_ue_code(bs, 0);           // pic_parameter_set_id  ue(v)
+  write_ue_code(bs, 0); // pic_parameter_set_id  ue(v)
   bs.write(slice.frame_num, 4 + sps.log2_max_frame_num_minus4);
   if nal_unit_type = NAL_IDR { 5 } then
       write_ue_code(bs, slice.idr_pic_id); // idr_pic_id 2 ue(v)
@@ -601,7 +601,7 @@ end;
 
 procedure TH264Stream.write_mb_pred_intra(const mb: TMacroblock);
 var
-  Mode,          // current block intrapred mode
+  Mode, // current block intrapred mode
   pred: uint8_t; // predicted intrapred mode
   i: uint8_t;
 begin
@@ -849,7 +849,7 @@ begin
     end
   else
       write_ue_code(bs, mbt); // I_16x16 - tab. 7-8
-  write_mb_pred_intra(mb);    // mb_pred
+  write_mb_pred_intra(mb); // mb_pred
   write_mb_residual(mb);
 end;
 
@@ -922,7 +922,7 @@ end;
 
 function TH264Stream.mb_intrapred_bits(const mb: TMacroblock): int32_t;
 var
-  Mode,          // current block intrapred mode
+  Mode, // current block intrapred mode
   pred: uint8_t; // predicted intrapred mode
   i: uint8_t;
 begin

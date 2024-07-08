@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -11,7 +12,7 @@ uses SysUtils, ZR.Core, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib,
   ZR.h264.Image_LIB, ZR.h264.Types, ZR.h264.Encoder, ZR.h264.Parameters, ZR.h264.Y4M;
 
 type
-  TH264Writer = class
+  TH264Writer = class(TCore_Object_Intermediate)
   private
     IOHandle: TIOHnd;
     FFrameCount: uint32_t;

@@ -12,7 +12,7 @@ object SequenceGenerateForm: TSequenceGenerateForm
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   OnClose = FormClose
-  DesignerMasterStyle = 0
+  DesignerMasterStyle = 2
   object OpenDialog: TOpenDialog
     Options = [ofReadOnly, ofHideReadOnly, ofAllowMultiSelect, ofPathMustExist, ofFileMustExist, ofEnableSizing]
     Left = 232
@@ -101,13 +101,11 @@ object SequenceGenerateForm: TSequenceGenerateForm
             Size.Height = 40.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 2
-            object ColumnSpinBox: TSpinBox
+            object ColumnSpinBox: TEdit
               Touch.InteractiveGestures = [LongTap, DoubleTap]
               Align = VertCenter
               TabOrder = 0
-              Cursor = crIBeam
-              Min = 1.000000000000000000
-              Value = 2.000000000000000000
+              Text = '2'
               Position.X = 57.000000000000000000
               Position.Y = 5.000000000000000000
               Size.Width = 96.000000000000000000
@@ -261,8 +259,8 @@ object SequenceGenerateForm: TSequenceGenerateForm
         Size.Height = 594.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 408.000000000000000000
-        Viewport.Height = 594.000000000000000000
+        Viewport.Width = 404.000000000000000000
+        Viewport.Height = 590.000000000000000000
       end
     end
     object TabItem_Import: TTabItem
@@ -291,13 +289,11 @@ object SequenceGenerateForm: TSequenceGenerateForm
           Size.Height = 40.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 3
-          object ImportColumnSpinBox: TSpinBox
+          object ImportColumnSpinBox: TEdit
             Touch.InteractiveGestures = [LongTap, DoubleTap]
             Align = VertCenter
             TabOrder = 0
-            Cursor = crIBeam
-            Min = 1.000000000000000000
-            Value = 1.000000000000000000
+            Text = '1'
             Position.X = 57.000000000000000000
             Position.Y = 5.000000000000000000
             Size.Width = 96.000000000000000000
@@ -320,13 +316,11 @@ object SequenceGenerateForm: TSequenceGenerateForm
           Size.Height = 40.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 2
-          object ImportTotalSpinBox: TSpinBox
+          object ImportTotalSpinBox: TEdit
             Touch.InteractiveGestures = [LongTap, DoubleTap]
             Align = VertCenter
             TabOrder = 0
-            Cursor = crIBeam
-            Min = 1.000000000000000000
-            Value = 1.000000000000000000
+            Text = '1'
             Position.X = 57.000000000000000000
             Position.Y = 5.000000000000000000
             Size.Width = 96.000000000000000000
@@ -469,8 +463,8 @@ object SequenceGenerateForm: TSequenceGenerateForm
         Size.Height = 541.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Viewport.Width = 408.000000000000000000
-        Viewport.Height = 541.000000000000000000
+        Viewport.Width = 404.000000000000000000
+        Viewport.Height = 537.000000000000000000
       end
     end
   end

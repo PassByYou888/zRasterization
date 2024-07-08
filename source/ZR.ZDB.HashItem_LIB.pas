@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB.HashItem_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -26,7 +27,7 @@ type
 
   PHashItemData = ^THashItemData;
 
-  TObjectDataHashItem = class(TCore_Object)
+  TObjectDataHashItem = class(TCore_Object_Intermediate)
   protected
     FCounter: Boolean;
     FCount: Integer;

@@ -30,7 +30,7 @@ begin
   FCritical := TCritical.Create;
   FThreadID := ThreadID_;
   FSyncPool := TThread_Post_Data_Order_Struct__.Create;
-  FSyncPool.OnFree := {$IFDEF FPC}@{$ENDIF FPC}FreeThreadProgressPostData;
+  FSyncPool.OnFree := FreeThreadProgressPostData;
   FProgressing := TAtomBool.Create(False);
   FOneStep := True;
   FResetRandomSeed := False;
@@ -664,7 +664,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -680,7 +680,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -696,7 +696,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -712,7 +712,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -728,7 +728,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -744,7 +744,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -760,7 +760,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -776,7 +776,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -792,7 +792,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -808,7 +808,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -824,7 +824,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);
@@ -840,7 +840,7 @@ begin
   while IsRuning_ do
     if Current_Thread_ID_ = FThreadID then
         Progress(Current_Thread_ID_)
-    else if Current_Thread_ID_ = MainThreadID then
+    else if Current_Thread_ID_ = Core_Main_Thread_ID then
         CheckThread(1)
     else
         TCompute.Sleep(1);

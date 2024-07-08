@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.MemoryStream;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -33,13 +34,15 @@ type
     procedure SetPointer(buffPtr: Pointer; const BuffSize: NativeUInt);
     procedure SetCapacity(NewCapacity: NativeUInt);
     function Realloc(var NewCapacity: NativeUInt): Pointer; virtual;
+    procedure SetDelta(const Value: NativeInt);
     property Capacity: NativeUInt read FCapacity write SetCapacity;
   public
     constructor Create;
     constructor CustomCreate(const customDelta: NativeInt);
     destructor Destroy; override;
 
-    function Mem64: TMem64;
+    function Mem64(Mapping_Begin_As_Position_: Boolean): TMem64; overload;
+    function Mem64: TMem64; overload;
     function Clone: TMS64;
     function Swap_To_New_Instance: TMS64;
     procedure DiscardMemory;
@@ -51,7 +54,7 @@ type
     function ToBytes: TBytes;
     function ToMD5: TMD5;
 
-    property Delta: NativeInt read FDelta write FDelta;
+    property Delta: NativeInt read FDelta write SetDelta;
     property ProtectedMode: Boolean read FProtectedMode;
     procedure SetPointerWithProtectedMode(buffPtr: Pointer; const BuffSize: Int64);
     procedure Mapping(buffPtr: Pointer; const BuffSize: Int64); overload;
@@ -85,7 +88,8 @@ type
     property Memory: Pointer read FMemory;
 
     function CopyMem64(const source: TMem64; Count: Int64): Int64;
-    function CopyFrom(const source: TCore_Stream; Count: Int64): Int64; virtual;
+    function CopyFrom(const source: TCore_Stream; Count: Int64): Int64; overload;
+    function CopyFrom(const source: TMem64; Count: Int64): Int64; overload;
 
     // Serialized writer
     procedure WriteBool(const buff: Boolean);
@@ -129,14 +133,14 @@ type
   TStream64 = TMS64;
   TMemoryStream64 = TMS64;
 
-  TMemoryStream64List_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TMS64>;
+  TMemoryStream64List_Decl = TGenericsList<TMS64>;
 
   TMemoryStream64List = class(TMemoryStream64List_Decl)
   public
     procedure Clean;
   end;
 
-  TMS64_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TBig_Object_List<TMS64>;
+  TMS64_Pool = TBig_Object_List<TMS64>;
 
   TStream64List = TMemoryStream64List;
   TMS64List = TMemoryStream64List;
@@ -196,7 +200,7 @@ type
     function Write64(const buffer; Count: Int64): Int64; override;
   end;
 
-  TMem64 = class(TCore_Object)
+  TMem64 = class(TCore_Object_Intermediate)
   private
     FDelta: NativeInt;
     FMemory: Pointer;
@@ -222,7 +226,8 @@ type
     constructor CustomCreate(const customDelta: NativeInt);
     destructor Destroy; override;
 
-    function Stream64: TMS64;
+    function Stream64(Mapping_Begin_As_Position_: Boolean): TMS64; overload;
+    function Stream64: TMS64; overload;
     function Clone: TMem64;
     function Swap_To_New_Instance: TMem64;
     procedure DiscardMemory;
@@ -262,7 +267,8 @@ type
     function read(var buffer; Count: Int64): Int64;
     function Seek(const Offset: Int64; origin: TSeekOrigin): Int64;
 
-    function CopyFrom(const source: TCore_Stream; Count: Int64): Int64;
+    function CopyFrom(const source: TCore_Stream; Count: Int64): Int64; overload;
+    function CopyFrom(const source: TMem64; Count: Int64): Int64; overload;
 
     // Serialized writer
     procedure WriteBool(const buff: Boolean);
@@ -305,7 +311,7 @@ type
 
   TM64 = TMem64;
 
-  TMem64List_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TMem64>;
+  TMem64List_Decl = TGenericsList<TMem64>;
 
   TMem64List = class(TMem64List_Decl)
   public
@@ -396,7 +402,7 @@ procedure DoStatus(const v: TMem64); overload;
 
 implementation
 
-uses ZR.Status, ZR.Compress;
+uses ZR.Status, ZR.Compress, ZR.Instance.Tool;
 
 procedure TMS64.SetPointer(buffPtr: Pointer; const BuffSize: NativeUInt);
 begin
@@ -434,9 +440,14 @@ begin
           else
               Result := System.ReallocMemory(Result, NewCapacity);
           if Result = nil then
-              RaiseInfo('Out of memory while expanding memory stream');
+              RaiseInfo('%s Out of memory while expanding memory stream', [umlSizeToStr(NewCapacity).Text]);
         end;
     end;
+end;
+
+procedure TMS64.SetDelta(const Value: NativeInt);
+begin
+  FDelta := umlClamp(Value, 64, 1024 * 1024);
 end;
 
 constructor TMS64.Create;
@@ -447,7 +458,7 @@ end;
 constructor TMS64.CustomCreate(const customDelta: NativeInt);
 begin
   inherited Create;
-  FDelta := umlMax(64, customDelta);
+  Delta := customDelta;
   FMemory := nil;
   FSize := 0;
   FPosition := 0;
@@ -464,12 +475,20 @@ begin
   inherited Destroy;
 end;
 
-function TMS64.Mem64: TMem64;
+function TMS64.Mem64(Mapping_Begin_As_Position_: Boolean): TMem64;
 begin
   if FMem64 = nil then
       FMem64 := TMem64.Create;
-  FMem64.Mapping(self);
+  if Mapping_Begin_As_Position_ then
+      FMem64.Mapping(PosAsPtr, Size - Position)
+  else
+      FMem64.Mapping(self);
   Result := FMem64;
+end;
+
+function TMS64.Mem64: TMem64;
+begin
+  Result := Mem64(False);
 end;
 
 function TMS64.Clone: TMS64;
@@ -991,6 +1010,15 @@ begin
   end;
 end;
 
+function TMS64.CopyFrom(const source: TMem64; Count: Int64): Int64;
+begin
+  if FProtectedMode then
+      RaiseInfo('protected mode');
+  WritePtr(source.PositionAsPtr, Count);
+  source.Position := source.FPosition + Count;
+  Result := Count;
+end;
+
 procedure TMS64.WriteBool(const buff: Boolean);
 begin
   WritePtr(@buff, 1);
@@ -1381,7 +1409,7 @@ begin
           else
               Result := System.ReallocMemory(Result, NewCapacity);
           if Result = nil then
-              RaiseInfo('Out of memory while expanding memory stream');
+              RaiseInfo('%s Out of memory while expanding memory stream', [umlSizeToStr(NewCapacity).Text]);
         end;
     end;
 end;
@@ -1393,7 +1421,7 @@ end;
 
 procedure TMem64.SetDelta(const Value: NativeInt);
 begin
-  FDelta := Value;
+  FDelta := umlClamp(Value, 64, 1024 * 1024);
 end;
 
 function TMem64.GetMemory_: Pointer;
@@ -1442,7 +1470,7 @@ end;
 constructor TMem64.CustomCreate(const customDelta: NativeInt);
 begin
   inherited Create;
-  FDelta := umlMax(64, customDelta);
+  Delta := customDelta;
   FMemory := nil;
   FSize := 0;
   FPosition := 0;
@@ -1459,12 +1487,20 @@ begin
   inherited Destroy;
 end;
 
-function TMem64.Stream64: TMS64;
+function TMem64.Stream64(Mapping_Begin_As_Position_: Boolean): TMS64;
 begin
   if FStream64 = nil then
       FStream64 := TMS64.Create;
-  FStream64.Mapping(self);
+  if Mapping_Begin_As_Position_ then
+      FStream64.Mapping(PosAsPtr, Size - Position)
+  else
+      FStream64.Mapping(self);
   Result := FStream64;
+end;
+
+function TMem64.Stream64: TMS64;
+begin
+  Result := Stream64(False);
 end;
 
 function TMem64.Clone: TMem64;
@@ -1868,6 +1904,15 @@ begin
   finally
       System.FreeMem(buffer);
   end;
+end;
+
+function TMem64.CopyFrom(const source: TMem64; Count: Int64): Int64;
+begin
+  if FProtectedMode then
+      RaiseInfo('protected mode');
+  WritePtr(source.PositionAsPtr, Count);
+  source.Position := source.FPosition + Count;
+  Result := Count;
 end;
 
 procedure TMem64.WriteBool(const buff: Boolean);
@@ -2426,7 +2471,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(ThNum, True, 0, Length(StripArry) - 1, @Nested_ParallelFor);
+      FPCParallelFor(ThNum, True, 0, Length(StripArry) - 1, Nested_ParallelFor);
 {$ELSE FPC}
       DelphiParallelFor(ThNum, True, 0, Length(StripArry) - 1, procedure(pass: Integer)
         begin
@@ -2584,7 +2629,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(ThNum, True, 0, Length(StripArry) - 1, @Nested_ParallelFor);
+      FPCParallelFor(ThNum, True, 0, Length(StripArry) - 1, Nested_ParallelFor);
 {$ELSE FPC}
       DelphiParallelFor(ThNum, True, 0, Length(StripArry) - 1, procedure(pass: Integer)
         begin

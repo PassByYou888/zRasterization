@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Macroblock;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 

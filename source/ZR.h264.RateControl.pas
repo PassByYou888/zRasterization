@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.RateControl;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -10,7 +11,7 @@ interface
 uses
   SysUtils,
 {$IFDEF FPC}
-  fgl,
+  ZR.FPC.GenericList, fgl,
 {$ENDIF FPC}
   ZR.h264.Types, ZR.h264.Common, ZR.h264.Util,
   ZR.Core;
@@ -32,7 +33,7 @@ type
 
   PRcFrame = ^TRcFrame;
 
-  TRcGop = class
+  TRcGop = class(TCore_Object_Intermediate)
   private
     procedure AdjustByFrameReferences;
     procedure AdjustByFrameRelativeSize(const avg_bitsize: int32_t);
@@ -48,13 +49,9 @@ type
     procedure ShiftQPs(Diff: int32_t);
   end;
 
-  {$IFDEF FPC}
-  TRcGopList = specialize TFPGList<TRcGop>;
-  {$ELSE FPC}
   TRcGopList = TGenericsList<TRcGop>;
-  {$ENDIF FPC}
 
-  TRatecontrol = class
+  TRatecontrol = class(TCore_Object_Intermediate)
   private
     Mode: uint8_t; // 0 - cqp, 1 - 2nd pass avg. bitrate
     qp_const: uint8_t;
@@ -370,8 +367,11 @@ begin
 
   // redistribute QPs
   CreateGOPs();
-  for gop in gop_list do
+  for i := 0 to gop_list.Count - 1 do
+    begin
+      gop := gop_list[i];
       gop.AdjustRelativeQPs(avg_size, Round(qp_avg));
+    end;
 
   // predict new frame sizes according to modified QPs
   qp_avg := 0;
@@ -400,8 +400,12 @@ begin
   // shift all QPS and predict new frame sizes.
   // Calculate rate compensation, because the sizes won't precisely lead to desired stream size:
   // we would need a perfect frame size predictor and fractional per-frame QPs for that
-  for gop in gop_list do
+  for i := 0 to gop_list.Count - 1 do
+    begin
+      gop := gop_list[i];
       gop.ShiftQPs(Diff);
+    end;
+
   stream_size_total := 0;
   for i := 0 to nframes - 1 do
       inc(stream_size_total, RecalculateFrameSize(frames[i]));
@@ -462,11 +466,11 @@ end;
 
 destructor TRatecontrol.Destroy;
 var
-  gop: TRcGop;
+  i: Integer;
 begin
   frames := nil;
-  for gop in gop_list do
-      gop.Free;
+  for i := 0 to gop_list.Count - 1 do
+      gop_list[i].Free;
   gop_list.Free;
   inherited Destroy;
 end;

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Stats;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -10,7 +11,7 @@ interface
 uses ZR.h264.Types, ZR.Core;
 
 type
-  TFrameStats = class
+  TFrameStats = class(TCore_Object_Intermediate)
   public
     pred: array [0 .. 8] of Int64_t;
     pred16: array [0 .. 3] of Int64_t;

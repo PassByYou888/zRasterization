@@ -121,6 +121,8 @@ var
   f: TSampleEditorForm;
 begin
   f := TSampleEditorForm.CustomCreate(nil, False);
+  if f <> Application.MainForm then
+      f.Parent := Application.MainForm;
   f.Bounds := Bounds;
   f.SetInputRaster(Input);
   f.Show;
@@ -132,6 +134,8 @@ var
   f: TSampleEditorForm;
 begin
   f := TSampleEditorForm.CustomCreate(nil, False);
+  if f <> Application.MainForm then
+      f.Parent := Application.MainForm;
   f.SetInputRaster(Input);
   f.Show;
   Result := f;

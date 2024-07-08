@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  ZR.UnicodeMixedLib, ZR.PascalStrings, ZR.UPascalStrings, ZR.Parsing, ZR.Expression;
+  ZR.Core, ZR.UnicodeMixedLib, ZR.PascalStrings, ZR.UPascalStrings, ZR.Parsing, ZR.Expression;
 
 type
   TStringTranslateForm = class(TForm)
@@ -18,6 +18,10 @@ type
     PascalDecl2AsciiButton: TButton;
     Ascii2cButton: TButton;
     c2AsciiButton: TButton;
+    Invert_Memo2_Button: TButton;
+    Invert_Memo1_Button: TButton;
+    procedure Invert_Memo1_ButtonClick(Sender: TObject);
+    procedure Invert_Memo2_ButtonClick(Sender: TObject);
     procedure Hex2AsciiButtonClick(Sender: TObject);
     procedure Ascii2HexButtonClick(Sender: TObject);
     procedure Ascii2DeclButtonClick(Sender: TObject);
@@ -26,9 +30,7 @@ type
     procedure Ascii2cButtonClick(Sender: TObject);
     procedure c2AsciiButtonClick(Sender: TObject);
   private
-    { Private declarations }
   public
-    { Public declarations }
   end;
 
 var
@@ -38,6 +40,30 @@ implementation
 
 {$R *.dfm}
 
+
+procedure TStringTranslateForm.Invert_Memo1_ButtonClick(Sender: TObject);
+var
+  ns: TStringList;
+  i: Integer;
+begin
+  ns := TStringList.Create;
+  for i := Memo1.Lines.Count - 1 downto 0 do
+      ns.Add(Memo1.Lines[i]);
+  Memo1.Lines.Assign(ns);
+  DisposeObject(ns);
+end;
+
+procedure TStringTranslateForm.Invert_Memo2_ButtonClick(Sender: TObject);
+var
+  ns: TStringList;
+  i: Integer;
+begin
+  ns := TStringList.Create;
+  for i := Memo2.Lines.Count - 1 downto 0 do
+      ns.Add(Memo2.Lines[i]);
+  Memo2.Lines.Assign(ns);
+  DisposeObject(ns);
+end;
 
 procedure TStringTranslateForm.Hex2AsciiButtonClick(Sender: TObject);
 var
@@ -50,8 +76,8 @@ begin
 
   while s <> '' do
     begin
-      n := umlGetFirstStr(s, ','#13#10#32);
-      s := umlDeleteFirstStr(s, ','#13#10#32);
+      n := umlGetFirstStr(s, ','#13#10#32#9);
+      s := umlDeleteFirstStr(s, ','#13#10#32#9);
       c := SystemChar(umlStrToInt(n, 0));
       output := output + c;
     end;
@@ -61,7 +87,7 @@ end;
 
 procedure TStringTranslateForm.Ascii2HexButtonClick(Sender: TObject);
 var
-  s: U_String;
+  s: u_String;
   c: SystemChar;
   cnt: Integer;
   output: string;
@@ -87,12 +113,12 @@ begin
       inc(cnt);
     end;
 
-  Memo1.Text := output;
+  Memo1.Lines.Text := output;
 end;
 
 procedure TStringTranslateForm.Ascii2DeclButtonClick(Sender: TObject);
 var
-  s: U_String;
+  s: u_String;
   c: SystemChar;
   cnt: Integer;
   output: string;

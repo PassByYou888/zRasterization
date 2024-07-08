@@ -6,12 +6,12 @@
 
 
 uses
-  FastMM5 in '..\Common\FastMM5.pas',
+  FastMM5,
   SysUtils, Windows,
 
   ZR.Core, ZR.ListEngine,
   ZR.MemoryStream, ZR.MemoryRaster, ZR.Geometry2D, ZR.Status, ZR.PascalStrings, ZR.UPascalStrings,
-  Z.FastGBK,
+  ZR.FastGBK,
   ZR.UnicodeMixedLib, ZR.DrawEngine, ZR.DrawEngine.SlowFMX, ZR.DrawEngine.FMXCharacterMapBuilder;
 
 function GenerateArrayBuff(const ASCII_, GBK_, FULL_: Boolean): TUArrayChar;
@@ -39,14 +39,23 @@ var
   n: U_String;
 begin
   if not(ASCII_ or GBK_ or FULL_) then
+    begin
+      DoStatus('"%s" need ASCII or GBK or FULL', [fontName_.Text]);
       exit;
+    end;
+  DoStatus('build "%s" size=%d AA=%s BOLD=%s ASCII=%s GBK=%s FULL=%s', [
+      fontName_.Text,
+      font_size_,
+      umlBoolToStr(AA_).Text,
+      umlBoolToStr(BOLD_).Text,
+      umlBoolToStr(ASCII_).Text,
+      umlBoolToStr(GBK_).Text,
+      umlBoolToStr(FULL_).Text
+      ]);
+  DoStatus('');
 
   n := PFormat('%s_%s%d%s%s%s.zFont',
     [fontName_.ReplaceChar(#32, '_').Text, if_(BOLD_, '(BOLD)', ''), font_size_, if_(ASCII_, '(ASCII)', ''), if_(GBK_, '(GBK)', ''), if_(FULL_, '(FULL)', '')]);
-
-  DoStatus('font: %s', [fontName_.Text]);
-  DoStatus('size: %d', [font_size_]);
-  DoStatus('build state:' + if_(ASCII_, ' (ASCII)', '') + if_(BOLD_, ' (BOLD)', '') + if_(GBK_, ' (GBK)', '') + if_(FULL_, ' (FULL)', ''));
 
   if umlFileExists(umlCombineFileName(SavePath_, n)) then
       exit;
@@ -57,6 +66,8 @@ begin
   fr.SaveToFile(umlCombineFileName(SavePath_, n));
   disposeObject(fr);
   DoStatus('build %s done', [n.Text]);
+  DoStatus('');
+  TCompute.Sleep(1000);
 end;
 
 procedure FillParam();
@@ -79,7 +90,7 @@ begin
     BOLD_ := umlStrToBool(ParamStr(5));
     ASCII_ := umlStrToBool(ParamStr(6));
     GBK_ := umlStrToBool(ParamStr(7));
-    FULL_ := umlStrToBool(ParamStr(7));
+    FULL_ := umlStrToBool(ParamStr(8));
   except
       exit;
   end;

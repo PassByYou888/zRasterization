@@ -3,30 +3,30 @@
 { ****************************************************************************** }
 unit ZR.h264.Parameters;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses
-  Classes, SysUtils, ZR.h264.Types, ZR.h264.Util, ZR.PascalStrings, ZR.UPascalStrings;
+uses Classes, SysUtils, ZR.Core, ZR.h264.Types, ZR.h264.Util, ZR.PascalStrings, ZR.UPascalStrings;
 
 const
-  MIN_QP               = 0;
-  MAX_QP               = 51;
+  MIN_QP = 0;
+  MAX_QP = 51;
   MAX_CHROMA_QP_OFFSET = 12;
   MAX_REFERENCE_FRAMES = 16;
 
 type
   // encoder configuration parameters
-  TEncodingParameters = class
+  TEncodingParameters = class(TCore_Object_Intermediate)
   private
-    width, height: uint16_t;  // input dimensions
-    frames: uint32_t;         // frame count
-    fps: Single;              // fps
-    qp: uint8_t;              // quantization parameter
+    width, height: uint16_t; // input dimensions
+    frames: uint32_t; // frame count
+    fps: Single; // fps
+    qp: uint8_t; // quantization parameter
     chroma_qp_offset: int8_t; // chroma qp offset
 
-    subme: uint8_t;           // subpixel ME refinement
+    subme: uint8_t; // subpixel ME refinement
     { 0 - none (fpel only)
       1 - hpel
       2 - qpel
@@ -40,15 +40,15 @@ type
       3 - bitcost
     }
 
-    ref: uint8_t;           // reference frame count
+    ref: uint8_t; // reference frame count
     key_interval: uint16_t; // maximum keyframe interval
-    loopfilter: Boolean;    // deblocking
+    loopfilter: Boolean; // deblocking
     filter_thread: Boolean; // deblocking in separate thread
-    aq: Boolean;            // mb-level adaptive quantization
-    luma_only: Boolean;     // ignore chroma
+    aq: Boolean; // mb-level adaptive quantization
+    luma_only: Boolean; // ignore chroma
 
     RC: record
-      Enabled: Boolean;  // enable avg. bitrate ratecontrol
+      Enabled: Boolean; // enable avg. bitrate ratecontrol
       Bitrate: uint32_t; // desired bitrate in kbps
     end;
 
@@ -216,9 +216,9 @@ function TEncodingParameters.ToPascalString: TPascalString;
 
 begin
   Result.Text := PFormat('%dx%d keyint:%d qp:%d subme:%d analyse:%d ref:%d aq:%s '
-    + 'chroma_qp_offset:%d loopfilter:%s (threaded:%s)',
+      + 'chroma_qp_offset:%d loopfilter:%s (threaded:%s)',
     [width, height, key_interval, qp, subme, analyse, ref, b2s(aq),
-    chroma_qp_offset, b2s(loopfilter), b2s(filter_thread)]);
+      chroma_qp_offset, b2s(loopfilter), b2s(filter_thread)]);
 end;
 
 end.

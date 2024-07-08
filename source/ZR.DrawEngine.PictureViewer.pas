@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.DrawEngine.PictureViewer;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -20,7 +21,7 @@ type
   TRasterHistogramInfos = class;
   TPictureViewerInterface = class;
 
-  TRasterHistogramInfo = class
+  TRasterHistogramInfo = class(TCore_Object_Intermediate)
   public
     Parent: TRasterHistogramInfos;
     info: SystemString;
@@ -38,7 +39,7 @@ type
 
   TRasterHistogramInfoArray = array of TRasterHistogramInfo;
 
-  TRasterHistogramInfos = class
+  TRasterHistogramInfos = class(TCore_Object_Intermediate)
   public
     Parent: TPictureViewerData;
     GrayAndYIQ: TRasterHistogramInfoArray;
@@ -57,7 +58,7 @@ type
     class procedure FreeArry(var arry: TRasterHistogramInfoArray);
   end;
 
-  TPictureViewerData = class
+  TPictureViewerData = class(TCore_Object_Intermediate)
   public
     Owner: TPictureViewerInterface;
     Enabled: Boolean;
@@ -77,12 +78,12 @@ type
 
   TPictureViewerData_Class = class of TPictureViewerData;
 
-  TPictureViewerDataList = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TPictureViewerData>;
-  TRasterHistogramInfoList = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TRasterHistogramInfo>;
+  TPictureViewerDataList = TGenericsList<TPictureViewerData>;
+  TRasterHistogramInfoList = TGenericsList<TRasterHistogramInfo>;
 
   TPictureViewerStyle = (pvsTop2Bottom, pvsLeft2Right, pvsDynamic);
 
-  TPictureViewerInterface = class
+  TPictureViewerInterface = class(TCore_Object_Intermediate)
   private
     FPictureDataList: TPictureViewerDataList;
     FViewer_Class: TPictureViewerData_Class;
@@ -243,10 +244,10 @@ begin
   p^.MorphPix_ := MorphPix_;
   p^.Height_ := Height_;
   p^.hColor := hColor;
-  TCompute.RunM(p, nil, {$IFDEF FPC}@{$ENDIF FPC}BuildHisComputeTh);
+  TCompute.RunM(p, nil, BuildHisComputeTh);
 
 {$ELSE Parallel}
-    MorphData := ZR_.BuildMorphomatics(MorphPix_);
+  MorphData := ZR_.BuildMorphomatics(MorphPix_);
   Raster := MorphData.BuildHistogram(Height_, hColor);
   Busy.V := False;
 {$ENDIF Parallel}
@@ -281,9 +282,9 @@ begin
   p^.MorphPix_ := MorphPix_;
   p^.Height_ := Height_;
   p^.hColor := hColor;
-  TCompute.RunM(p, nil, {$IFDEF FPC}@{$ENDIF FPC}UpdateHisComputeTh);
+  TCompute.RunM(p, nil, UpdateHisComputeTh);
 {$ELSE Parallel}
-    Parent.Parent.Raster.BuildMorphomaticsTo(MorphPix_, MorphData);
+  Parent.Parent.Raster.BuildMorphomaticsTo(MorphPix_, MorphData);
   MorphData.BuildHistogramTo(Height_, hColor, Raster);
   Busy.V := False;
 {$ENDIF Parallel}

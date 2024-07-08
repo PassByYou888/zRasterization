@@ -3,11 +3,12 @@
 { ****************************************************************************** }
 unit ZR.Notify;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses Variants,
+uses SysUtils, Classes, Variants,
 {$IFDEF FPC}
   ZR.FPC.GenericList,
 {$ENDIF FPC}
@@ -30,10 +31,22 @@ type
   TN_Post_Execute_P = reference to procedure(Sender: TN_Post_Execute);
   TN_Post_Execute_P_NP = reference to procedure();
 {$ENDIF FPC}
-  TN_Post_Execute_List_Struct = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TN_Post_Execute>;
-  TN_Post_Execute_Temp_Order_Struct = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TN_Post_Execute>;
+  TN_Post_Execute_List_Struct = TCritical_ZR_BL<TN_Post_Execute>;
+  TN_Post_Execute_Temp_Order_Struct = TOrderStruct<TN_Post_Execute>;
 
-  TN_Post_Execute = class(TCore_Object)
+{$IFDEF Tracking_Dealy_Free_Object}
+  TN_Post_Execute_Auto_Free_Pool_ = TCritical_Big_Object_List<TObject>;
+
+  TN_Post_Execute_Auto_Free_Pool = class(TN_Post_Execute_Auto_Free_Pool_)
+  public
+    procedure DoAdd(var Data: TObject); override;
+  end;
+{$ELSE Tracking_Dealy_Free_Object}
+
+  TN_Post_Execute_Auto_Free_Pool = TCritical_Big_Object_List<TObject>;
+{$ENDIF Tracking_Dealy_Free_Object}
+
+  TN_Post_Execute = class(TCore_Object_Intermediate)
   private
     FOwner: TN_Progress_Tool;
     FPool_Data_Ptr: TN_Post_Execute_List_Struct.PQueueStruct;
@@ -41,6 +54,7 @@ type
     FNewTime: Double;
     FIsRuning, FIsExit: PBoolean;
     FIsReady: Boolean;
+    FDiscard: Boolean;
     procedure SetIsExit(const Value: PBoolean);
     procedure SetIsRuning(const Value: PBoolean);
   public
@@ -51,6 +65,7 @@ type
     Data4: Variant;
     Data5: Pointer;
     Delay: Double;
+    Auto_Free_Pool: TN_Post_Execute_Auto_Free_Pool;
     OnExecute_C: TN_Post_Execute_C;
     OnExecute_C_NP: TN_Post_Execute_C_NP;
     OnExecute_M: TN_Post_Execute_M;
@@ -69,18 +84,18 @@ type
     destructor Destroy; override;
     procedure Execute; virtual;
     procedure Ready;
+    procedure DoDiscard;
   end;
 
   TN_Post_ExecuteClass = class of TN_Post_Execute;
 
-  TN_Progress_Tool = class(TCore_InterfacedObject)
+  TN_Progress_Tool = class(TCore_InterfacedObject_Intermediate)
   protected
-    FPostIsRun: Boolean;
+    FPostIsRunning: Boolean;
     FPostExecute_Pool: TN_Post_Execute_List_Struct;
     FPostClass: TN_Post_ExecuteClass;
     FBusy: Boolean;
     FCurrentExecute: TN_Post_Execute;
-    FBreakProgress: Boolean;
     FPaused: Boolean;
     procedure Do_Free(var Inst_: TN_Post_Execute);
   public
@@ -89,12 +104,12 @@ type
     procedure ResetPost;
     procedure Clear;
     procedure Clean;
-    // post
+    // post prototype
     function PostExecute(ready_: Boolean): TN_Post_Execute; overload;
     function PostExecute(ready_: Boolean; DataEng: TDFE): TN_Post_Execute; overload;
     function PostExecute(ready_: Boolean; Delay: Double): TN_Post_Execute; overload;
     function PostExecute(ready_: Boolean; Delay: Double; DataEng: TDFE): TN_Post_Execute; overload;
-    //
+    // post call
     function PostExecuteC(DataEng: TDFE; OnExecute_C: TN_Post_Execute_C): TN_Post_Execute; overload;
     function PostExecuteC(Delay: Double; DataEng: TDFE; OnExecute_C: TN_Post_Execute_C): TN_Post_Execute; overload;
     function PostExecuteC(Delay: Double; OnExecute_C: TN_Post_Execute_C): TN_Post_Execute; overload;
@@ -103,7 +118,7 @@ type
     function PostExecuteC(ready_: Boolean; Delay: Double; DataEng: TDFE; OnExecute_C: TN_Post_Execute_C): TN_Post_Execute; overload;
     function PostExecuteC(ready_: Boolean; Delay: Double; OnExecute_C: TN_Post_Execute_C): TN_Post_Execute; overload;
     function PostExecuteC_NP(ready_: Boolean; Delay: Double; OnExecute_C: TN_Post_Execute_C_NP): TN_Post_Execute; overload;
-    //
+    // post method
     function PostExecuteM(DataEng: TDFE; OnExecute_M: TN_Post_Execute_M): TN_Post_Execute; overload;
     function PostExecuteM(Delay: Double; DataEng: TDFE; OnExecute_M: TN_Post_Execute_M): TN_Post_Execute; overload;
     function PostExecuteM(Delay: Double; OnExecute_M: TN_Post_Execute_M): TN_Post_Execute; overload;
@@ -112,7 +127,7 @@ type
     function PostExecuteM(ready_: Boolean; Delay: Double; DataEng: TDFE; OnExecute_M: TN_Post_Execute_M): TN_Post_Execute; overload;
     function PostExecuteM(ready_: Boolean; Delay: Double; OnExecute_M: TN_Post_Execute_M): TN_Post_Execute; overload;
     function PostExecuteM_NP(ready_: Boolean; Delay: Double; OnExecute_M: TN_Post_Execute_M_NP): TN_Post_Execute; overload;
-    //
+    // post proc
     function PostExecuteP(DataEng: TDFE; OnExecute_P: TN_Post_Execute_P): TN_Post_Execute; overload;
     function PostExecuteP(Delay: Double; DataEng: TDFE; OnExecute_P: TN_Post_Execute_P): TN_Post_Execute; overload;
     function PostExecuteP(Delay: Double; OnExecute_P: TN_Post_Execute_P): TN_Post_Execute; overload;
@@ -121,10 +136,14 @@ type
     function PostExecuteP(ready_: Boolean; Delay: Double; DataEng: TDFE; OnExecute_P: TN_Post_Execute_P): TN_Post_Execute; overload;
     function PostExecuteP(ready_: Boolean; Delay: Double; OnExecute_P: TN_Post_Execute_P): TN_Post_Execute; overload;
     function PostExecuteP_NP(ready_: Boolean; Delay: Double; OnExecute_P: TN_Post_Execute_P_NP): TN_Post_Execute; overload;
-    // state and dispatch
+    // delay free
+    procedure PostDelayFreeObject(Delay: Double; Arry: array of TCore_Object); overload;
+    procedure PostDelayFreeObject(Delay: Double; Obj1_, Obj2_, Obj3_, Obj4_: TCore_Object); overload;
+    procedure PostDelayFreeObject(Delay: Double; Obj1_, Obj2_, Obj3_: TCore_Object); overload;
     procedure PostDelayFreeObject(Delay: Double; Obj1_, Obj2_: TCore_Object); overload;
     procedure PostDelayFreeObject(Delay: Double; Obj1_: TCore_Object); overload;
     procedure Remove(Inst_: TN_Post_Execute); overload; virtual;
+    // state and dispatch
     procedure Progress(deltaTime: Double); overload;
     property Paused: Boolean read FPaused write FPaused;
     property Busy: Boolean read FBusy;
@@ -150,6 +169,7 @@ type
 
 var
   SystemPostProgress: TCadencer_N_Progress_Tool;
+  Print_Tracking_Delay_Free: Boolean;
 
 function SysPostProgress: TCadencer_N_Progress_Tool;
 function SysPost: TCadencer_N_Progress_Tool;
@@ -160,8 +180,10 @@ procedure DelayFreeObj(Delay: Double; Obj1_: TCore_Object); overload;
 
 implementation
 
+uses ZR.Status, ZR.UnicodeMixedLib;
+
 var
-  Hooked_OnCheckThreadSynchronize: TOnCheckThreadSynchronize;
+  Hooked_OnCheckThreadSynchronize: TOn_Check_Thread_Synchronize;
 
 procedure DoCheckThreadSynchronize();
 begin
@@ -205,11 +227,28 @@ begin
   SystemPostProgress.PostDelayFreeObject(Delay, Obj1_, nil);
 end;
 
-procedure DoDelayFreeObject(Sender: TN_Post_Execute);
+{$IFDEF Tracking_Dealy_Free_Object}
+
+
+procedure TN_Post_Execute_Auto_Free_Pool.DoAdd(var Data: TObject);
 begin
-  DisposeObject(Sender.Data1);
-  DisposeObject(Sender.Data2);
+  inherited DoAdd(Data);
+  if Data <> nil then
+    begin
+      try
+        if Print_Tracking_Delay_Free then
+            DoStatus('delay free Object: %s (0x%s)', [Data.ClassName, umlPointerToStr(Data).Text]);
+      except
+        on E: Exception do
+          begin
+            if Assigned(On_Raise_Info) then
+                On_Raise_Info('delay free Object error ' + E.Message);
+          end;
+      end;
+    end;
 end;
+{$ENDIF Tracking_Dealy_Free_Object}
+
 
 procedure TN_Post_Execute.SetIsExit(const Value: PBoolean);
 begin
@@ -240,9 +279,11 @@ begin
   Data4 := Null;
   Data5 := nil;
   Delay := 0;
+  Auto_Free_Pool := TN_Post_Execute_Auto_Free_Pool.Create(True);
   FIsRuning := nil;
   FIsExit := nil;
   FIsReady := False;
+  FDiscard := False;
 
   OnExecute_C := nil;
   OnExecute_C_NP := nil;
@@ -258,7 +299,6 @@ begin
     begin
       if FOwner.FCurrentExecute = Self then
         begin
-          FOwner.FBreakProgress := True;
           FOwner.FCurrentExecute := nil;
         end;
 
@@ -270,6 +310,7 @@ begin
       FOwner := nil;
     end;
   DisposeObject(FDFE_Inst);
+  DisposeObject(Auto_Free_Pool);
   inherited Destroy;
 end;
 
@@ -344,6 +385,11 @@ begin
   FIsReady := True;
 end;
 
+procedure TN_Post_Execute.DoDiscard;
+begin
+  FDiscard := True;
+end;
+
 procedure TN_Progress_Tool.Do_Free(var Inst_: TN_Post_Execute);
 begin
   if Inst_ <> nil then
@@ -356,13 +402,12 @@ end;
 constructor TN_Progress_Tool.Create;
 begin
   inherited Create;
-  FPostIsRun := False;
+  FPostIsRunning := False;
   FPostExecute_Pool := TN_Post_Execute_List_Struct.Create;
-  FPostExecute_Pool.OnFree := {$IFDEF FPC}@{$ENDIF FPC}Do_Free;
+  FPostExecute_Pool.OnFree := Do_Free;
   FPostClass := TN_Post_Execute;
   FBusy := False;
   FCurrentExecute := nil;
-  FBreakProgress := False;
   FPaused := False;
 end;
 
@@ -376,7 +421,6 @@ end;
 procedure TN_Progress_Tool.ResetPost;
 begin
   FPostExecute_Pool.Clear;
-  FBreakProgress := True;
 end;
 
 procedure TN_Progress_Tool.Clear;
@@ -604,14 +648,57 @@ begin
       Result.Ready;
 end;
 
+procedure TN_Progress_Tool.PostDelayFreeObject(Delay: Double; Arry: array of TCore_Object);
+var
+  tmp: TN_Post_Execute;
+  i: Integer;
+begin
+  tmp := PostExecute(False, Delay);
+  for i := low(Arry) to high(Arry) do
+    if Arry[i] <> nil then
+        tmp.Auto_Free_Pool.Add(Arry[i]);
+  tmp.Ready;
+end;
+
+procedure TN_Progress_Tool.PostDelayFreeObject(Delay: Double; Obj1_, Obj2_, Obj3_, Obj4_: TCore_Object);
+var
+  tmp: TN_Post_Execute;
+begin
+  tmp := PostExecute(False, Delay);
+  if Obj1_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj1_);
+  if Obj2_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj2_);
+  if Obj3_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj3_);
+  if Obj4_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj4_);
+  tmp.Ready;
+end;
+
+procedure TN_Progress_Tool.PostDelayFreeObject(Delay: Double; Obj1_, Obj2_, Obj3_: TCore_Object);
+var
+  tmp: TN_Post_Execute;
+begin
+  tmp := PostExecute(False, Delay);
+  if Obj1_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj1_);
+  if Obj2_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj2_);
+  if Obj3_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj3_);
+  tmp.Ready;
+end;
+
 procedure TN_Progress_Tool.PostDelayFreeObject(Delay: Double; Obj1_, Obj2_: TCore_Object);
 var
   tmp: TN_Post_Execute;
 begin
   tmp := PostExecute(False, Delay);
-  tmp.Data1 := Obj1_;
-  tmp.Data2 := Obj2_;
-  tmp.OnExecute_C := {$IFDEF FPC}@{$ENDIF FPC}DoDelayFreeObject;
+  if Obj1_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj1_);
+  if Obj2_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj2_);
   tmp.Ready;
 end;
 
@@ -620,9 +707,8 @@ var
   tmp: TN_Post_Execute;
 begin
   tmp := PostExecute(False, Delay);
-  tmp.Data1 := Obj1_;
-  tmp.Data2 := nil;
-  tmp.OnExecute_C := {$IFDEF FPC}@{$ENDIF FPC}DoDelayFreeObject;
+  if Obj1_ <> nil then
+      tmp.Auto_Free_Pool.Add(Obj1_);
   tmp.Ready;
 end;
 
@@ -636,13 +722,11 @@ var
   tmp_Order: TN_Post_Execute_Temp_Order_Struct;
 
   procedure Do_Run;
-  var
-    backup_state: Boolean;
   begin
     while tmp_Order.Num > 0 do
       begin
         FCurrentExecute := tmp_Order.First^.Data;
-        if not FBreakProgress then
+        if not FCurrentExecute.FDiscard then
           begin
             FBusy := True;
             try
@@ -651,9 +735,7 @@ var
             end;
             FBusy := False;
           end;
-        backup_state := FBreakProgress;
         DisposeObject(FCurrentExecute);
-        FBreakProgress := backup_state;
         tmp_Order.Next;
       end;
   end;
@@ -663,15 +745,14 @@ var
 begin
   if FPaused then
       Exit;
-  if FPostIsRun then
+  if FPostIsRunning then
       Exit;
   if FPostExecute_Pool.Num <= 0 then
       Exit;
 
-  FPostIsRun := True;
-  FBreakProgress := False;
+  FPostIsRunning := True;
 
-  tmp_Order := TN_Post_Execute_Temp_Order_Struct.Create;
+  tmp_Order := nil; // progress optimized
   try
     __Repeat__ := FPostExecute_Pool.Repeat_;
     repeat
@@ -679,13 +760,20 @@ begin
         begin
           __Repeat__.Queue^.Data.FNewTime := __Repeat__.Queue^.Data.FNewTime + deltaTime;
           if (__Repeat__.Queue^.Data.FNewTime >= __Repeat__.Queue^.Data.Delay) then
+            begin
+              if tmp_Order = nil then // progress optimized
+                  tmp_Order := TN_Post_Execute_Temp_Order_Struct.Create;
               tmp_Order.Push(__Repeat__.Queue^.Data);
+            end;
         end;
     until not __Repeat__.Next;
-    Do_Run();
-    tmp_Order.Free;
+    if tmp_Order <> nil then // progress optimized
+      begin
+        Do_Run();
+        tmp_Order.Free;
+      end;
   finally
-      FPostIsRun := False;
+      FPostIsRunning := False;
   end;
 end;
 
@@ -716,22 +804,13 @@ end;
 initialization
 
 Hooked_OnCheckThreadSynchronize := ZR.Core.OnCheckThreadSynchronize;
-ZR.Core.OnCheckThreadSynchronize := {$IFDEF FPC}@{$ENDIF FPC}DoCheckThreadSynchronize;
+ZR.Core.OnCheckThreadSynchronize := DoCheckThreadSynchronize;
 SystemPostProgress := TCadencer_N_Progress_Tool.Create;
+Print_Tracking_Delay_Free := False;
 
 finalization
 
 ZR.Core.OnCheckThreadSynchronize := Hooked_OnCheckThreadSynchronize;
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
-SystemPostProgress.Progress(10);
 DisposeObject(SystemPostProgress);
 
 end.

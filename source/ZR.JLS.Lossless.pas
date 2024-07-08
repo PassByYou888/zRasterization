@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.Lossless;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -19,7 +20,7 @@ interface
 uses ZR.JLS.Global, ZR.JLS.Jpegmark, ZR.JLS.Melcode, ZR.JLS.BitIO, ZR.Core;
 
 type
-  TJLSLossless = class
+  TJLSLossless = class(TCore_Object_Intermediate)
   private
     FBitIO: TJLSBitIO;
     FMelcode: TJLSMelcode;
@@ -33,22 +34,22 @@ type
     function lossless_end_of_run_d(RA, rb: Pixel; RItype: Int): Pixel;
     procedure lossless_end_of_run_e(RA, rb, ix: Pixel; RItype: Int);
     function lossless_undoscanline(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                               { current scanline }
+      SL: ppixelarray; { current scanline }
       no: Int; COLOR: Int): Int;
 
     procedure lossless_doscanline(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                              { current scanline }
-      no, COLOR: Int);                              { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no, COLOR: Int); { number of values in it }
     { For pixel interleaved mode for LOSSLESS encoding }
 
     procedure lossless_doscanline_pixel(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                                    { current scanline }
-      no: Int);                                           { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no: Int); { number of values in it }
 
     { For DEOCODING pixel interleavde mode for LOSSLESS images }
     function lossless_undoscanline_pixel(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                                     { current scanline }
-      no: Int): Int;                                       { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no: Int): Int; { number of values in it }
 
   end;
 
@@ -326,7 +327,7 @@ begin
 end;
 
 function TJLSLossless.lossless_undoscanline(psl: ppixelarray; { previous scanline }
-  SL: ppixelarray;                                            { current scanline }
+  SL: ppixelarray; { current scanline }
   no: Int; COLOR: Int): Int;
 var
   i, psfix: Int;
@@ -1065,7 +1066,8 @@ begin
 
   nst := Nt;
   k := 0;
-  while (nst < at) do begin nst := nst shl 1; inc(k);
+  while (nst < at) do begin nst := nst shl 1;
+      inc(k);
     end;
 
   { Do Rice mapping and compute magnitude of Errval }
@@ -1153,13 +1155,13 @@ begin
 end;
 
 procedure TJLSLossless.lossless_doscanline(psl: ppixelarray; { previous scanline }
-  SL: ppixelarray;                                           { current scanline }
-  no, COLOR: Int);                                           { number of values in it }
+  SL: ppixelarray; { current scanline }
+  no, COLOR: Int); { number of values in it }
 var
   i: Int;
   RA, rb, RC, Rd, { context pixels }
-  ix,             { current pixel }
-  Px: Pixel;      { predicted current pixel }
+  ix, { current pixel }
+  Px: Pixel; { predicted current pixel }
 
   Sign: Int; { sign of current context }
   cont: Int; { context }
@@ -1455,9 +1457,9 @@ var
   c_dd: array [0 .. MAX_COMPONENTS - 1] of Pixel;
   c_xx: array [0 .. MAX_COMPONENTS - 1] of Pixel;
   RA, rb, RC, Rd, { context pixels }
-  ix,             { current pixel }
-  Px: Pixel;      { predicted current pixel }
-  Sign: Int;      { sign of current context }
+  ix, { current pixel }
+  Px: Pixel; { predicted current pixel }
+  Sign: Int; { sign of current context }
   cont: Int;
   c_cont: array [0 .. MAX_COMPONENTS - 1] of Int; { context }
   RUNcnt: Int;

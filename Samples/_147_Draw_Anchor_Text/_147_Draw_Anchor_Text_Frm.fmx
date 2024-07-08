@@ -1,0 +1,26 @@
+object _147_Draw_Anchor_Text_Form: T_147_Draw_Anchor_Text_Form
+  Left = 0
+  Top = 0
+  Caption = 'Draw Anchor Text '
+  ClientHeight = 448
+  ClientWidth = 1347
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object fpsTimer: TTimer
+    Interval = 1
+    OnTimer = fpsTimerTimer
+    Left = 328
+    Top = 192
+  end
+  object rendererTimer: TTimer
+    Interval = 15
+    OnTimer = rendererTimerTimer
+    Left = 328
+    Top = 256
+  end
+end

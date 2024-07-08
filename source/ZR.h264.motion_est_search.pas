@@ -3,15 +3,15 @@
 { ****************************************************************************** }
 unit ZR.h264.motion_est_search;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses
-  ZR.h264.Types, ZR.h264.Common, ZR.h264.Util, ZR.h264.Motion_comp, ZR.h264.Frame;
+uses ZR.Core, ZR.h264.Types, ZR.h264.Common, ZR.h264.Util, ZR.h264.Motion_comp, ZR.h264.Frame;
 
 type
-  TRegionSearch = class
+  TRegionSearch = class(TCore_Object_Intermediate)
   private
     _max_x, _max_y: int32_t;
     _max_x_hpel, _max_y_hpel: int32_t;
@@ -209,7 +209,7 @@ function TRegionSearch.SearchHPel(var mb: TMacroblock; const fref: PFrame): TMot
 var
   ref: array [0 .. 3] of uint8_p;
   max_x, max_y: int32_t;
-  mbx, mby,      // macroblock hpel x,y position
+  mbx, mby, // macroblock hpel x,y position
   x, y: int32_t; // currently searched hpel x,y position
   stride: int32_t;
   min_score: int32_t;
@@ -293,7 +293,7 @@ function TRegionSearch.SearchQPel(var mb: TMacroblock; const fref: PFrame; const
 var
   mbcmp: mbcmp_func_t;
   max_x, max_y: int32_t;
-  mbx, mby,      // macroblock qpel x,y position
+  mbx, mby, // macroblock qpel x,y position
   x, y: int32_t; // currently searched qpel x,y position
   min_score: int32_t;
   mv, mv_prev_pass: TMotionvec;

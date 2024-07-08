@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.DrawEngine.Y4M;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

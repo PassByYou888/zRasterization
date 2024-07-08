@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Vcl.ComCtrls,
 
   System.Math, System.Threading,
-  Z.FastGBK, Z.GBK,
+  ZR.FastGBK, ZR.GBK,
   ZR.MemoryStream, ZR.MemoryRaster, ZR.Geometry2D, ZR.Status, ZR.PascalStrings, ZR.UPascalStrings, ZR.Core, GR32, ZR.DrawEngine;
 
 type

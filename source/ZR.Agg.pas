@@ -2,7 +2,6 @@
 { * memory Rasterization on AGG                                                * }
 { * by QQ 600585@qq.com                                                        * }
 
-
 (*
   ////////////////////////////////////////////////////////////////////////////////
   //                                                                            //
@@ -85,7 +84,7 @@ type
     procedure PreMultiply;
     procedure DeMultiply;
 
-    property ScanLine[index: Cardinal]: Pointer read GetScanLine;
+    property Scanline[index: Cardinal]: Pointer read GetScanLine;
     property width: Integer read GetWidth;
     property height: Integer read GetHeight;
   end;
@@ -408,8 +407,8 @@ type
 
 function OperatorIsEqual(c1, c2: PAggColorRgba8): Boolean;
 function OperatorIsNotEqual(c1, c2: PAggColorRgba8): Boolean;
-procedure Agg2DRendererRender(Gr: TAgg2D; RendererBase: TAggRendererBase; RenSolid: TAggRendererScanLineAASolid; FillColor: Boolean); overload;
-procedure Agg2DRendererRenderImage(Gr: TAgg2D; img: TAgg2DImage; RendererBase: TAggRendererBase; Interpolator: TAggSpanInterpolatorLinear);
+procedure Agg2DRendererRender(GR: TAgg2D; RendererBase: TAggRendererBase; RenSolid: TAggRendererScanLineAASolid; FillColor: Boolean); overload;
+procedure Agg2DRendererRenderImage(GR: TAgg2D; img: TAgg2DImage; RendererBase: TAggRendererBase; Interpolator: TAggSpanInterpolatorLinear);
 
 implementation
 
@@ -2003,11 +2002,11 @@ begin
     PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^);
 
   LineTo(PDouble(PtrComp(Parallelogram))^ +
-    PDouble(PtrComp(Parallelogram) + 4 * SizeOf(Double))^ -
-    PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
+      PDouble(PtrComp(Parallelogram) + 4 * SizeOf(Double))^ -
+      PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
     PDouble(PtrComp(Parallelogram) + SizeOf(Double))^ +
-    PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^ -
-    PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
+      PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^ -
+      PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
 
   ClosePolygon;
 
@@ -2029,11 +2028,11 @@ begin
     PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^);
 
   LineTo(PDouble(PtrComp(Parallelogram))^ +
-    PDouble(PtrComp(Parallelogram) + 4 * SizeOf(Double))^ -
-    PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
+      PDouble(PtrComp(Parallelogram) + 4 * SizeOf(Double))^ -
+      PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
     PDouble(PtrComp(Parallelogram) + SizeOf(Double))^ +
-    PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^ -
-    PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
+      PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^ -
+      PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
 
   ClosePolygon;
 
@@ -2045,7 +2044,7 @@ begin
   ResetPath;
 
   MoveTo(PDouble(Parallelogram)^, PDouble(PtrComp(Parallelogram) +
-    SizeOf(Double))^);
+        SizeOf(Double))^);
 
   LineTo(PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
     PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
@@ -2054,11 +2053,11 @@ begin
     PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^);
 
   LineTo(PDouble(Parallelogram)^ +
-    PDouble(PtrComp(Parallelogram) + 4 * SizeOf(Double))^ -
-    PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
+      PDouble(PtrComp(Parallelogram) + 4 * SizeOf(Double))^ -
+      PDouble(PtrComp(Parallelogram) + 2 * SizeOf(Double))^,
     PDouble(PtrComp(Parallelogram) + SizeOf(Double))^ +
-    PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^ -
-    PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
+      PDouble(PtrComp(Parallelogram) + 5 * SizeOf(Double))^ -
+      PDouble(PtrComp(Parallelogram) + 3 * SizeOf(Double))^);
 
   ClosePolygon;
 
@@ -2340,23 +2339,21 @@ begin
   Result := not OperatorIsEqual(c1, c2);
 end;
 
-procedure Agg2DRendererRender(Gr: TAgg2D; RendererBase: TAggRendererBase; RenSolid: TAggRendererScanLineAASolid; FillColor: Boolean);
+procedure Agg2DRendererRender(GR: TAgg2D; RendererBase: TAggRendererBase; RenSolid: TAggRendererScanLineAASolid; FillColor: Boolean);
 var
   Span: TAggSpanGradient;
   Ren: TAggRendererScanLineAA;
   Clr: TAggColor;
 begin
-  if (FillColor and (Gr.FFillGradientFlag = grdLinear)) or
-    (not FillColor and (Gr.FLineGradientFlag = grdLinear)) then
+  if (FillColor and (GR.FFillGradientFlag = grdLinear)) or
+    (not FillColor and (GR.FLineGradientFlag = grdLinear)) then
     if FillColor then
       begin
-        Span := TAggSpanGradient.Create(Gr.FAllocator,
-          Gr.FFillGradientInterpolator, Gr.FLinearGradientFunction,
-          Gr.FFillGradient, Gr.FFillGradientD1, Gr.FFillGradientD2);
+        Span := TAggSpanGradient.Create(GR.FAllocator, GR.FFillGradientInterpolator, GR.FLinearGradientFunction, GR.FFillGradient, GR.FFillGradientD1, GR.FFillGradientD2);
         try
           Ren := TAggRendererScanLineAA.Create(RendererBase, Span);
           try
-              RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ren);
+              RenderScanlines(GR.FRasterizer, GR.FScanLine, Ren);
           finally
               Ren.Free;
           end;
@@ -2366,13 +2363,11 @@ begin
       end
     else
       begin
-        Span := TAggSpanGradient.Create(Gr.FAllocator,
-          Gr.FLineGradientInterpolator, Gr.FLinearGradientFunction,
-          Gr.FLineGradient, Gr.FLineGradientD1, Gr.FLineGradientD2);
+        Span := TAggSpanGradient.Create(GR.FAllocator, GR.FLineGradientInterpolator, GR.FLinearGradientFunction, GR.FLineGradient, GR.FLineGradientD1, GR.FLineGradientD2);
         try
           Ren := TAggRendererScanLineAA.Create(RendererBase, Span);
           try
-              RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ren);
+              RenderScanlines(GR.FRasterizer, GR.FScanLine, Ren);
           finally
               Ren.Free;
           end;
@@ -2380,17 +2375,15 @@ begin
             Span.Free;
         end;
       end
-  else if (FillColor and (Gr.FFillGradientFlag = grdRadial)) or
-    (not FillColor and (Gr.FLineGradientFlag = grdRadial)) then
+  else if (FillColor and (GR.FFillGradientFlag = grdRadial)) or
+    (not FillColor and (GR.FLineGradientFlag = grdRadial)) then
     if FillColor then
       begin
-        Span := TAggSpanGradient.Create(Gr.FAllocator,
-          Gr.FFillGradientInterpolator, Gr.FRadialGradientFunction,
-          Gr.FFillGradient, Gr.FFillGradientD1, Gr.FFillGradientD2);
+        Span := TAggSpanGradient.Create(GR.FAllocator, GR.FFillGradientInterpolator, GR.FRadialGradientFunction, GR.FFillGradient, GR.FFillGradientD1, GR.FFillGradientD2);
         try
           Ren := TAggRendererScanLineAA.Create(RendererBase, Span);
           try
-              RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ren);
+              RenderScanlines(GR.FRasterizer, GR.FScanLine, Ren);
           finally
               Ren.Free;
           end;
@@ -2400,13 +2393,11 @@ begin
       end
     else
       begin
-        Span := TAggSpanGradient.Create(Gr.FAllocator,
-          Gr.FLineGradientInterpolator, Gr.FRadialGradientFunction,
-          Gr.FLineGradient, Gr.FLineGradientD1, Gr.FLineGradientD2);
+        Span := TAggSpanGradient.Create(GR.FAllocator, GR.FLineGradientInterpolator, GR.FRadialGradientFunction, GR.FLineGradient, GR.FLineGradientD1, GR.FLineGradientD2);
         try
           Ren := TAggRendererScanLineAA.Create(RendererBase, Span);
           try
-              RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ren);
+              RenderScanlines(GR.FRasterizer, GR.FScanLine, Ren);
           finally
               Ren.Free;
           end;
@@ -2417,16 +2408,16 @@ begin
   else
     begin
       if FillColor then
-          Clr.FromRgba8(Gr.FFillColor)
+          Clr.FromRgba8(GR.FFillColor)
       else
-          Clr.FromRgba8(Gr.FLineColor);
+          Clr.FromRgba8(GR.FLineColor);
 
       RenSolid.SetColor(@Clr);
-      RenderScanLines(Gr.FRasterizer, Gr.FScanLine, RenSolid);
+      RenderScanlines(GR.FRasterizer, GR.FScanLine, RenSolid);
     end;
 end;
 
-procedure Agg2DRendererRenderImage(Gr: TAgg2D; img: TAgg2DImage; RendererBase: TAggRendererBase; Interpolator: TAggSpanInterpolatorLinear);
+procedure Agg2DRendererRenderImage(GR: TAgg2D; img: TAgg2DImage; RendererBase: TAggRendererBase; Interpolator: TAggSpanInterpolatorLinear);
 var
   Blend: TAggSpanConvImageBlend;
 
@@ -2441,22 +2432,22 @@ var
   Resample: Boolean;
   SX, SY: Double;
 begin
-  Blend := TAggSpanConvImageBlend.Create(Gr.FImageBlendMode,
-    Gr.FImageBlendColor, Gr.FPixelFormatCompPre);
+  Blend := TAggSpanConvImageBlend.Create(GR.FImageBlendMode,
+    GR.FImageBlendColor, GR.FPixelFormatCompPre);
   try
-    if Gr.FImageFilter = ifNoFilter then
+    if GR.FImageFilter = ifNoFilter then
       begin
         Clr.Clear;
-        case Gr.FPixelFormat of
-          pfRGBA: sg := TAggSpanImageFilterRgbaNN.Create(Gr.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, CAggOrderRgba);
-          pfBGRA: sg := TAggSpanImageFilterRgbaNN.Create(Gr.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, CAggOrderBgra);
+        case GR.FPixelFormat of
+          pfRGBA: sg := TAggSpanImageFilterRgbaNN.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, CAggOrderRgba);
+          pfBGRA: sg := TAggSpanImageFilterRgbaNN.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, CAggOrderBgra);
         end;
         try
           sc := TAggSpanConverter.Create(sg, Blend);
           try
             Ri := TAggRendererScanLineAA.Create(RendererBase, sc);
             try
-                RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ri);
+                RenderScanlines(GR.FRasterizer, GR.FScanLine, Ri);
             finally
                 Ri.Free;
             end;
@@ -2469,9 +2460,9 @@ begin
       end
     else
       begin
-        Resample := Gr.FImageResample = irAlways;
+        Resample := GR.FImageResample = irAlways;
 
-        if Gr.FImageResample = irOnZoomOut then
+        if GR.FImageResample = irOnZoomOut then
           begin
             Interpolator.Transformer.GetScalingAbs(SX, SY);
 
@@ -2482,16 +2473,16 @@ begin
         if Resample then
           begin
             Clr.Clear;
-            case Gr.FPixelFormat of
-              pfRGBA: SA := TAggSpanImageResampleRgbaAffine.Create(Gr.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, Gr.FImageFilterLUT, CAggOrderRgba);
-              pfBGRA: SA := TAggSpanImageResampleRgbaAffine.Create(Gr.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, Gr.FImageFilterLUT, CAggOrderBgra);
+            case GR.FPixelFormat of
+              pfRGBA: SA := TAggSpanImageResampleRgbaAffine.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, GR.FImageFilterLUT, CAggOrderRgba);
+              pfBGRA: SA := TAggSpanImageResampleRgbaAffine.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, GR.FImageFilterLUT, CAggOrderBgra);
             end;
             try
               sc := TAggSpanConverter.Create(SA, Blend);
               try
                 Ri := TAggRendererScanLineAA.Create(RendererBase, sc);
                 try
-                    RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ri);
+                    RenderScanlines(GR.FRasterizer, GR.FScanLine, Ri);
                 finally
                     Ri.Free;
                 end;
@@ -2502,23 +2493,19 @@ begin
                 SA.Free;
             end;
           end
-        else if Gr.FImageFilter = ifBilinear then
+        else if GR.FImageFilter = ifBilinear then
           begin
             Clr.Clear;
-            case Gr.FPixelFormat of
-              pfRGBA:
-                SB := TAggSpanImageFilterRgbaBilinear.Create(Gr.FAllocator,
-                  img.FRenderingBuffer, @Clr, Interpolator, CAggOrderRgba);
-              pfBGRA:
-                SB := TAggSpanImageFilterRgbaBilinear.Create(Gr.FAllocator,
-                  img.FRenderingBuffer, @Clr, Interpolator, CAggOrderBgra);
+            case GR.FPixelFormat of
+              pfRGBA: SB := TAggSpanImageFilterRgbaBilinear.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, CAggOrderRgba);
+              pfBGRA: SB := TAggSpanImageFilterRgbaBilinear.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, CAggOrderBgra);
             end;
             try
               sc := TAggSpanConverter.Create(SB, Blend);
               try
                 Ri := TAggRendererScanLineAA.Create(RendererBase, sc);
                 try
-                    RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ri);
+                    RenderScanlines(GR.FRasterizer, GR.FScanLine, Ri);
                 finally
                     Ri.Free;
                 end;
@@ -2529,25 +2516,19 @@ begin
                 SB.Free;
             end;
           end
-        else if Gr.FImageFilterLUT.Diameter = 2 then
+        else if GR.FImageFilterLUT.Diameter = 2 then
           begin
             Clr.Clear;
-            case Gr.FPixelFormat of
-              pfRGBA:
-                s2 := TAggSpanImageFilterRgba2x2.Create(Gr.FAllocator,
-                  img.FRenderingBuffer, @Clr, Interpolator, Gr.FImageFilterLUT,
-                  CAggOrderRgba);
-              pfBGRA:
-                s2 := TAggSpanImageFilterRgba2x2.Create(Gr.FAllocator,
-                  img.FRenderingBuffer, @Clr, Interpolator, Gr.FImageFilterLUT,
-                  CAggOrderBgra);
+            case GR.FPixelFormat of
+              pfRGBA: s2 := TAggSpanImageFilterRgba2x2.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, GR.FImageFilterLUT, CAggOrderRgba);
+              pfBGRA: s2 := TAggSpanImageFilterRgba2x2.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, GR.FImageFilterLUT, CAggOrderBgra);
             end;
             try
               sc := TAggSpanConverter.Create(s2, Blend);
               try
                 Ri := TAggRendererScanLineAA.Create(RendererBase, sc);
                 try
-                    RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ri);
+                    RenderScanlines(GR.FRasterizer, GR.FScanLine, Ri);
                 finally
                     Ri.Free;
                 end;
@@ -2561,22 +2542,16 @@ begin
         else
           begin
             Clr.Clear;
-            case Gr.FPixelFormat of
-              pfRGBA:
-                SI := TAggSpanImageFilterRgba.Create(Gr.FAllocator,
-                  img.FRenderingBuffer, @Clr, Interpolator, Gr.FImageFilterLUT,
-                  CAggOrderRgba);
-              pfBGRA:
-                SI := TAggSpanImageFilterRgba.Create(Gr.FAllocator,
-                  img.FRenderingBuffer, @Clr, Interpolator, Gr.FImageFilterLUT,
-                  CAggOrderBgra);
+            case GR.FPixelFormat of
+              pfRGBA: SI := TAggSpanImageFilterRgba.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, GR.FImageFilterLUT, CAggOrderRgba);
+              pfBGRA: SI := TAggSpanImageFilterRgba.Create(GR.FAllocator, img.FRenderingBuffer, @Clr, Interpolator, GR.FImageFilterLUT, CAggOrderBgra);
             end;
             try
               sc := TAggSpanConverter.Create(SI, Blend);
               try
                 Ri := TAggRendererScanLineAA.Create(RendererBase, sc);
                 try
-                    RenderScanLines(Gr.FRasterizer, Gr.FScanLine, Ri);
+                    RenderScanlines(GR.FRasterizer, GR.FScanLine, Ri);
                 finally
                     Ri.Free;
                 end;

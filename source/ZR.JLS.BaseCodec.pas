@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.BaseCodec;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -24,7 +25,7 @@ type
 
   { TbsJLSBaseCodec }
 
-  TJLSBaseCodec = class
+  TJLSBaseCodec = class(TCore_Object_Intermediate)
   private
 
     function GetComponents: Int;
@@ -77,8 +78,8 @@ type
     restart_interval: Int; { indicates the restart interval }
 
     // encode...
-    need_lse: Int;     { if we need an LSE marker (non-default params) }
-    need_table: Int;   { if we need an LSE marker (mapping table) }
+    need_lse: Int; { if we need an LSE marker (non-default params) }
+    need_table: Int; { if we need an LSE marker (mapping table) }
     need_restart: Int; { if we need to add restart markers }
 
     function prepareLUTs: Int;
@@ -100,7 +101,7 @@ type
     quant: Integer;
 
     lutmax: Int;
-    lossy: Boolean;
+    Lossy: Boolean;
     nopause: Boolean; { whether to pause the legal notice or not }
     nolegal: Boolean; { whether to print the legal notice or not }
 
@@ -352,7 +353,7 @@ begin
 
   { Build classification tables (lossless or lossy) }
 
-  if (lossy = False) then
+  if (Lossy = False) then
     begin
 
       for i := -lmax + 1 to pred(lmax) do
@@ -435,9 +436,9 @@ begin
       if (IsTrue(FImageInfo.classmap[i])) then
           Continue;
 
-      q1 := i div (CREGIONS * CREGIONS);   { first digit }
+      q1 := i div (CREGIONS * CREGIONS); { first digit }
       q2 := (i div CREGIONS) mod CREGIONS; { second digit }
-      Q3 := i mod CREGIONS;                { third digit }
+      Q3 := i mod CREGIONS; { third digit }
 
       if (IsTrue(q1 mod 2)) or ((q1 = 0) and IsTrue(q2 mod 2)) or ((q1 = 0) and (q2 = 0) and IsTrue(Q3 mod 2)) then
           sgn := -1

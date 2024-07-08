@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Common;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 
@@ -25,7 +26,7 @@ const
   INTRA_PRED_LEFT = 1;
   INTRA_PRED_DC = 2;
   INTRA_PRED_PLANE = 3; // I16x16
-  INTRA_PRED_DDL = 3;   // I4x4
+  INTRA_PRED_DDL = 3; // I4x4
   INTRA_PRED_DDR = 4;
   INTRA_PRED_VR = 5;
   INTRA_PRED_HD = 6;
@@ -84,28 +85,17 @@ type
   // motion vector
   TMotionvec = packed record
     x, y: int16_t;
-
-{$IFNDEF FPC}
     // operator overloads
     class operator Equal(const a, b: TMotionvec): Boolean;
     class operator Add(const a, b: TMotionvec): TMotionvec;
     class operator Subtract(const a, b: TMotionvec): TMotionvec;
     class operator Multiply(const a: TMotionvec; multiplier: int32_t): TMotionvec;
     class operator Divide(const a: TMotionvec; Divisor: int32_t): TMotionvec;
-{$ENDIF FPC}
   end;
 
   PMotionvec = ^TMotionvec;
 
-  TMotionVectorList = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TMotionvec>;
-
-{$IFDEF FPC}
-  operator = (const a, b: TMotionvec): Boolean;
-operator / (const a: TMotionvec; const Divisor: int32_t): TMotionvec;
-operator * (const a: TMotionvec; const multiplier: int32_t): TMotionvec;
-operator + (const a, b: TMotionvec): TMotionvec;
-operator - (const a, b: TMotionvec): TMotionvec;
-{$ENDIF FPC}
+  TMotionVectorList = TGenericsList<TMotionvec>;
 
 function XYToMVec(const x: int32_t; const y: int32_t): TMotionvec;
 
@@ -141,19 +131,19 @@ type
       16..19 - top mb bottom row
       20..23 - left mb right column
     }
-    i16_pred_mode: int32_t;    // intra 16x16 pred mode
+    i16_pred_mode: int32_t; // intra 16x16 pred mode
     chroma_pred_mode: int32_t; // chroma intra pred mode
 
     mvp, mv_skip, mv: TMotionvec; // mvs: predicted, skip, coded
-    fref: PFrame;                 // reference frame selected for inter prediction
-    ref: int32_t;                 // reference frame L0 index
-    cbp: int32_t;                 // cpb bitmask: 0..3 luma, 4..5 chroma u/v
+    fref: PFrame; // reference frame selected for inter prediction
+    ref: int32_t; // reference frame L0 index
+    cbp: int32_t; // cpb bitmask: 0..3 luma, 4..5 chroma u/v
 
     // luma
     pfenc, pfdec, pfpred: uint8_p;
-    pixels: uint8_p;     // original pixels
-    pred: uint8_p;       // predicted pixels
-    mcomp: uint8_p;      // motion-compensated pixels (maps to pred!)
+    pixels: uint8_p; // original pixels
+    pred: uint8_p; // predicted pixels
+    mcomp: uint8_p; // motion-compensated pixels (maps to pred!)
     pixels_dec: uint8_p; // decoded pixels
 
     // chroma
@@ -194,42 +184,42 @@ type
   TFrame = record
     ftype: int32_t; // slice type
 
-    qp: int32_t;             // fixed quant parameter
-    Num: int32_t;            // frame number
-    mbs: PMacroblock;        // frame macroblocks
+    qp: int32_t; // fixed quant parameter
+    Num: int32_t; // frame number
+    mbs: PMacroblock; // frame macroblocks
     num_ref_frames: int32_t; // L0 reference picture count
 
     // img data
-    w, h: int32_t;                                  // width, height
-    w_cr, h_cr: int32_t;                            // chroma w&h
-    pw, ph: int32_t;                                // padded w&h
-    mbw, mbh: int32_t;                              // macroblock width, height
-    mem: array [0 .. 5] of uint8_p;                 // allocated memory
-    plane: array [0 .. 2] of uint8_p;               // image planes
-    luma_mc: array [0 .. 3] of uint8_p;             // luma planes for hpel interpolated samples (none, h, v, h+v)
-    luma_mc_qpel: array [0 .. 7] of uint8_p;        // plane pointers for qpel mc
-    plane_dec: array [0 .. 2] of uint8_p;           // decoded image planes
-    stride, stride_c: int32_t;                      // luma stride, chroma stride
+    w, h: int32_t; // width, height
+    w_cr, h_cr: int32_t; // chroma w&h
+    pw, ph: int32_t; // padded w&h
+    mbw, mbh: int32_t; // macroblock width, height
+    mem: array [0 .. 5] of uint8_p; // allocated memory
+    plane: array [0 .. 2] of uint8_p; // image planes
+    luma_mc: array [0 .. 3] of uint8_p; // luma planes for hpel interpolated samples (none, h, v, h+v)
+    luma_mc_qpel: array [0 .. 7] of uint8_p; // plane pointers for qpel mc
+    plane_dec: array [0 .. 2] of uint8_p; // decoded image planes
+    stride, stride_c: int32_t; // luma stride, chroma stride
     frame_mem_offset, frame_mem_offset_cr: int32_t; // padding to image offset in bytes
-    blk_offset: array [0 .. 15] of int32_t;         // 4x4 block offsets
-    blk_chroma_offset: array [0 .. 3] of int32_t;   // 4x4 chroma block offsets
-    filter_hv_temp: int16_p;                        // temp storage for fir filter
-    refs: array [0 .. 15] of PFrame;                // L0 reference list
+    blk_offset: array [0 .. 15] of int32_t; // 4x4 block offsets
+    blk_chroma_offset: array [0 .. 3] of int32_t; // 4x4 chroma block offsets
+    filter_hv_temp: int16_p; // temp storage for fir filter
+    refs: array [0 .. 15] of PFrame; // L0 reference list
 
     // mb-adaptive quant data
     aq_table: uint8_p; // qp table
-    qp_avg: Single;    // average quant
+    qp_avg: Single; // average quant
 
     // bitstream buffer
     bs_buf: uint8_p;
 
     // stats
-    stats: TFrameStats;
+    Stats: TFrameStats;
     estimated_framebits: int32_t;
     qp_adj: int32_t;
   end;
 
-  IInterPredCostEvaluator = class
+  IInterPredCostEvaluator = class(TCore_Object_Intermediate)
     procedure SetQP(qp: int32_t); virtual; abstract;
     procedure SetMVPredAndRefIdx(const mvp: TMotionvec; const idx: int32_t); virtual; abstract;
     function bitcost(const mv: TMotionvec): int32_t; virtual; abstract;
@@ -242,9 +232,6 @@ var
   lookup_table_CCIR_601_1, lookup_table_ITU_BT_709: array [0 .. 3] of int32_p;
 
 implementation
-
-{$IFNDEF FPC}
-
 
 class operator TMotionvec.Equal(const a, b: TMotionvec): Boolean;
 begin
@@ -275,40 +262,6 @@ begin
   Result.y := a.y div Divisor;
 end;
 
-{$ELSE}
-
-
-operator = (const a, b: TMotionvec): Boolean;
-begin
-  Result := (a.x = b.x) and (a.y = b.y);
-end;
-
-operator / (const a: TMotionvec; const Divisor: int32_t): TMotionvec;
-begin
-  Result.x := a.x div Divisor;
-  Result.y := a.y div Divisor;
-end;
-
-operator * (const a: TMotionvec; const multiplier: int32_t): TMotionvec;
-begin
-  Result.x := a.x * multiplier;
-  Result.y := a.y * multiplier;
-end;
-
-operator + (const a, b: TMotionvec): TMotionvec;
-begin
-  Result.x := a.x + b.x;
-  Result.y := a.y + b.y;
-end;
-
-operator - (const a, b: TMotionvec): TMotionvec;
-begin
-  Result.x := a.x - b.x;
-  Result.y := a.y - b.y;
-end;
-{$ENDIF FPC}
-
-
 function XYToMVec(const x: int32_t; const y: int32_t): TMotionvec;
 begin
   Result.x := x;
@@ -329,8 +282,8 @@ procedure YV12ToZR(const luma_ptr, u_ptr, v_ptr: uint8_p; const w, h, stride, st
 // conversion works on 2x2 pixels at once, since they share chroma info
 var
   nw, nh, y, x: int32_t;
-  p, pu, pv, t: uint8_p;   // source plane ptrs
-  d: int32_t;              // dest index for topleft pixel
+  p, pu, pv, t: uint8_p; // source plane ptrs
+  d: int32_t; // dest index for topleft pixel
   r0, r1, r2, r4: int32_t; // scaled yuv values for rgb calculation
   t0, t1, t2, t3: int32_p; // lookup table ptrs
   row1, row2: PZRColorEntry;
@@ -424,13 +377,12 @@ begin
 end;
 
 procedure ZRToYV12(const sour: TMZR; const luma_ptr, u_ptr, v_ptr: uint8_p; const w, h: int32_t);
-  function Clip(c: int32_t): uint8_t;
+  function Clip(c: int32_t): uint8_t; inline;
   begin
     Result := uint8_t(c);
     if c > 255 then
         Result := 255
-    else
-      if c < 0 then
+    else if c < 0 then
         Result := 0;
   end;
 
@@ -449,10 +401,11 @@ begin
   vv := @(uu[nw * nh]);
   v := vv;
 
+  sour.ReadyBits;
   for j := 0 to nh - 1 do
     for i := 0 to nw - 1 do
       begin
-        c.BGRA := sour.Pixel[i, j];
+        c.BGRA := sour.DirectPixel[i, j];
         y^ := Clip(Trunc(0.256788 * c.r + 0.504129 * c.g + 0.097906 * c.b + 16));
         inc(y);
         u^ := Clip(Trunc(-0.148223 * c.r - 0.290993 * c.g + 0.439216 * c.b + 128));

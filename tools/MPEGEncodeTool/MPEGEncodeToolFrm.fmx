@@ -1,0 +1,258 @@
+object MPEGEncodeToolForm: TMPEGEncodeToolForm
+  Left = 0
+  Top = 0
+  Caption = 'MPEG Encoder and Play Tool.'
+  ClientHeight = 385
+  ClientWidth = 1099
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnCloseQuery = FormCloseQuery
+  DesignerMasterStyle = 0
+  object sourceOpenDialog: TOpenDialog
+    Filter = 
+      'video files|*.mp4;*.mkv;*.avi;*.flv;*.h264;*.y4m;*.ts;*.mov;*.mp' +
+      'g;*.mpeg'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Left = 376
+    Top = 122
+  end
+  object bkTimer: TTimer
+    Interval = 10
+    OnTimer = bkTimerTimer
+    Left = 488
+    Top = 128
+  end
+  object DestSaveDialog: TSaveDialog
+    DefaultExt = '.h264'
+    Filter = 'h264 file|*.h264'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Left = 280
+    Top = 192
+  end
+  object toolLayout: TLayout
+    Align = Top
+    Margins.Top = 3.000000000000000000
+    Position.Y = 3.000000000000000000
+    Size.Width = 1099.000000000000000000
+    Size.Height = 33.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    object VideoSourceLayout: TLayout
+      Align = MostLeft
+      Size.Width = 441.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Label1: TLabel
+        Align = Left
+        Size.Width = 49.000000000000000000
+        Size.Height = 33.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        TextSettings.WordWrap = False
+        Text = 'URL'
+        TabOrder = 0
+      end
+      object VideoSourceEdit: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = Client
+        TabOrder = 1
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 2.000000000000000000
+        Margins.Right = 10.000000000000000000
+        Margins.Bottom = 2.000000000000000000
+        Size.Width = 328.000000000000000000
+        Size.Height = 29.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'video source (rtsp,rtmp,and local file)'
+        object BrowseSourceEditButton: TEditButton
+          CanFocus = False
+          Cursor = crArrow
+          Size.Width = 28.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = '..'
+          OnClick = BrowseSourceEditButtonClick
+        end
+      end
+      object UDP_CheckBox: TCheckBox
+        Align = Right
+        Position.X = 392.000000000000000000
+        Size.Width = 49.000000000000000000
+        Size.Height = 33.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        Text = 'UDP'
+      end
+    end
+    object VideoDestLayout: TLayout
+      Align = Client
+      Size.Width = 458.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      object Label2: TLabel
+        Align = Left
+        Size.Width = 97.000000000000000000
+        Size.Height = 33.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        TextSettings.WordWrap = False
+        Text = 'Encode To .h264'
+        TabOrder = 0
+      end
+      object VideoDestEdit: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = Client
+        TabOrder = 1
+        Margins.Left = 5.000000000000000000
+        Margins.Top = 2.000000000000000000
+        Margins.Right = 10.000000000000000000
+        Margins.Bottom = 2.000000000000000000
+        Size.Width = 346.000000000000000000
+        Size.Height = 29.000000000000000000
+        Size.PlatformDefault = False
+        TextPrompt = 'encode to h.264 file.'
+        object BrowseDestEditButton: TEditButton
+          CanFocus = False
+          Cursor = crArrow
+          Size.Width = 28.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = '..'
+          OnClick = BrowseDestEditButtonClick
+        end
+        object AutoFileNameEditButton: TEditButton
+          CanFocus = False
+          Cursor = crArrow
+          Position.X = 28.000000000000000000
+          Size.Width = 44.000000000000000000
+          Size.Height = 25.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          Text = 'Auto'
+          OnClick = AutoFileNameEditButtonClick
+        end
+      end
+    end
+    object RunEncodeButton: TButton
+      Align = Right
+      StyledSettings = [Family, Size, Style]
+      Position.X = 899.000000000000000000
+      Size.Width = 57.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Text = 'Encode'
+      TextSettings.FontColor = claLime
+      OnClick = RunEncodeButtonClick
+    end
+    object StopButton: TButton
+      Align = Right
+      StyledSettings = [Family, Size, FontColor]
+      Position.X = 1023.000000000000000000
+      Size.Width = 49.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      Text = 'Stop'
+      TextSettings.Font.StyleExt = {00070000000000000004000000}
+      OnClick = StopButtonClick
+    end
+    object quietCheckBox: TCheckBox
+      Align = Right
+      Margins.Left = 5.000000000000000000
+      Margins.Right = 5.000000000000000000
+      Position.X = 961.000000000000000000
+      Size.Width = 57.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      Text = 'quiet'
+    end
+    object fitButton: TButton
+      Align = Right
+      StyledSettings = [Family, Size, FontColor]
+      Position.X = 1072.000000000000000000
+      Size.Width = 27.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 4
+      Text = 'Fit'
+      TextSettings.Font.StyleExt = {00070000000000000004000000}
+      OnClick = fitButtonClick
+    end
+  end
+  object pb: TPaintBox
+    Align = Client
+    ClipChildren = True
+    ClipParent = True
+    Size.Width = 1099.000000000000000000
+    Size.Height = 349.000000000000000000
+    Size.PlatformDefault = False
+    OnMouseDown = pbMouseDown
+    OnMouseMove = pbMouseMove
+    OnMouseUp = pbMouseUp
+    OnMouseWheel = pbMouseWheel
+    OnPaint = pbPaint
+  end
+  object rb_Layout: TLayout
+    Position.Y = 40.000000000000000000
+    Size.Width = 329.000000000000000000
+    Size.Height = 177.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 7
+    object GPU_Decoder_CheckBox: TCheckBox
+      Position.X = 8.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 289.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = 'GPU decoder and Options'
+    end
+    object GPU_Encoder_CheckBox: TCheckBox
+      Position.X = 8.000000000000000000
+      Position.Y = 96.000000000000000000
+      Size.Width = 289.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Text = 'GPU encoder and Addional Options'
+    end
+    object DecoderOptMemo: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      DataDetectorTypes = []
+      Lines.Strings = (
+        'gpu=0')
+      Position.X = 8.000000000000000000
+      Position.Y = 32.000000000000000000
+      Size.Width = 313.000000000000000000
+      Size.Height = 57.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Viewport.Width = 309.000000000000000000
+      Viewport.Height = 53.000000000000000000
+    end
+    object EncoderOptMemo: TMemo
+      Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+      DataDetectorTypes = []
+      Lines.Strings = (
+        'gpu=0'
+        'threads=4')
+      Position.X = 8.000000000000000000
+      Position.Y = 120.000000000000000000
+      Size.Width = 313.000000000000000000
+      Size.Height = 57.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 3
+      Viewport.Width = 309.000000000000000000
+      Viewport.Height = 53.000000000000000000
+    end
+  end
+end

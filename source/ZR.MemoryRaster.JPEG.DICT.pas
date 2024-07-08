@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.DICT;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -262,7 +263,7 @@ begin
       FQuant[cJpegInverseZigZag8x8[i]] := Table_.FQuant[i] * 8;
 
   // Forward DCT method (we always use this one)
-  FFDctMethod := {$IFDEF FPC}@{$ENDIF FPC}ForwardDCTIntAccurate8x8;
+  FFDctMethod := ForwardDCTIntAccurate8x8;
 
   for j := 0 to FMap.VertBlockCount - 1 do
     begin
@@ -315,19 +316,19 @@ begin
     dmFast:
       begin
         case FMap.BlockStride of
-          64: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntFast8x8; // 8x8
-          16: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate4x4; // 4x4
-          4: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate2x2; // 2x2
-          1: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate1x1; // 1x1
+          64: FIDctMethod := InverseDCTIntFast8x8; // 8x8
+          16: FIDctMethod := InverseDCTIntAccurate4x4; // 4x4
+          4: FIDctMethod := InverseDCTIntAccurate2x2; // 2x2
+          1: FIDctMethod := InverseDCTIntAccurate1x1; // 1x1
         end;
       end;
     dmAccurate:
       begin
         case FMap.BlockStride of
-          64: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate8x8; // 8x8
-          16: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate4x4; // 4x4
-          4: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate2x2; // 2x2
-          1: FIDctMethod := {$IFDEF FPC}@{$ENDIF FPC}InverseDCTIntAccurate1x1; // 1x1
+          64: FIDctMethod := InverseDCTIntAccurate8x8; // 8x8
+          16: FIDctMethod := InverseDCTIntAccurate4x4; // 4x4
+          4: FIDctMethod := InverseDCTIntAccurate2x2; // 2x2
+          1: FIDctMethod := InverseDCTIntAccurate1x1; // 1x1
         end;
       end;
   end;

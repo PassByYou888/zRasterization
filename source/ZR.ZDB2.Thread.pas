@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB2.Thread;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -18,6 +19,7 @@ uses DateUtils, SysUtils,
   ZR.MemoryStream,
   ZR.Status, ZR.Cipher, ZR.ZDB2, ZR.ListEngine, ZR.TextDataEngine, ZR.IOThread,
   ZR.HashList.Templet,
+  ZR.FragmentBuffer, // solve for discontinuous space
   ZR.Notify, ZR.ZDB2.Thread.Queue;
 
 type
@@ -26,14 +28,18 @@ type
   TZDB2_Th_Engine = class;
   TZDB2_Th_Engine_Static_Copy_Tech = class;
   TZDB2_Th_Engine_Dynamic_Copy_Tech = class;
-  TZDB2_Th_Engine_Data_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Marshal_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Data_Instance_Recycle_Tool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Data_Link_Recycle_Tool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
-  TZDB2_Th_Engine_Static_Copy_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Static_Copy_Tech>;
-  TZDB2_Th_Engine_Dynamic_Copy_Instance_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Dynamic_Copy_Tech>;
+  TZDB2_Th_Engine_Data_Instance_Pool = TZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_BigList___ = TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Marshal_BigList___ = TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_Instance_Recycle_Tool___ = TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_Link_Recycle_Tool___ = TCritical_ZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Static_Copy_Instance_Pool = TCritical_ZR_BL<TZDB2_Th_Engine_Static_Copy_Tech>;
+  TZDB2_Th_Engine_Dynamic_Copy_Instance_Pool = TCritical_ZR_BL<TZDB2_Th_Engine_Dynamic_Copy_Tech>;
+  TZDB2_Th_Engine_ID_Data_Pool = TCritical_Big_Hash_Pair_Pool<Integer, TZDB2_Th_Engine_Data>;
 
-  TZDB2_Th_Engine_Get_Mem64_Data_Event_Bridge = class
+{$REGION 'Data_Engine'}
+
+  TZDB2_Th_Engine_Get_Mem64_Data_Event_Bridge = class(TCore_Object_Intermediate)
   public
     Source: TZDB2_Th_Engine_Data;
     OnResult_C: TOn_Mem64_And_State_Event_C;
@@ -44,7 +50,7 @@ type
     procedure Do_Result(var Sender: TZDB2_Th_CMD_Mem64_And_State);
   end;
 
-  TZDB2_Th_Engine_Get_Stream_Data_Event_Bridge = class
+  TZDB2_Th_Engine_Get_Stream_Data_Event_Bridge = class(TCore_Object_Intermediate)
   public
     Source: TZDB2_Th_Engine_Data;
     OnResult_C: TOn_Stream_And_State_Event_C;
@@ -55,7 +61,71 @@ type
     procedure Do_Result(var Sender: TZDB2_Th_CMD_Stream_And_State);
   end;
 
-  TZDB2_Th_Engine_Data = class(TCore_Object)
+  TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_C = procedure(Sender: TZDB2_Th_Engine_Data; Mem64: TMem64; Successed: Boolean);
+  TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_M = procedure(Sender: TZDB2_Th_Engine_Data; Mem64: TMem64; Successed: Boolean) of object;
+{$IFDEF FPC}
+  TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_P = procedure(Sender: TZDB2_Th_Engine_Data; Mem64: TMem64; Successed: Boolean) is nested;
+{$ELSE FPC}
+  TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_P = reference to procedure(Sender: TZDB2_Th_Engine_Data; Mem64: TMem64; Successed: Boolean);
+{$ENDIF FPC}
+
+  TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge = class(TCore_Object_Intermediate)
+  private
+    R_State: TCMD_State;
+    procedure Do_Event;
+  public
+    Source: TZDB2_Th_Engine_Data;
+    Mem64: TMem64;
+    OnResult_C: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_C;
+    OnResult_M: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_M;
+    OnResult_P: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_P;
+    constructor Create;
+    destructor Destroy; override;
+    procedure Do_Result(var Sender: TZDB2_Th_CMD_Mem64_And_State);
+  end;
+
+  TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_C = procedure(Sender: TZDB2_Th_Engine_Data; Stream: TMS64; Successed: Boolean);
+  TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_M = procedure(Sender: TZDB2_Th_Engine_Data; Stream: TMS64; Successed: Boolean) of object;
+{$IFDEF FPC}
+  TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_P = procedure(Sender: TZDB2_Th_Engine_Data; Stream: TMS64; Successed: Boolean) is nested;
+{$ELSE FPC}
+  TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_P = reference to procedure(Sender: TZDB2_Th_Engine_Data; Stream: TMS64; Successed: Boolean);
+{$ENDIF FPC}
+
+  TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge = class(TCore_Object_Intermediate)
+  private
+    R_State: TCMD_State;
+    procedure Do_Event;
+  public
+    Source: TZDB2_Th_Engine_Data;
+    Stream: TMS64;
+    OnResult_C: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_C;
+    OnResult_M: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_M;
+    OnResult_P: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_P;
+    constructor Create;
+    destructor Destroy; override;
+    procedure Do_Result(var Sender: TZDB2_Th_CMD_Stream_And_State);
+  end;
+
+  TOn_ZDB2_Th_Engine_Save_Data_Event_C = procedure(Sender: TZDB2_Th_Engine_Data; Successed: Boolean);
+  TOn_ZDB2_Th_Engine_Save_Data_Event_M = procedure(Sender: TZDB2_Th_Engine_Data; Successed: Boolean) of object;
+{$IFDEF FPC}
+  TOn_ZDB2_Th_Engine_Save_Data_Event_P = procedure(Sender: TZDB2_Th_Engine_Data; Successed: Boolean) is nested;
+{$ELSE FPC}
+  TOn_ZDB2_Th_Engine_Save_Data_Event_P = reference to procedure(Sender: TZDB2_Th_Engine_Data; Successed: Boolean);
+{$ENDIF FPC}
+
+  TZDB2_Th_Engine_Save_Data_Event_Bridge = class(TCore_Object_Intermediate)
+  public
+    Source: TZDB2_Th_Engine_Data;
+    OnResult_C: TOn_ZDB2_Th_Engine_Save_Data_Event_C;
+    OnResult_M: TOn_ZDB2_Th_Engine_Save_Data_Event_M;
+    OnResult_P: TOn_ZDB2_Th_Engine_Save_Data_Event_P;
+    constructor Create;
+    procedure Do_Result(var Sender: TZDB2_Th_CMD_ID_And_State);
+  end;
+
+  TZDB2_Th_Engine_Data = class(TCore_Object_Intermediate)
   private
     FOwner: TZDB2_Th_Engine_Marshal; // marshal
     FOwner_Data_Ptr: TZDB2_Th_Engine_Marshal_BigList___.PQueueStruct; // marshal data ptr
@@ -67,13 +137,15 @@ type
     // temp data swap technology
     // When the data is in a long loop, it is not appended to the data structure, but stored in the underlying ZDB2 database and Temp_Swap_Pool.
     // after the long loop ends, the data will truly become a engine structure
-    FIn_Temp_Swap_Pool: Boolean;
+    FIs_Temp_Swap_Pool: Boolean;
 
     // In a multithreaded instance, data will be busy-loaded by multiple threads, OneWayDataProcessReady indicates that the data is ready
     // If added to the data, it will be false and true after completion
     FOneWayDataProcessReady: Boolean; // instance and data is first operation
 
     FInstance_Busy: Integer; // instance user support
+    // if a user program or system malfunction prevents unlocking FInstance_Busy, engine will reset based on time
+    FInstance_Last_Busy_Time: TTimeTick; // user bug or system
     FLocked: Boolean; // lock
     FSaveFailed_Do_Remove: Boolean; // free instance and remove data on save failure
     FAsync_Load_Num: Integer; // async Load number
@@ -81,8 +153,12 @@ type
     FPost_Free_Runing: Boolean; // free check
     FLoad_Data_Error: Boolean; // last load state
     procedure Wait_Unlock(timeOut: TTimeTick); overload;
-    procedure Do_Async_Save_Result(var Sender: TZDB2_Th_CMD_ID_And_State);
   public
+    property Owner: TZDB2_Th_Engine_Marshal read FOwner; // marshal
+    property Owner_Data_Ptr: TZDB2_Th_Engine_Marshal_BigList___.PQueueStruct read FOwner_Data_Ptr; // marshal data ptr
+    property Th_Engine: TZDB2_Th_Engine read FTh_Engine; // engine
+    property Th_Engine_Data_Ptr: TZDB2_Th_Engine_Data_BigList___.PQueueStruct read FTh_Engine_Data_Ptr; // engine data ptr
+
     constructor Create; virtual;
     destructor Destroy; override;
     procedure Progress(); virtual;
@@ -100,13 +176,15 @@ type
     // In a multithreaded instance, data will be loaded by multiple threads, OneWayDataProcessReady indicates that the data is ready
     // If added to the data, it will be false and true after completion
     property OneWayDataProcessReady: Boolean read FOneWayDataProcessReady; // instance and data is first operation
+    procedure OneWay_Ready_From_External_Header();
 
     // free instance and remove data on save failure, default is true
     property SaveFailed_Do_Remove: Boolean read FSaveFailed_Do_Remove write FSaveFailed_Do_Remove;
 
     function IsOnlyRead: Boolean;
-    function Engine: TZDB2_Th_Queue;
+    function Engine: TZDB2_Th_Queue; // queue-engine
     property ID: Integer read FID;
+    procedure Update_Owner_ID_Pool(OLD_, New_: Integer); virtual;
     function Can_Load: Boolean;
     function Can_Progress: Boolean;
     function Can_Free: Boolean;
@@ -123,28 +201,43 @@ type
     // async load
     procedure Async_Load_Data(Source: TMS64; State: PCMD_State); overload;
     procedure Async_Load_Data(Source: TMem64; State: PCMD_State); overload;
-    procedure Async_Load_Data_C(Source: TMS64; OnResult: TOn_Stream_And_State_Event_C); overload;
-    procedure Async_Load_Data_C(Source: TMem64; OnResult: TOn_Mem64_And_State_Event_C); overload;
-    procedure Async_Load_Data_M(Source: TMS64; OnResult: TOn_Stream_And_State_Event_M); overload;
-    procedure Async_Load_Data_M(Source: TMem64; OnResult: TOn_Mem64_And_State_Event_M); overload;
-    procedure Async_Load_Data_P(Source: TMS64; OnResult: TOn_Stream_And_State_Event_P); overload;
-    procedure Async_Load_Data_P(Source: TMem64; OnResult: TOn_Mem64_And_State_Event_P); overload;
+    procedure Async_Load_Data_C(Source: TMS64; OnResult: TOn_Stream_And_State_Event_C); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Load_Data_C(Source: TMem64; OnResult: TOn_Mem64_And_State_Event_C); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Load_Data_M(Source: TMS64; OnResult: TOn_Stream_And_State_Event_M); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Load_Data_M(Source: TMem64; OnResult: TOn_Mem64_And_State_Event_M); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Load_Data_P(Source: TMS64; OnResult: TOn_Stream_And_State_Event_P); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Load_Data_P(Source: TMem64; OnResult: TOn_Mem64_And_State_Event_P); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Load_Stream_C(OnResult: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_C); // Post Thread Do OnReturn Event
+    procedure Async_Load_Mem64_C(OnResult: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_C); // Post Thread Do OnReturn Event
+    procedure Async_Load_Stream_M(OnResult: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_M); // Post Thread Do OnReturn Event
+    procedure Async_Load_Mem64_M(OnResult: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_M); // Post Thread Do OnReturn Event
+    procedure Async_Load_Stream_P(OnResult: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_P); // Post Thread Do OnReturn Event
+    procedure Async_Load_Mem64_P(OnResult: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_P); // Post Thread Do OnReturn Event
     // sync save
     function Save_Data(Source: TMS64): Boolean; overload;
     function Save_Data(Source: TMem64): Boolean; overload;
     // async save
+    procedure Do_Async_Save_Result(var Sender: TZDB2_Th_CMD_ID_And_State); virtual; // save done
+    procedure Async_Save_And_Free_Data_C(Source: TMS64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_C); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Save_And_Free_Data_C(Source: TMem64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_C); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Save_And_Free_Data_M(Source: TMS64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_M); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Save_And_Free_Data_M(Source: TMem64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_M); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Save_And_Free_Data_P(Source: TMS64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_P); overload; // Queue-Engine Do OnReturn Event
+    procedure Async_Save_And_Free_Data_P(Source: TMem64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_P); overload; // Queue-Engine Do OnReturn Event
     procedure Async_Save_And_Free_Data(Source: TMS64); overload;
     procedure Async_Save_And_Free_Data(Source: TMem64); overload;
     procedure Async_Save(Source: TMS64); overload;
     procedure Async_Save(Source: TMem64); overload;
+
     // state update
     procedure Update_State_Loading_Error; // if loading error then remove it.
   end;
 
-  TZDB2_Th_Engine_Data_List = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_Th_Engine_Data>;
+  TZDB2_Th_Engine_Data_List = TZR_BL<TZDB2_Th_Engine_Data>;
 
   TZDB2_Th_Engine_Data_Class = class of TZDB2_Th_Engine_Data;
-
+{$ENDREGION 'Data_Engine'}
+{$REGION 'Copy_Tech'}
   TZDB2_Th_Engine_For_C = procedure(Sender: TZDB2_Th_Engine_Data; Index: Int64; var Aborted: Boolean);
   TZDB2_Th_Engine_For_M = procedure(Sender: TZDB2_Th_Engine_Data; Index: Int64; var Aborted: Boolean) of object;
 {$IFDEF FPC}
@@ -154,7 +247,7 @@ type
 {$ENDIF FPC}
 
   // static copy technology
-  TZDB2_Th_Engine_Static_Copy_Tech = class
+  TZDB2_Th_Engine_Static_Copy_Tech = class(TCore_Object_Intermediate)
   private
     Instance_Ptr: TZDB2_Th_Engine_Static_Copy_Instance_Pool.PQueueStruct;
   public
@@ -169,7 +262,7 @@ type
   end;
 
   // dynamic copy technology
-  TZDB2_Th_Engine_Dynamic_Copy_Tech = class
+  TZDB2_Th_Engine_Dynamic_Copy_Tech = class(TCore_Object_Intermediate)
   private
     Instance_Ptr: TZDB2_Th_Engine_Dynamic_Copy_Instance_Pool.PQueueStruct;
   public
@@ -195,10 +288,12 @@ type
     // TZDB2_Th_Engine.Copy_Mode default is cmAuto
     cmAuto
     );
+{$ENDREGION 'Copy_Tech'}
+{$REGION 'Thread_Engine'}
 
   // this multithreaded model.
   // Try to avoid calling the methods here at the application
-  TZDB2_Th_Engine = class(TCore_InterfacedObject)
+  TZDB2_Th_Engine = class(TCore_InterfacedObject_Intermediate)
   private
     FLast_Backup_Execute_Time: TTimeTick;
     FCopy_Is_Busy: Boolean;
@@ -211,34 +306,67 @@ type
     // after the long loop ends, the data will truly become a engine structure
     Temp_Swap_Pool: TZDB2_Th_Engine_Data_BigList___;
     procedure Flush_Temp_Swap_Pool();
+    function Get_Temp_Swap_Pool_Memory_Size: Int64;
+  private
+    // flush state
+    FFlush_Activted_Num: Integer;
+    FFlush_Total_Run_Num: Integer;
+    // rolling state
+    FRolling_Activted_Num: Integer;
+    // limit Physics Space thread state
+    FLimit_Physics_Space_Is_Running: Boolean;
   public
     // base
-    Name: U_String;
+    Name: U_String; // default NULL
     Owner: TZDB2_Th_Engine_Marshal;
-    RemoveDatabaseOnDestroy: Boolean;
-    Mode: TZDB2_SpaceMode; // default is smBigData
+    RemoveDatabaseOnDestroy: Boolean; // default is False
+    Cache_Mode: TZDB2_SpaceMode; // default is smBigData
+    Cache_Memory: Int64; // default is 64*1024*1024
     Database_File: U_String; // Database_File is empty creating an in memory database, otherwise it is a file database
-    OnlyRead: Boolean; // onlyread work in file mode
-    Delta: Int64; // append space delta
+    OnlyRead: Boolean; // onlyread work in file Cache_Mode
+    Delta: Int64; // append space delta, default is 16 * 1024 * 1024
     BlockSize: Word; // blocksize default is 1536
     Fast_Alloc_Space: Boolean; // default is true
-    First_Inited_Physics_Space: Int64; // initialized when creating a new database size.
+    First_Inited_Physics_Space: Int64; // initialized when creating a new database size. default is 16 * 1024 * 1024
+    Limit_Max_Physics_Space: Int64; // Limit the maximum physical storage space, and when the limit is reached, it will enter the rolling model, default is 0
+    Rolling_Space_Step: Integer; // one-step rolling remove num
     Auto_Append_Space: Boolean; // default is true
     // cipher support
     Cipher: TZDB2_Cipher;
-    Cipher_Security: TCipherSecurity;
-    Cipher_password: U_String;
-    Cipher_Level: Integer;
-    Cipher_Tail: Boolean;
-    Cipher_CBC: Boolean;
+    // TCipherSecurity
+    // 'None',
+    // 'DES64', 'DES128', 'DES192',
+    // 'Blowfish', 'LBC', 'LQC', 'RNG32', 'RNG64', 'LSC',
+    // 'XXTea512',
+    // 'RC6', 'Serpent', 'Mars', 'Rijndael', 'TwoFish',
+    // 'AES128', 'AES192', 'AES256'
+    Cipher_Security: TCipherSecurity; // Default is csNone
+    Cipher_password: U_String; // Default is 'DTC40@ZSERVER'
+    Cipher_Level: Integer; // Default is 1
+    Cipher_Tail: Boolean; // Default is True
+    Cipher_CBC: Boolean; // Default is True
     // backup and copy technology
-    Copy_Mode: TZDB2_Copy_Mode; // copy mode
+    Copy_Mode: TZDB2_Copy_Mode; // copy Cache_Mode
     Static_Copy_Tech_Physics_Limit: Int64; // this value is exceeded, dynamic-copy tech will be used
     Dynamic_Copy_Tech_Max_Queue: Integer; // default 500
     // pool
     Engine: TZDB2_Th_Queue; // th-queue-engine
-    Th_Engine_Data_Pool: TZDB2_Th_Engine_Data_BigList___; // data pool
-    Last_Build_Class: TZDB2_Th_Engine_Data_Class;
+    Th_Engine_Data_Pool: TZDB2_Th_Engine_Data_BigList___; // queue data pool
+    Th_Engine_ID_Data_Pool: TZDB2_Th_Engine_ID_Data_Pool; // ID data pool
+    Last_Build_Class: TZDB2_Th_Engine_Data_Class; // default is TZDB2_Th_Engine_Data
+    // external-header-data
+    External_Header_Technology: Boolean;
+    External_Header_Data: TMem64;
+    // fragment space
+    Fragment_Space_Enabled: Boolean;
+    Fragment_Space_Span: Int64;
+    Fragment_Space_Read_Buffer_Cache: Boolean;
+    Fragment_Space_Wait_hardware: Boolean;
+    Fragment_Space_Restore_Mode: TSafe_Flush_Restore_Mode;
+    Fragment_Space_Max_Flush_History_Num: Integer;
+    // automated
+    Password_Error_Or_Fault_Shutdown_Remove_Database: Boolean;
+    // api
     constructor Create(Owner_: TZDB2_Th_Engine_Marshal); virtual;
     destructor Destroy; override;
     procedure ReadConfig(const Name_: U_String; cfg: THashStringList); overload;
@@ -271,64 +399,81 @@ type
     // create or open
     procedure Build(Data_Class: TZDB2_Th_Engine_Data_Class);
     procedure Rebuild_Sequence_Data_Pool(Data_Class: TZDB2_Th_Engine_Data_Class); // rebuild sequence
+    // flush
+    property Flush_Activted_Num: Integer read FFlush_Activted_Num;
+    property Flush_Total_Run_Num: Integer read FFlush_Total_Run_Num;
+    procedure Do_Get_Sequence_Table(Sender: TZDB2_Th_Queue; var Sequence_Table: TZDB2_BlockHandle); virtual;
     procedure Flush(WaitQueue_: Boolean);
+    // append
+    property Temp_Swap_Pool_Memory_Size: Int64 read Get_Temp_Swap_Pool_Memory_Size;
+    procedure Do_Limit_Physics_Space; // limit physics space run in thread
     function Add(Data_Class: TZDB2_Th_Engine_Data_Class; ID: Integer; ID_Size: Int64): TZDB2_Th_Engine_Data; overload;
     function Add(Data_Class: TZDB2_Th_Engine_Data_Class): TZDB2_Th_Engine_Data; overload;
+    function Is_Overflow: Boolean;
     procedure Progress();
+    // solved for discontinuous space.
+    function Fragment_Buffer_Num: Int64;
+    function Fragment_Buffer_Memory: Int64;
   end;
 
-  TZDB2_Th_Engine_Pool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine>;
+  TZDB2_Th_Engine_Pool_ = TCritical_ZR_BL<TZDB2_Th_Engine>;
 
-  TZDB2_Th_Engine_Pool = class(TZDB2_Th_Engine_Pool_Decl)
+  TZDB2_Th_Engine_Pool = class(TZDB2_Th_Engine_Pool_)
+  private
+    FLast_Minimize_Size_Engine: TZDB2_Th_Engine_Pool_.PQueueStruct;
   public
     constructor Create();
     procedure DoFree(var Data: TZDB2_Th_Engine); override;
     function Get_Minimize_Size_Engine(): TZDB2_Th_Engine;
     function Get_Minimize_Workload_Engine(): TZDB2_Th_Engine;
-    function AllIsOnlyRead(): Boolean;
+    function All_Is_OnlyRead(): Boolean;
   end;
+{$ENDREGION 'Thread_Engine'}
+{$REGION 'Data_Parallel_Load'}
 
-  TZDB2_Th_Engine_On_Data_Event_C = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64);
-  TZDB2_Th_Engine_On_Data_Event_M = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64) of object;
+  TOn_ZDB2_Th_Engine_Data_Event_C = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64);
+  TOn_ZDB2_Th_Engine_Data_Event_M = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64) of object;
 {$IFDEF FPC}
-  TZDB2_Th_Engine_On_Data_Event_P = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64) is nested;
+  TOn_ZDB2_Th_Engine_Data_Event_P = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64) is nested;
 {$ELSE FPC}
-  TZDB2_Th_Engine_On_Data_Event_P = reference to procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64);
+  TOn_ZDB2_Th_Engine_Data_Event_P = reference to procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMS64);
 {$ENDIF FPC}
-  TZDB2_Th_Engine_Load_Processor = class;
+  TZDB2_Th_Engine_Data_Load_Processor = class;
 
   TZDB2_Th_Engine_Data_Load_Instance = class(TIO_Thread_Data)
   private
     FStream: TMS64;
-    FLoad_Processor: TZDB2_Th_Engine_Load_Processor;
+    FLoad_Processor: TZDB2_Th_Engine_Data_Load_Processor;
     FData: TZDB2_Th_Engine_Data;
-    FOnRun_C: TZDB2_Th_Engine_On_Data_Event_C;
-    FOnRun_M: TZDB2_Th_Engine_On_Data_Event_M;
-    FOnRun_P: TZDB2_Th_Engine_On_Data_Event_P;
+    FOnRun_C: TOn_ZDB2_Th_Engine_Data_Event_C;
+    FOnRun_M: TOn_ZDB2_Th_Engine_Data_Event_M;
+    FOnRun_P: TOn_ZDB2_Th_Engine_Data_Event_P;
     procedure Do_Read_Stream_Result(var Sender: TZDB2_Th_CMD_Stream_And_State);
   public
-    constructor Create(Load_Processor_: TZDB2_Th_Engine_Load_Processor; Data_: TZDB2_Th_Engine_Data);
+    constructor Create(Load_Processor_: TZDB2_Th_Engine_Data_Load_Processor; Data_: TZDB2_Th_Engine_Data);
     destructor Destroy; override;
     procedure Process; override;
   end;
 
-  TOn_Wait_C = procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance);
-  TOn_Wait_M = procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance) of object;
+  TOn_ZDB2_Th_Engine_Data_Wait_C = procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance);
+  TOn_ZDB2_Th_Engine_Data_Wait_M = procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance) of object;
 {$IFDEF FPC}
-  TOn_Wait_P = procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance) is nested;
+  TOn_ZDB2_Th_Engine_Data_Wait_P = procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance) is nested;
 {$ELSE FPC}
-  TOn_Wait_P = reference to procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance);
+  TOn_ZDB2_Th_Engine_Data_Wait_P = reference to procedure(Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance);
 {$ENDIF FPC}
 
-  TZDB2_Th_Engine_Load_Processor = class
+  TZDB2_Th_Engine_Data_Load_Processor = class(TCore_Object_Intermediate)
   private
     tatal_data_num_: Int64;
     buff: TZDB2_Th_Engine_Marshal_BigList___.PQueueArrayStruct;
-    Load_Task_Num: TAtomInt64;
+    Max_Wait_Task_Num: Int64;
+    IO_Thread_Task_Num: TAtomInt64;
+    Loaded_Num, Error_Num: TAtomInt64;
     Task_Is_Run: Boolean;
-    OnRun_C: TZDB2_Th_Engine_On_Data_Event_C;
-    OnRun_M: TZDB2_Th_Engine_On_Data_Event_M;
-    OnRun_P: TZDB2_Th_Engine_On_Data_Event_P;
+    OnRun_C: TOn_ZDB2_Th_Engine_Data_Event_C;
+    OnRun_M: TOn_ZDB2_Th_Engine_Data_Event_M;
+    OnRun_P: TOn_ZDB2_Th_Engine_Data_Event_P;
     FTh_Pool: TIO_Thread_Base;
     procedure Do_Thread_Run();
   public
@@ -336,15 +481,75 @@ type
     destructor Destroy; override;
     procedure Run();
     procedure Wait();
-    procedure Wait_C(On_Wait: TOn_Wait_C);
-    procedure Wait_M(On_Wait: TOn_Wait_M);
-    procedure Wait_P(On_Wait: TOn_Wait_P);
+    procedure Wait_C(On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_C);
+    procedure Wait_M(On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_M);
+    procedure Wait_P(On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_P);
+  end;
+{$ENDREGION 'Data_Parallel_Load'}
+{$REGION 'Block_Parallel_Load'}
+
+  TOn_ZDB2_Th_Engine_Block_Event_C = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMem64);
+  TOn_ZDB2_Th_Engine_Block_Event_M = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMem64) of object;
+{$IFDEF FPC}
+  TOn_ZDB2_Th_Engine_Block_Event_P = procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMem64) is nested;
+{$ELSE FPC}
+  TOn_ZDB2_Th_Engine_Block_Event_P = reference to procedure(Sender: TZDB2_Th_Engine_Data; IO_: TMem64);
+{$ENDIF FPC}
+  TZDB2_Th_Engine_Block_Load_Processor = class;
+
+  TZDB2_Th_Engine_Block_Load_Instance = class(TIO_Thread_Data)
+  private
+    FMem: TMem64;
+    FLoad_Processor: TZDB2_Th_Engine_Block_Load_Processor;
+    FData: TZDB2_Th_Engine_Data;
+    FOnRun_C: TOn_ZDB2_Th_Engine_Block_Event_C;
+    FOnRun_M: TOn_ZDB2_Th_Engine_Block_Event_M;
+    FOnRun_P: TOn_ZDB2_Th_Engine_Block_Event_P;
+    procedure Do_Read_Block_Result(var Sender: TZDB2_Th_CMD_Mem64_And_State);
+  public
+    constructor Create(Load_Processor_: TZDB2_Th_Engine_Block_Load_Processor; Data_: TZDB2_Th_Engine_Data);
+    destructor Destroy; override;
+    procedure Process; override;
   end;
 
-  TZDB2_Th_Engine_Marshal_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<TZDB2_Th_Engine_Marshal>;
+  TOn_ZDB2_Th_Engine_Block_Wait_C = procedure(Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance);
+  TOn_ZDB2_Th_Engine_Block_Wait_M = procedure(Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance) of object;
+{$IFDEF FPC}
+  TOn_ZDB2_Th_Engine_Block_Wait_P = procedure(Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance) is nested;
+{$ELSE FPC}
+  TOn_ZDB2_Th_Engine_Block_Wait_P = reference to procedure(Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance);
+{$ENDIF FPC}
+
+  TZDB2_Th_Engine_Block_Load_Processor = class(TCore_Object_Intermediate)
+  private
+    tatal_data_num_: Int64;
+    buff: TZDB2_Th_Engine_Marshal_BigList___.PQueueArrayStruct;
+    Block_Index, Block_Offset, Block_ReadSize: Integer;
+    Max_Wait_Task_Num: Int64;
+    IO_Thread_Task_Num: TAtomInt64;
+    Loaded_Num, Error_Num: TAtomInt64;
+    Task_Is_Run: Boolean;
+    OnRun_C: TOn_ZDB2_Th_Engine_Block_Event_C;
+    OnRun_M: TOn_ZDB2_Th_Engine_Block_Event_M;
+    OnRun_P: TOn_ZDB2_Th_Engine_Block_Event_P;
+    FTh_Pool: TIO_Thread_Base;
+    procedure Do_Thread_Run();
+  public
+    constructor Create(ThNum_: Integer);
+    destructor Destroy; override;
+    procedure Run();
+    procedure Wait();
+    procedure Wait_C(On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_C);
+    procedure Wait_M(On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_M);
+    procedure Wait_P(On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_P);
+  end;
+{$ENDREGION 'Block_Parallel_Load'}
+{$REGION 'Engine_Marshal'}
+
+  TZDB2_Th_Engine_Marshal_Pool = TCritical_ZR_BL<TZDB2_Th_Engine_Marshal>;
 
   // TZDB2_Th_Engine_Marshal is a parallel marshal manager.
-  TZDB2_Th_Engine_Marshal = class(TCore_InterfacedObject) // all methods is thread safe.
+  TZDB2_Th_Engine_Marshal = class(TCore_InterfacedObject_Intermediate) // all methods is thread safe.
   private
     FCritical: TCritical;
     FLong_Loop_Num: Integer;
@@ -383,6 +588,9 @@ type
     function Total: NativeInt;
     // task queue
     function QueueNum: NativeInt;
+    // solved for discontinuous space.
+    function Fragment_Buffer_Num: Int64;
+    function Fragment_Buffer_Memory: Int64;
     // pick engine
     function Add_Data_To_Minimize_Workload_Engine(): TZDB2_Th_Engine_Data;
     function Add_Data_To_Minimize_Size_Engine(): TZDB2_Th_Engine_Data;
@@ -401,27 +609,36 @@ type
     procedure Backup_If_No_Exists();
     procedure Stop_Backup;
     procedure Remove_Backup;
+    // copy
+    procedure Stop_Copy;
+    // flush-build external-header backcall api
+    procedure Prepare_Flush_External_Header(Th_Engine_: TZDB2_Th_Engine; var Sequence_Table: TZDB2_BlockHandle; Flush_Instance_Pool: TZDB2_Th_Engine_Data_Instance_Pool; External_Header_Data_: TMem64); virtual;
     // flush
     procedure Flush; overload;
     procedure Flush(WaitQueue_: Boolean); overload;
+    function Flush_Is_Busy: Boolean;
     // remove and rebuild datgabase
     procedure Format_Database;
-    // parallel load model
-    procedure Parallel_Load_C(ThNum_: Integer; On_Run: TZDB2_Th_Engine_On_Data_Event_C; On_Wait: TOn_Wait_C);
-    procedure Parallel_Load_M(ThNum_: Integer; On_Run: TZDB2_Th_Engine_On_Data_Event_M; On_Wait: TOn_Wait_M);
-    procedure Parallel_Load_P(ThNum_: Integer; On_Run: TZDB2_Th_Engine_On_Data_Event_P; On_Wait: TOn_Wait_P);
-    // parallel for model
+    // parallel data model
+    procedure Parallel_Load_C(ThNum_: Integer; On_Run: TOn_ZDB2_Th_Engine_Data_Event_C; On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_C);
+    procedure Parallel_Load_M(ThNum_: Integer; On_Run: TOn_ZDB2_Th_Engine_Data_Event_M; On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_M);
+    procedure Parallel_Load_P(ThNum_: Integer; On_Run: TOn_ZDB2_Th_Engine_Data_Event_P; On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_P);
+    // parallel block model
+    procedure Parallel_Block_Load_C(ThNum_, Block_Index, Block_Offset, Block_Read_Size: Integer; On_Run: TOn_ZDB2_Th_Engine_Block_Event_C; On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_C);
+    procedure Parallel_Block_Load_M(ThNum_, Block_Index, Block_Offset, Block_Read_Size: Integer; On_Run: TOn_ZDB2_Th_Engine_Block_Event_M; On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_M);
+    procedure Parallel_Block_Load_P(ThNum_, Block_Index, Block_Offset, Block_Read_Size: Integer; On_Run: TOn_ZDB2_Th_Engine_Block_Event_P; On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_P);
+    // parallel model
     procedure Parallel_For_C(Parallel_: Boolean; ThNum_: Integer; On_Run: TZDB2_Th_Engine_For_C);
     procedure Parallel_For_M(Parallel_: Boolean; ThNum_: Integer; On_Run: TZDB2_Th_Engine_For_M);
     procedure Parallel_For_P(Parallel_: Boolean; ThNum_: Integer; On_Run: TZDB2_Th_Engine_For_P);
-    // one-way for model
+    // one-way model
     procedure For_C(Max_Loop_: Int64; On_Run: TZDB2_Th_Engine_For_C);
     procedure For_M(Max_Loop_: Int64; On_Run: TZDB2_Th_Engine_For_M);
     procedure For_P(Max_Loop_: Int64; On_Run: TZDB2_Th_Engine_For_P);
     procedure Invert_For_C(Max_Loop_: Int64; On_Run: TZDB2_Th_Engine_For_C);
     procedure Invert_For_M(Max_Loop_: Int64; On_Run: TZDB2_Th_Engine_For_M);
     procedure Invert_For_P(Max_Loop_: Int64; On_Run: TZDB2_Th_Engine_For_P);
-    // remove first data, Scrolling storage support
+    // remove first data, scrolling support
     procedure Remove_First_Data(Num_: Int64; remove_data_: Boolean);
     procedure Remove_First_Data_For_All_Th_Engine(Th_Engine_Max_Space_Size: Int64);
     // custom loop
@@ -440,6 +657,8 @@ type
     class procedure Test_Backup_Support();
     class procedure Test_Remove_First_Data_Support();
   end;
+{$ENDREGION 'Engine_Marshal'}
+
 
 procedure Stop_All_ZDB2_Thread_Backup_Task;
 
@@ -447,6 +666,10 @@ var
   Th_Engine_Marshal_Pool__: TZDB2_Th_Engine_Marshal_Pool;
   Static_Copy_Instance_Pool__: TZDB2_Th_Engine_Static_Copy_Instance_Pool; // static copy and backup technology
   Dynamic_Copy_Instance_Pool__: TZDB2_Th_Engine_Dynamic_Copy_Instance_Pool; // dynamic copy and backup technology
+
+const
+  // if a user program or system malfunction prevents unlocking FInstance_Busy, engine will reset based on time
+  C_Max_Busy_Instance_Recycle_Time: TTimeTick = 15 * C_Tick_Minute;
 
 implementation
 
@@ -547,6 +770,120 @@ begin
   DelayFreeObj(1.0, Self);
 end;
 
+procedure TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Do_Event;
+begin
+  try
+    Source.FOneWayDataProcessReady := R_State = TCMD_State.csDone;
+    if Source.FOneWayDataProcessReady then
+        Source.FSize := Mem64.Size
+    else
+        Source.FSize := 0;
+
+    if Assigned(OnResult_C) then
+        OnResult_C(Source, Mem64, R_State = TCMD_State.csDone);
+    if Assigned(OnResult_M) then
+        OnResult_M(Source, Mem64, R_State = TCMD_State.csDone);
+    if Assigned(OnResult_P) then
+        OnResult_P(Source, Mem64, R_State = TCMD_State.csDone);
+  except
+  end;
+  AtomDec(Source.FAsync_Load_Num);
+  DelayFreeObj(1.0, Self);
+end;
+
+constructor TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Create;
+begin
+  inherited Create;
+  R_State := TCMD_State.csDefault;
+  Source := nil;
+  Mem64 := TMem64.Create;
+  OnResult_C := nil;
+  OnResult_M := nil;
+  OnResult_P := nil;
+end;
+
+destructor TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Destroy;
+begin
+  DisposeObject(Mem64);
+  inherited Destroy;
+end;
+
+procedure TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Do_Result(var Sender: TZDB2_Th_CMD_Mem64_And_State);
+begin
+  R_State := Sender.State;
+  TCompute.RunM_NP(Do_Event);
+end;
+
+procedure TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Do_Event;
+begin
+  try
+    Source.FOneWayDataProcessReady := R_State = TCMD_State.csDone;
+    if Source.FOneWayDataProcessReady then
+        Source.FSize := Stream.Size
+    else
+        Source.FSize := 0;
+
+    if Assigned(OnResult_C) then
+        OnResult_C(Source, Stream, R_State = TCMD_State.csDone);
+    if Assigned(OnResult_M) then
+        OnResult_M(Source, Stream, R_State = TCMD_State.csDone);
+    if Assigned(OnResult_P) then
+        OnResult_P(Source, Stream, R_State = TCMD_State.csDone);
+  except
+  end;
+  AtomDec(Source.FAsync_Load_Num);
+  DelayFreeObj(1.0, Self);
+end;
+
+constructor TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Create;
+begin
+  inherited Create;
+  R_State := TCMD_State.csDefault;
+  Source := nil;
+  Stream := TMS64.Create;
+  OnResult_C := nil;
+  OnResult_M := nil;
+  OnResult_P := nil;
+end;
+
+destructor TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Destroy;
+begin
+  DisposeObject(Stream);
+  inherited Destroy;
+end;
+
+procedure TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Do_Result(var Sender: TZDB2_Th_CMD_Stream_And_State);
+begin
+  R_State := Sender.State;
+  TCompute.RunM_NP(Do_Event);
+end;
+
+constructor TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+begin
+  inherited Create;
+  Source := nil;
+  OnResult_C := nil;
+  OnResult_M := nil;
+  OnResult_P := nil;
+end;
+
+procedure TZDB2_Th_Engine_Save_Data_Event_Bridge.Do_Result(var Sender: TZDB2_Th_CMD_ID_And_State);
+begin
+  try
+    if Assigned(OnResult_C) then
+        OnResult_C(Source, Sender.State = TCMD_State.csDone);
+    if Assigned(OnResult_M) then
+        OnResult_M(Source, Sender.State = TCMD_State.csDone);
+    if Assigned(OnResult_P) then
+        OnResult_P(Source, Sender.State = TCMD_State.csDone);
+  except
+  end;
+  if Source <> nil then
+      Source.Do_Async_Save_Result(Sender);
+
+  DelayFreeObj(1.0, Self);
+end;
+
 procedure TZDB2_Th_Engine_Data.Wait_Unlock(timeOut: TTimeTick);
 var
   tk: TTimeTick;
@@ -560,25 +897,6 @@ begin
     end;
 end;
 
-procedure TZDB2_Th_Engine_Data.Do_Async_Save_Result(var Sender: TZDB2_Th_CMD_ID_And_State);
-begin
-  if Sender.State = TCMD_State.csDone then
-    begin
-      FID := Sender.ID;
-      FOneWayDataProcessReady := True;
-      AtomDec(FAsync_Save_Num);
-    end
-  else
-    begin
-      FID := -1;
-      FSize := 0;
-      FOneWayDataProcessReady := False;
-      AtomDec(FAsync_Save_Num);
-      if FSaveFailed_Do_Remove then
-          Remove(False);
-    end;
-end;
-
 constructor TZDB2_Th_Engine_Data.Create;
 begin
   inherited Create;
@@ -588,9 +906,10 @@ begin
   FTh_Engine_Data_Ptr := nil;
   FID := -1;
   FSize := 0;
-  FIn_Temp_Swap_Pool := False;
+  FIs_Temp_Swap_Pool := False;
   FOneWayDataProcessReady := False;
   FInstance_Busy := 0;
+  FInstance_Last_Busy_Time := 0;
   FLocked := False;
   FSaveFailed_Do_Remove := True;
   FAsync_Load_Num := 0;
@@ -632,6 +951,7 @@ begin
   Lock;
   Inc(FInstance_Busy);
   UnLock;
+  FInstance_Last_Busy_Time := GetTimeTick;
 end;
 
 procedure TZDB2_Th_Engine_Data.Update_Instance_As_Free;
@@ -639,6 +959,7 @@ begin
   Lock;
   Dec(FInstance_Busy);
   UnLock;
+  FInstance_Last_Busy_Time := GetTimeTick;
 end;
 
 procedure TZDB2_Th_Engine_Data.Reset_Instance_As_Free();
@@ -646,12 +967,18 @@ begin
   Lock;
   FInstance_Busy := 0;
   UnLock;
+  FInstance_Last_Busy_Time := 0;
+end;
+
+procedure TZDB2_Th_Engine_Data.OneWay_Ready_From_External_Header;
+begin
+  FOneWayDataProcessReady := True;
 end;
 
 function TZDB2_Th_Engine_Data.IsOnlyRead: Boolean;
 begin
   if Engine <> nil then
-      Result := Engine.IsOnlyRead
+      Result := Engine.Is_OnlyRead
   else
       Result := True;
 end;
@@ -664,9 +991,19 @@ begin
       Result := nil;
 end;
 
+procedure TZDB2_Th_Engine_Data.Update_Owner_ID_Pool(OLD_, New_: Integer);
+begin
+  if FTh_Engine = nil then
+      exit;
+  if OLD_ >= 0 then
+      FTh_Engine.Th_Engine_ID_Data_Pool.Delete(OLD_);
+  if New_ >= 0 then
+      FTh_Engine.Th_Engine_ID_Data_Pool.Add(New_, Self, True);
+end;
+
 function TZDB2_Th_Engine_Data.Can_Load: Boolean;
 begin
-  Result := (FID >= 0) and (FTh_Engine <> nil) and (FTh_Engine_Data_Ptr <> nil) and (not FPost_Free_Runing) and (not FLoad_Data_Error);
+  Result := (FID >= 0) and (FTh_Engine <> nil) and (FTh_Engine_Data_Ptr <> nil) and (not FPost_Free_Runing) and (not FLoad_Data_Error) and (FAsync_Save_Num <= 0);
 end;
 
 function TZDB2_Th_Engine_Data.Can_Progress: Boolean;
@@ -676,7 +1013,8 @@ end;
 
 function TZDB2_Th_Engine_Data.Can_Free: Boolean;
 begin
-  Result := (FInstance_Busy <= 0) and (is_UnLocked) and (FAsync_Load_Num <= 0) and (FAsync_Save_Num <= 0) and (not FIn_Temp_Swap_Pool);
+  Result := ((FInstance_Busy <= 0) or (GetTimeTick - FInstance_Last_Busy_Time > C_Max_Busy_Instance_Recycle_Time))
+    and (is_UnLocked) and (FAsync_Load_Num <= 0) and (FAsync_Save_Num <= 0) and (not FIs_Temp_Swap_Pool);
 end;
 
 procedure TZDB2_Th_Engine_Data.MoveToLast;
@@ -717,42 +1055,46 @@ begin
   Lock;
   if not FPost_Free_Runing then
     begin
-      FPost_Free_Runing := True;
+      try
+        FPost_Free_Runing := True;
+        Do_Remove();
+        if Delete_Data_ and (Engine <> nil) then
+          begin
+            if (FID >= 0) then
+              begin
+                Engine.Async_Remove(FID);
+                Update_Owner_ID_Pool(FID, -1);
+              end;
+            FID := -1;
+            FSize := 0;
+            FOneWayDataProcessReady := False;
+            Result := True;
+          end;
 
-      Do_Remove();
-
-      if Delete_Data_ and (Engine <> nil) then
-        begin
-          if (FID >= 0) then
-              Engine.Async_Remove(FID);
-          FID := -1;
-          FSize := 0;
-          FOneWayDataProcessReady := False;
-          Result := True;
-        end;
-
-      if (FOwner <> nil) and (FOwner.FLong_Loop_Num > 0) then
-        begin
-          FOwner.Data_Link_Recycle_Tool.Add(Self); // post link to recycle pool
-        end
-      else if (FTh_Engine <> nil) and (FTh_Engine_Data_Ptr <> nil) then
-        begin
-          Engine__ := FTh_Engine;
-          Engine__.Th_Engine_Data_Pool.Lock;
-          FTh_Engine.Th_Engine_Data_Pool.Push_To_Recycle_Pool(FTh_Engine_Data_Ptr); // remove link
-          FTh_Engine := nil;
-          FTh_Engine_Data_Ptr := nil;
-          Engine__.Th_Engine_Data_Pool.UnLock;
-        end
-      else if (FOwner <> nil) and (FOwner_Data_Ptr <> nil) then
-        begin
-          Eng_Marshal__ := FOwner;
-          Eng_Marshal__.Data_Marshal.Lock;
-          FOwner.Data_Marshal.Push_To_Recycle_Pool(FOwner_Data_Ptr); // remove link
-          FOwner := nil;
-          FOwner_Data_Ptr := nil;
-          Eng_Marshal__.Data_Marshal.UnLock;
-        end;
+        if (FOwner <> nil) and (FOwner.FLong_Loop_Num > 0) then
+          begin
+            FOwner.Data_Link_Recycle_Tool.Add(Self); // post link to recycle pool
+          end
+        else if (FTh_Engine <> nil) and (FTh_Engine_Data_Ptr <> nil) then
+          begin
+            Engine__ := FTh_Engine;
+            Engine__.Th_Engine_Data_Pool.Lock;
+            FTh_Engine.Th_Engine_Data_Pool.Push_To_Recycle_Pool(FTh_Engine_Data_Ptr); // remove link
+            FTh_Engine := nil;
+            FTh_Engine_Data_Ptr := nil;
+            Engine__.Th_Engine_Data_Pool.UnLock;
+          end
+        else if (FOwner <> nil) and (FOwner_Data_Ptr <> nil) then
+          begin
+            Eng_Marshal__ := FOwner;
+            Eng_Marshal__.Data_Marshal.Lock;
+            FOwner.Data_Marshal.Push_To_Recycle_Pool(FOwner_Data_Ptr); // remove link
+            FOwner := nil;
+            FOwner_Data_Ptr := nil;
+            Eng_Marshal__.Data_Marshal.UnLock;
+          end;
+      except
+      end;
     end;
   UnLock;
 end;
@@ -822,7 +1164,7 @@ begin
       bridge_.State := State;
       if State <> nil then
           State^ := TCMD_State.csDefault;
-      Engine.Async_GetData_AsStream_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsStream_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -850,7 +1192,7 @@ begin
       bridge_.State := State;
       if State <> nil then
           State^ := TCMD_State.csDefault;
-      Engine.Async_GetData_AsMem64_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsMem64_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -878,7 +1220,7 @@ begin
       bridge_ := TZDB2_Th_Engine_Get_Stream_Data_Event_Bridge.Create;
       bridge_.Source := Self;
       bridge_.OnResult_C := OnResult;
-      Engine.Async_GetData_AsStream_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsStream_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -907,7 +1249,7 @@ begin
       bridge_ := TZDB2_Th_Engine_Get_Mem64_Data_Event_Bridge.Create;
       bridge_.Source := Self;
       bridge_.OnResult_C := OnResult;
-      Engine.Async_GetData_AsMem64_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsMem64_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -936,7 +1278,7 @@ begin
       bridge_ := TZDB2_Th_Engine_Get_Stream_Data_Event_Bridge.Create;
       bridge_.Source := Self;
       bridge_.OnResult_M := OnResult;
-      Engine.Async_GetData_AsStream_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsStream_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -965,7 +1307,7 @@ begin
       bridge_ := TZDB2_Th_Engine_Get_Mem64_Data_Event_Bridge.Create;
       bridge_.Source := Self;
       bridge_.OnResult_M := OnResult;
-      Engine.Async_GetData_AsMem64_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsMem64_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -994,7 +1336,7 @@ begin
       bridge_ := TZDB2_Th_Engine_Get_Stream_Data_Event_Bridge.Create;
       bridge_.Source := Self;
       bridge_.OnResult_P := OnResult;
-      Engine.Async_GetData_AsStream_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsStream_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
@@ -1023,13 +1365,157 @@ begin
       bridge_ := TZDB2_Th_Engine_Get_Mem64_Data_Event_Bridge.Create;
       bridge_.Source := Self;
       bridge_.OnResult_P := OnResult;
-      Engine.Async_GetData_AsMem64_M(FID, Source, {$IFDEF FPC}@{$ENDIF FPC}bridge_.Do_Result);
+      Engine.Async_GetData_AsMem64_M(FID, Source, bridge_.Do_Result);
     end
   else
     begin
       tmp.Mem64 := Source;
       tmp.State := TCMD_State.csError;
       OnResult(tmp);
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Load_Stream_C(OnResult: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_C);
+var
+  bridge_: TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      OnResult(Self, nil, False);
+    end
+  else if (FID >= 0) then
+    begin
+      AtomInc(FAsync_Load_Num);
+      bridge_ := TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_C := OnResult;
+      Engine.Async_GetData_AsStream_M(FID, bridge_.Stream, bridge_.Do_Result);
+    end
+  else
+    begin
+      OnResult(Self, nil, False);
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Load_Mem64_C(OnResult: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_C);
+var
+  bridge_: TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      OnResult(Self, nil, False);
+    end
+  else if (FID >= 0) then
+    begin
+      AtomInc(FAsync_Load_Num);
+      bridge_ := TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_C := OnResult;
+      Engine.Async_GetData_AsMem64_M(FID, bridge_.Mem64, bridge_.Do_Result);
+    end
+  else
+    begin
+      OnResult(Self, nil, False);
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Load_Stream_M(OnResult: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_M);
+var
+  bridge_: TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      OnResult(Self, nil, False);
+    end
+  else if (FID >= 0) then
+    begin
+      AtomInc(FAsync_Load_Num);
+      bridge_ := TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_M := OnResult;
+      Engine.Async_GetData_AsStream_M(FID, bridge_.Stream, bridge_.Do_Result);
+    end
+  else
+    begin
+      OnResult(Self, nil, False);
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Load_Mem64_M(OnResult: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_M);
+var
+  bridge_: TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      OnResult(Self, nil, False);
+    end
+  else if (FID >= 0) then
+    begin
+      AtomInc(FAsync_Load_Num);
+      bridge_ := TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_M := OnResult;
+      Engine.Async_GetData_AsMem64_M(FID, bridge_.Mem64, bridge_.Do_Result);
+    end
+  else
+    begin
+      OnResult(Self, nil, False);
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Load_Stream_P(OnResult: TOn_ZDB2_Th_Engine_Load_Stream_Data_Event_P);
+var
+  bridge_: TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      OnResult(Self, nil, False);
+    end
+  else if (FID >= 0) then
+    begin
+      AtomInc(FAsync_Load_Num);
+      bridge_ := TZDB2_Th_Engine_Load_Stream_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_P := OnResult;
+      Engine.Async_GetData_AsStream_M(FID, bridge_.Stream, bridge_.Do_Result);
+    end
+  else
+    begin
+      OnResult(Self, nil, False);
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Load_Mem64_P(OnResult: TOn_ZDB2_Th_Engine_Load_Mem64_Data_Event_P);
+var
+  bridge_: TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      OnResult(Self, nil, False);
+    end
+  else if (FID >= 0) then
+    begin
+      AtomInc(FAsync_Load_Num);
+      bridge_ := TZDB2_Th_Engine_Load_Mem64_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_P := OnResult;
+      Engine.Async_GetData_AsMem64_M(FID, bridge_.Mem64, bridge_.Do_Result);
+    end
+  else
+    begin
+      OnResult(Self, nil, False);
     end;
   UnLock;
 end;
@@ -1070,17 +1556,164 @@ begin
   UnLock;
 end;
 
+procedure TZDB2_Th_Engine_Data.Do_Async_Save_Result(var Sender: TZDB2_Th_CMD_ID_And_State);
+begin
+  if Sender.State = TCMD_State.csDone then
+    begin
+      Update_Owner_ID_Pool(FID, Sender.ID);
+      FID := Sender.ID;
+      FOneWayDataProcessReady := True;
+      AtomDec(FAsync_Save_Num);
+    end
+  else
+    begin
+      Update_Owner_ID_Pool(FID, -1);
+      FID := -1;
+      FSize := 0;
+      FOneWayDataProcessReady := False;
+      AtomDec(FAsync_Save_Num);
+      if FSaveFailed_Do_Remove then
+          Remove(False);
+    end;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data_C(Source: TMS64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_C);
+var
+  bridge_: TZDB2_Th_Engine_Save_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      DisposeObject(Source);
+    end
+  else
+    begin
+      AtomInc(FAsync_Save_Num);
+      bridge_ := TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_C := OnResult;
+      Engine.Async_SetData_M(Source, True, FID, bridge_.Do_Result);
+      FSize := Source.Size;
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data_C(Source: TMem64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_C);
+var
+  bridge_: TZDB2_Th_Engine_Save_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      DisposeObject(Source);
+    end
+  else
+    begin
+      AtomInc(FAsync_Save_Num);
+      bridge_ := TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_C := OnResult;
+      Engine.Async_SetData_M(Source, True, FID, bridge_.Do_Result);
+      FSize := Source.Size;
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data_M(Source: TMS64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_M);
+var
+  bridge_: TZDB2_Th_Engine_Save_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      DisposeObject(Source);
+    end
+  else
+    begin
+      AtomInc(FAsync_Save_Num);
+      bridge_ := TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_M := OnResult;
+      Engine.Async_SetData_M(Source, True, FID, bridge_.Do_Result);
+      FSize := Source.Size;
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data_M(Source: TMem64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_M);
+var
+  bridge_: TZDB2_Th_Engine_Save_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      DisposeObject(Source);
+    end
+  else
+    begin
+      AtomInc(FAsync_Save_Num);
+      bridge_ := TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_M := OnResult;
+      Engine.Async_SetData_M(Source, True, FID, bridge_.Do_Result);
+      FSize := Source.Size;
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data_P(Source: TMS64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_P);
+var
+  bridge_: TZDB2_Th_Engine_Save_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      DisposeObject(Source);
+    end
+  else
+    begin
+      AtomInc(FAsync_Save_Num);
+      bridge_ := TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_P := OnResult;
+      Engine.Async_SetData_M(Source, True, FID, bridge_.Do_Result);
+      FSize := Source.Size;
+    end;
+  UnLock;
+end;
+
+procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data_P(Source: TMem64; OnResult: TOn_ZDB2_Th_Engine_Save_Data_Event_P);
+var
+  bridge_: TZDB2_Th_Engine_Save_Data_Event_Bridge;
+begin
+  Lock;
+  if FPost_Free_Runing then
+    begin
+      DisposeObject(Source);
+    end
+  else
+    begin
+      AtomInc(FAsync_Save_Num);
+      bridge_ := TZDB2_Th_Engine_Save_Data_Event_Bridge.Create;
+      bridge_.Source := Self;
+      bridge_.OnResult_P := OnResult;
+      Engine.Async_SetData_M(Source, True, FID, bridge_.Do_Result);
+      FSize := Source.Size;
+    end;
+  UnLock;
+end;
+
 procedure TZDB2_Th_Engine_Data.Async_Save_And_Free_Data(Source: TMS64);
 begin
   Lock;
   if FPost_Free_Runing then
     begin
-      disposeObjectAndNil(Source);
+      DisposeObject(Source);
     end
   else
     begin
       AtomInc(FAsync_Save_Num);
-      Engine.Async_SetData_M(Source, True, FID, {$IFDEF FPC}@{$ENDIF FPC}Do_Async_Save_Result);
+      Engine.Async_SetData_M(Source, True, FID, Do_Async_Save_Result);
       FSize := Source.Size;
     end;
   UnLock;
@@ -1091,12 +1724,12 @@ begin
   Lock;
   if FPost_Free_Runing then
     begin
-      disposeObjectAndNil(Source);
+      DisposeObject(Source);
     end
   else
     begin
       AtomInc(FAsync_Save_Num);
-      Engine.Async_SetData_M(Source, True, FID, {$IFDEF FPC}@{$ENDIF FPC}Do_Async_Save_Result);
+      Engine.Async_SetData_M(Source, True, FID, Do_Async_Save_Result);
       FSize := Source.Size;
     end;
   UnLock;
@@ -1105,14 +1738,10 @@ end;
 procedure TZDB2_Th_Engine_Data.Async_Save(Source: TMS64);
 begin
   Lock;
-  if FPost_Free_Runing then
-    begin
-      disposeObjectAndNil(Source);
-    end
-  else
+  if not FPost_Free_Runing then
     begin
       AtomInc(FAsync_Save_Num);
-      Engine.Async_SetData_M(Source, False, FID, {$IFDEF FPC}@{$ENDIF FPC}Do_Async_Save_Result);
+      Engine.Async_SetData_M(Source, False, FID, Do_Async_Save_Result);
       FSize := Source.Size;
     end;
   UnLock;
@@ -1121,14 +1750,10 @@ end;
 procedure TZDB2_Th_Engine_Data.Async_Save(Source: TMem64);
 begin
   Lock;
-  if FPost_Free_Runing then
-    begin
-      disposeObjectAndNil(Source);
-    end
-  else
+  if not FPost_Free_Runing then
     begin
       AtomInc(FAsync_Save_Num);
-      Engine.Async_SetData_M(Source, False, FID, {$IFDEF FPC}@{$ENDIF FPC}Do_Async_Save_Result);
+      Engine.Async_SetData_M(Source, False, FID, Do_Async_Save_Result);
       FSize := Source.Size;
     end;
   UnLock;
@@ -1174,7 +1799,7 @@ begin
       DoStatus('static copy to %s', [umlGetFileName(Copy_To_Dest).Text]);
 
   fs := TCore_FileStream.Create(Copy_To_Dest, fmCreate);
-  th := TZDB2_Th_Queue.Create(Owner.Mode, fs, True, False, Owner.Delta, Owner.BlockSize, Owner.Cipher);
+  th := TZDB2_Th_Queue.Create(Owner.Cache_Mode, Owner.Cache_Memory, fs, True, False, Owner.Delta, Owner.BlockSize, Owner.Cipher);
   if Owner.Fast_Alloc_Space then
       th.Sync_Fast_Format_Custom_Space(umlMax(Owner.Engine.CoreSpace_Size, Owner.Delta), Owner.BlockSize)
   else
@@ -1249,7 +1874,7 @@ type
     ID: Integer;
   end;
 
-  TDynamic_Copy_Tech_Tech_Data_State_Order_ = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TData_State_>;
+  TDynamic_Copy_Tech_Tech_Data_State_Order_ = TOrderStruct<TData_State_>;
   PData_State_ = TDynamic_Copy_Tech_Tech_Data_State_Order_.POrderStruct;
 
 var
@@ -1267,7 +1892,7 @@ begin
       DoStatus('dynamic copy to %s', [umlGetFileName(Copy_To_Dest).Text]);
 
   fs := TCore_FileStream.Create(Copy_To_Dest, fmCreate);
-  th := TZDB2_Th_Queue.Create(Owner.Mode, fs, True, False, Owner.Delta, Owner.BlockSize, nil);
+  th := TZDB2_Th_Queue.Create(Owner.Cache_Mode, Owner.Cache_Memory, fs, True, False, Owner.Delta, Owner.BlockSize, nil);
   if Owner.Fast_Alloc_Space then
       th.Sync_Fast_Format_Custom_Space(umlMax(Owner.Engine.CoreSpace_Size, Owner.Delta), Owner.BlockSize)
   else
@@ -1384,7 +2009,7 @@ type
     FileTime_: TDateTime;
   end;
 
-  TFileTime_Sort_Tool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TFile_Time_Info>;
+  TFileTime_Sort_Tool = TZR_BL<TFile_Time_Info>;
 
 var
   Reserve_: Word;
@@ -1426,10 +2051,10 @@ begin
   Dispose(PWORD(thSender.UserData));
 
   db_path := Get_Backup_Directory();
-  db_file := umlGetFileName(Engine.Get_Database_FileName);
+  db_file := umlGetFileName(Engine.Database_FileName);
 
   DoStatus('scan backup file:' + db_file + '.backup(*)');
-  arry := umlGetFileListPath(db_path);
+  arry := umlGet_File_Array(db_path);
   L := TFileTime_Sort_Tool.Create;
   for n in arry do
     if umlMultipleMatch(True, db_file + '.backup(*)', n) then
@@ -1441,7 +2066,7 @@ begin
 
   // sort backup file by time
 {$IFDEF FPC}
-  L.Sort_P(@do_fpc_sort);
+  L.Sort_P(do_fpc_sort);
 {$ELSE FPC}
   L.Sort_P(function(var L, R: TFile_Time_Info): Integer
     begin
@@ -1466,7 +2091,7 @@ begin
       Owner.Check_Recycle_Pool;
       Static_Copy_Tech_inst.Copy_To_Dest := Make_backup_File_Name();
       Static_Copy_Tech_inst.Quiet := False;
-      TCompute.RunM(nil, Self, {$IFDEF FPC}@{$ENDIF FPC}Static_Copy_Tech_inst.Do_Run); // run static-backup thread
+      TCompute.RunM(nil, Self, Static_Copy_Tech_inst.Do_Run); // run static-backup thread
     end
   else
     begin
@@ -1476,7 +2101,7 @@ begin
       Dynamic_Copy_Tech_inst.Dynamic_Copy_Tech_Max_Queue := Dynamic_Copy_Tech_Max_Queue;
       Dynamic_Copy_Tech_inst.Copy_To_Dest := Make_backup_File_Name();
       Dynamic_Copy_Tech_inst.Quiet := False;
-      TCompute.RunM(nil, Self, {$IFDEF FPC}@{$ENDIF FPC}Dynamic_Copy_Tech_inst.Do_Run); // run dynamic-backup thread
+      TCompute.RunM(nil, Self, Dynamic_Copy_Tech_inst.Do_Run); // run dynamic-backup thread
     end;
 end;
 
@@ -1490,10 +2115,26 @@ begin
         repeat
           Queue^.Data.FOwner_Data_Ptr := Owner.Data_Marshal.Add(Queue^.Data);
           Queue^.Data.FTh_Engine_Data_Ptr := Th_Engine_Data_Pool.Add(Queue^.Data);
-          Queue^.Data.FIn_Temp_Swap_Pool := False;
+          Queue^.Data.FIs_Temp_Swap_Pool := False;
+          Queue^.Data.Update_Owner_ID_Pool(-1, Queue^.Data.FID);
           Temp_Swap_Pool.Push_To_Recycle_Pool(Queue);
         until not Next;
     Temp_Swap_Pool.Free_Recycle_Pool;
+  finally
+      Temp_Swap_Pool.UnLock;
+  end;
+end;
+
+function TZDB2_Th_Engine.Get_Temp_Swap_Pool_Memory_Size: Int64;
+begin
+  Result := 0;
+  try
+    Temp_Swap_Pool.Free_Recycle_Pool;
+    if Temp_Swap_Pool.num > 0 then
+      with Temp_Swap_Pool.Repeat_ do
+        repeat
+            Inc(Result, Queue^.Data.Size);
+        until not Next;
   finally
       Temp_Swap_Pool.UnLock;
   end;
@@ -1506,16 +2147,23 @@ begin
   FCopy_Is_Busy := False;
   FBackup_Directory := '';
   Temp_Swap_Pool := TZDB2_Th_Engine_Data_BigList___.Create; // temp data pool
+  FFlush_Activted_Num := 0;
+  FFlush_Total_Run_Num := 0;
+  FRolling_Activted_Num := 0;
+  FLimit_Physics_Space_Is_Running := False;
   Name := '';
   Owner := Owner_;
   RemoveDatabaseOnDestroy := False;
-  Mode := smBigData;
+  Cache_Mode := smBigData;
+  Cache_Memory := 64 * 1024 * 1024;
   Database_File := '';
   OnlyRead := False;
   Delta := 16 * 1024 * 1024;
   BlockSize := 1536;
   Fast_Alloc_Space := True;
   First_Inited_Physics_Space := Delta;
+  Limit_Max_Physics_Space := 0;
+  Rolling_Space_Step := 100;
   Auto_Append_Space := True;
   Cipher := nil;
   Cipher_Security := TCipherSecurity.csNone;
@@ -1528,9 +2176,19 @@ begin
   Dynamic_Copy_Tech_Max_Queue := 500;
   Engine := nil;
   Th_Engine_Data_Pool := TZDB2_Th_Engine_Data_BigList___.Create;
-  Th_Engine_Data_Pool.OnFree := {$IFDEF FPC}@{$ENDIF FPC}DoFree;
+  Th_Engine_Data_Pool.OnFree := DoFree;
+  Th_Engine_ID_Data_Pool := TZDB2_Th_Engine_ID_Data_Pool.Create($FFFF, nil); // ID data pool
   Owner.Engine_Pool.Add(Self);
   Last_Build_Class := TZDB2_Th_Engine_Data;
+  External_Header_Technology := True;
+  External_Header_Data := TMem64.CustomCreate(1024 * 1024);
+  Fragment_Space_Enabled := True;
+  Fragment_Space_Span := 1024 * 1024;
+  Fragment_Space_Read_Buffer_Cache := True;
+  Fragment_Space_Wait_hardware := True;
+  Fragment_Space_Restore_Mode := TSafe_Flush_Restore_Mode.sfLastHistory;
+  Fragment_Space_Max_Flush_History_Num := 10;
+  Password_Error_Or_Fault_Shutdown_Remove_Database := True;
 end;
 
 destructor TZDB2_Th_Engine.Destroy;
@@ -1547,7 +2205,9 @@ begin
             TCompute.Sleep(100);
       end;
 
+    Th_Engine_ID_Data_Pool.Clear;
     disposeObjectAndNil(Th_Engine_Data_Pool);
+    disposeObjectAndNil(Th_Engine_ID_Data_Pool);
     disposeObjectAndNil(Temp_Swap_Pool);
     disposeObjectAndNil(Engine);
     disposeObjectAndNil(Cipher);
@@ -1557,6 +2217,7 @@ begin
         DoStatus('Close file %s', [Database_File.Text])
     else
         DoStatus('free memory %s', [Self.ClassName]);
+    DisposeObject(External_Header_Data);
   except
   end;
   inherited Destroy;
@@ -1568,12 +2229,24 @@ var
 begin
   Name := Name_;
   RemoveDatabaseOnDestroy := EStrToBool(cfg.GetDefaultValue('RemoveDatabaseOnDestroy', umlBoolToStr(RemoveDatabaseOnDestroy)), RemoveDatabaseOnDestroy);
+  n := cfg.GetDefaultValue('Cache_Mode', '');
+  if n.Same('CacheAll', 'Cache_All', 'CacheFull', 'Cache_Full') then
+      Cache_Mode := TZDB2_SpaceMode.smFast
+  else if n.Same('CacheNormal', 'Cache_Normal', 'CacheDefault', 'Cache_Default') then
+      Cache_Mode := TZDB2_SpaceMode.smNormal
+  else if n.Same('NoCache', 'No_Cache') then
+      Cache_Mode := TZDB2_SpaceMode.smBigData
+  else
+      Cache_Mode := TZDB2_SpaceMode.smBigData;
+  Cache_Memory := EStrToInt64(cfg.GetDefaultValue('Cache_Memory', umlIntToStr(Cache_Memory)), Cache_Memory);
   Database_File := cfg.GetDefaultValue('database', Database_File);
   OnlyRead := EStrToBool(cfg.GetDefaultValue('OnlyRead', umlBoolToStr(OnlyRead)), OnlyRead);
-  Delta := EStrToInt(cfg.GetDefaultValue('Delta', umlIntToStr(Delta)), Delta);
+  Delta := EStrToInt64(cfg.GetDefaultValue('Delta', umlIntToStr(Delta)), Delta);
   Fast_Alloc_Space := EStrToBool(cfg.GetDefaultValue('Fast_Alloc_Space', umlBoolToStr(Fast_Alloc_Space)), Fast_Alloc_Space);
   BlockSize := EStrToInt(cfg.GetDefaultValue('BlockSize', umlIntToStr(BlockSize)), BlockSize);
   First_Inited_Physics_Space := EStrToInt64(cfg.GetDefaultValue('First_Inited_Physics_Space', umlIntToStr(First_Inited_Physics_Space)), First_Inited_Physics_Space);
+  Limit_Max_Physics_Space := EStrToInt64(cfg.GetDefaultValue('Limit_Max_Physics_Space', umlIntToStr(Limit_Max_Physics_Space)), Limit_Max_Physics_Space);
+  Rolling_Space_Step := EStrToInt(cfg.GetDefaultValue('Rolling_Space_Step', umlIntToStr(Rolling_Space_Step)), Rolling_Space_Step);
   Auto_Append_Space := EStrToBool(cfg.GetDefaultValue('Auto_Append_Space', umlBoolToStr(Auto_Append_Space)), Auto_Append_Space);
   Cipher_Security := TZDB2_Cipher.GetCipherSecurity(cfg.GetDefaultValue('Security', TCipher.CCipherSecurityName[Cipher_Security]));
   Cipher_password := cfg.GetDefaultValue('Password', Cipher_password);
@@ -1585,13 +2258,30 @@ begin
   n := cfg.GetDefaultValue('Copy_Mode', '');
   if n.Same('Auto', '') then
       Copy_Mode := TZDB2_Copy_Mode.cmAuto
-  else if n.Same('Static', 'safe') then
+  else if n.Same('Static', 'Safe') then
       Copy_Mode := TZDB2_Copy_Mode.cmStatic
   else if n.Same('Dynamic') then
       Copy_Mode := TZDB2_Copy_Mode.cmDynamic;
 
   Static_Copy_Tech_Physics_Limit := EStrToInt64(cfg.GetDefaultValue('Static_Copy_Tech_Physics_Limit', umlIntToStr(Static_Copy_Tech_Physics_Limit)), Static_Copy_Tech_Physics_Limit);
   Dynamic_Copy_Tech_Max_Queue := EStrToInt(cfg.GetDefaultValue('Dynamic_Copy_Tech_Max_Queue', umlIntToStr(Dynamic_Copy_Tech_Max_Queue)), Dynamic_Copy_Tech_Max_Queue);
+  FBackup_Directory := cfg.GetDefaultValue('Backup_Directory', FBackup_Directory);
+
+  External_Header_Technology := EStrToBool(cfg.GetDefaultValue('External_Header_Technology', umlBoolToStr(External_Header_Technology)), External_Header_Technology);
+
+  Fragment_Space_Enabled := EStrToBool(cfg.GetDefaultValue('Fragment_Space_Enabled', umlBoolToStr(Fragment_Space_Enabled)), Fragment_Space_Enabled);
+  Fragment_Space_Span := EStrToInt64(cfg.GetDefaultValue('Fragment_Space_Span', umlIntToStr(Fragment_Space_Span)), Fragment_Space_Span);
+  Fragment_Space_Read_Buffer_Cache := EStrToBool(cfg.GetDefaultValue('Fragment_Space_Read_Buffer_Cache', umlBoolToStr(Fragment_Space_Read_Buffer_Cache)), Fragment_Space_Read_Buffer_Cache);
+  Fragment_Space_Wait_hardware := EStrToBool(cfg.GetDefaultValue('Fragment_Space_Wait_hardware', umlBoolToStr(Fragment_Space_Wait_hardware)), Fragment_Space_Wait_hardware);
+  n := cfg.GetDefaultValue('Fragment_Space_Restore_Mode', '');
+  if n.Same('Last') then
+      Fragment_Space_Restore_Mode := TSafe_Flush_Restore_Mode.sfLastHistory
+  else if n.Same('All') then
+      Fragment_Space_Restore_Mode := TSafe_Flush_Restore_Mode.sfAllHistory
+  else
+      Fragment_Space_Restore_Mode := TSafe_Flush_Restore_Mode.sfIgnore;
+  Fragment_Space_Max_Flush_History_Num := EStrToInt64(cfg.GetDefaultValue('Fragment_Space_Max_Flush_History_Num', umlIntToStr(Fragment_Space_Max_Flush_History_Num)), Fragment_Space_Max_Flush_History_Num);
+  Password_Error_Or_Fault_Shutdown_Remove_Database := EStrToBool(cfg.GetDefaultValue('Password_Error_Or_Fault_Shutdown_Remove_Database', umlBoolToStr(Password_Error_Or_Fault_Shutdown_Remove_Database)), Password_Error_Or_Fault_Shutdown_Remove_Database);
 end;
 
 procedure TZDB2_Th_Engine.ReadConfig(cfg: THashStringList);
@@ -1602,18 +2292,32 @@ end;
 procedure TZDB2_Th_Engine.WriteConfig(cfg: THashStringList);
 begin
   cfg.SetDefaultValue('RemoveDatabaseOnDestroy', umlBoolToStr(RemoveDatabaseOnDestroy));
+  cfg.SetDefaultValue('// Cache_Mode', 'NoCache(default),CacheNormal,CacheAll');
+  case Cache_Mode of
+    smBigData: cfg.SetDefaultValue('Cache_Mode', 'NoCache');
+    smNormal: cfg.SetDefaultValue('Cache_Mode', 'CacheNormal');
+    smFast: cfg.SetDefaultValue('Cache_Mode', 'CacheAll');
+    else cfg.SetDefaultValue('Cache_Mode', 'NoCache');
+  end;
+  cfg.SetDefaultValue('Cache_Memory', umlIntToStr(Cache_Memory));
   cfg.SetDefaultValue('database', Database_File);
   cfg.SetDefaultValue('OnlyRead', umlBoolToStr(OnlyRead));
   cfg.SetDefaultValue('Delta', umlIntToStr(Delta));
   cfg.SetDefaultValue('Fast_Alloc_Space', umlBoolToStr(Fast_Alloc_Space));
   cfg.SetDefaultValue('BlockSize', umlIntToStr(BlockSize));
   cfg.SetDefaultValue('First_Inited_Physics_Space', umlIntToStr(First_Inited_Physics_Space));
+  cfg.SetDefaultValue('Limit_Max_Physics_Space', umlIntToStr(Limit_Max_Physics_Space));
+  cfg.SetDefaultValue('Rolling_Space_Step', umlIntToStr(Rolling_Space_Step));
   cfg.SetDefaultValue('Auto_Append_Space', umlBoolToStr(Auto_Append_Space));
-  cfg.GetDefaultValue('Security', TCipher.CCipherSecurityName[Cipher_Security]);
+  cfg.SetDefaultValue('// Security', 'None(Default),DES64, DES128, DES192,Blowfish, LBC, LQC, RNG32, RNG64, LSC,XXTea512,RC6, Serpent, Mars, Rijndael, TwoFish,AES128, AES192, AES256');
+  cfg.SetDefaultValue('Security', TCipher.CCipherSecurityName[Cipher_Security]);
   cfg.SetDefaultValue('Password', Cipher_password);
   cfg.SetDefaultValue('Level', umlIntToStr(Cipher_Level));
   cfg.SetDefaultValue('Tail', umlBoolToStr(Cipher_Tail));
   cfg.SetDefaultValue('CBC', umlBoolToStr(Cipher_CBC));
+
+  // backup
+  cfg.SetDefaultValue('// Copy_Mode', 'Static,Dynamic,Auto(default)');
   case Copy_Mode of
     cmStatic: cfg.SetDefaultValue('Copy_Mode', 'Static');
     cmDynamic: cfg.SetDefaultValue('Copy_Mode', 'Dynamic');
@@ -1621,6 +2325,24 @@ begin
   end;
   cfg.SetDefaultValue('Static_Copy_Tech_Physics_Limit', umlIntToStr(Static_Copy_Tech_Physics_Limit));
   cfg.SetDefaultValue('Dynamic_Copy_Tech_Max_Queue', umlIntToStr(Dynamic_Copy_Tech_Max_Queue));
+  cfg.SetDefaultValue('Backup_Directory', FBackup_Directory);
+
+  // external header technology
+  cfg.SetDefaultValue('External_Header_Technology', umlBoolToStr(External_Header_Technology));
+
+  // fragment space
+  cfg.SetDefaultValue('Fragment_Space_Enabled', umlBoolToStr(Fragment_Space_Enabled));
+  cfg.SetDefaultValue('Fragment_Space_Span', umlIntToStr(Fragment_Space_Span));
+  cfg.SetDefaultValue('Fragment_Space_Read_Buffer_Cache', umlBoolToStr(Fragment_Space_Read_Buffer_Cache));
+  cfg.SetDefaultValue('Fragment_Space_Wait_hardware', umlBoolToStr(Fragment_Space_Wait_hardware));
+  cfg.SetDefaultValue('// Restore_Mode', 'Last,All,Ignore');
+  case Fragment_Space_Restore_Mode of
+    sfLastHistory: cfg.SetDefaultValue('Fragment_Space_Restore_Mode', 'Last');
+    sfAllHistory: cfg.SetDefaultValue('Fragment_Space_Restore_Mode', 'All');
+    sfIgnore: cfg.SetDefaultValue('Fragment_Space_Restore_Mode', 'Ignore');
+  end;
+  cfg.SetDefaultValue('Fragment_Space_Max_Flush_History_Num', umlIntToStr(Fragment_Space_Max_Flush_History_Num));
+  cfg.SetDefaultValue('Password_Error_Or_Fault_Shutdown_Remove_Database', umlBoolToStr(Password_Error_Or_Fault_Shutdown_Remove_Database));
 end;
 
 procedure TZDB2_Th_Engine.Update_Engine_Data_Ptr();
@@ -1692,14 +2414,14 @@ begin
       exit;
   if Engine.Is_Memory_Database then
       exit;
-  if not umlFileExists(Engine.Get_Database_FileName) then
+  if not umlFileExists(Engine.Database_FileName) then
       exit;
   if FCopy_Is_Busy then
       exit;
   FCopy_Is_Busy := True;
   new(p);
   p^ := Reserve_;
-  TCompute.RunM(p, nil, {$IFDEF FPC}@{$ENDIF FPC}Do_Start_Backup_Thread);
+  TCompute.RunM(p, nil, Do_Start_Backup_Thread);
 end;
 
 function TZDB2_Th_Engine.Found_Backup(): Boolean;
@@ -1717,7 +2439,7 @@ begin
   try
     db_path := Get_Backup_Directory();
     db_file := umlGetFileName(Database_File);
-    arry := umlGetFileListPath(db_path);
+    arry := umlGet_File_Array(db_path);
     for n in arry do
       if umlMultipleMatch(True, db_file + '.backup(*)', n) then
         begin
@@ -1739,7 +2461,7 @@ type
     FileTime_: TDateTime;
   end;
 
-  TFileTime_Sort_Tool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TFile_Time_Info>;
+  TFileTime_Sort_Tool = TZR_BL<TFile_Time_Info>;
 
 var
   db_path: U_String;
@@ -1775,7 +2497,7 @@ begin
     db_file := umlGetFileName(Database_File);
 
     DoStatus('scan Backup-Revert for "%s"', [umlGetFileName(Database_File).Text]);
-    arry := umlGetFileListPath(db_path);
+    arry := umlGet_File_Array(db_path);
     L := TFileTime_Sort_Tool.Create;
     for n in arry do
       if umlMultipleMatch(True, db_file + '.backup(*)', n) then
@@ -1787,7 +2509,7 @@ begin
 
     // sort backup file by time
 {$IFDEF FPC}
-    L.Sort_P(@do_fpc_sort);
+    L.Sort_P(do_fpc_sort);
 {$ELSE FPC}
     L.Sort_P(function(var L, R: TFile_Time_Info): Integer
       begin
@@ -1864,7 +2586,7 @@ begin
   try
     db_path := Get_Backup_Directory();
     db_file := umlGetFileName(Database_File);
-    arry := umlGetFileListPath(db_path);
+    arry := umlGet_File_Array(db_path);
     for n in arry do
       if umlMultipleMatch(True, db_file + '.backup(*)', n) then
         begin
@@ -1906,7 +2628,7 @@ begin
       Owner.Check_Recycle_Pool;
       Static_Copy_Tech_inst.Copy_To_Dest := Dest_;
       Static_Copy_Tech_inst.Quiet := False;
-      TCompute.RunM(nil, Self, {$IFDEF FPC}@{$ENDIF FPC}Static_Copy_Tech_inst.Do_Run); // run static-backup thread
+      TCompute.RunM(nil, Self, Static_Copy_Tech_inst.Do_Run); // run static-backup thread
     end
   else
     begin
@@ -1916,7 +2638,7 @@ begin
       Dynamic_Copy_Tech_inst.Dynamic_Copy_Tech_Max_Queue := Dynamic_Copy_Tech_Max_Queue;
       Dynamic_Copy_Tech_inst.Copy_To_Dest := Dest_;
       Dynamic_Copy_Tech_inst.Quiet := False;
-      TCompute.RunM(nil, Self, {$IFDEF FPC}@{$ENDIF FPC}Dynamic_Copy_Tech_inst.Do_Run); // run dynamic-backup thread
+      TCompute.RunM(nil, Self, Dynamic_Copy_Tech_inst.Do_Run); // run dynamic-backup thread
     end;
 end;
 
@@ -2021,7 +2743,7 @@ begin
   Aborted := False;
 
 {$IFDEF FPC}
-  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, @fpc_ParallelFor);
+  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, fpc_ParallelFor);
 {$ELSE FPC}
   ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, procedure(pass: Int64)
     var
@@ -2120,7 +2842,7 @@ begin
   Aborted := False;
 
 {$IFDEF FPC}
-  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, @fpc_ParallelFor);
+  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, fpc_ParallelFor);
 {$ELSE FPC}
   ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, procedure(pass: Int64)
     var
@@ -2219,7 +2941,7 @@ begin
   Aborted := False;
 
 {$IFDEF FPC}
-  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, @fpc_ParallelFor);
+  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, fpc_ParallelFor);
 {$ELSE FPC}
   ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, procedure(pass: Int64)
     var
@@ -2285,6 +3007,7 @@ begin
   Th_Engine_Data_Pool.Clear;
   disposeObjectAndNil(Engine);
   disposeObjectAndNil(Cipher);
+  External_Header_Data.Clear;
 
   // init cipher
   if Cipher_Security <> TCipherSecurity.csNone then
@@ -2299,8 +3022,34 @@ begin
     else
       begin
         if RemoveDatabaseOnDestroy then
+          begin
             umlDeleteFile(Database_File);
-        Stream := TReliableFileStream.Create(Database_File, not umlFileExists(Database_File), not OnlyRead);
+            Stream := TCore_FileStream.Create(Database_File, fmCreate);
+          end
+        else
+          begin
+{$IFDEF ZDB2_Thread_Engine_Safe_Flush}
+            if Fragment_Space_Enabled then
+              begin
+                Stream := TSafe_Flush_Stream.Create(Database_File,
+                  not umlFileExists(Database_File),
+                  not OnlyRead,
+                  False,
+                  Fragment_Space_Wait_hardware, Fragment_Space_Restore_Mode);
+
+                TSafe_Flush_Stream(Stream).Fragment_Space_Span := Fragment_Space_Span;
+                TSafe_Flush_Stream(Stream).Fragment_Space_Read_Buffer_Cache := Fragment_Space_Read_Buffer_Cache;
+                TSafe_Flush_Stream(Stream).Max_Flush_History_Num := Fragment_Space_Max_Flush_History_Num;
+                TSafe_Flush_Stream(Stream).Flush;
+              end
+            else
+              begin
+                Stream := TReliableFileStream.Create(Database_File, not umlFileExists(Database_File), not OnlyRead);
+              end;
+{$ELSE ZDB2_Thread_Engine_Safe_Flush}
+            Stream := TReliableFileStream.Create(Database_File, not umlFileExists(Database_File), not OnlyRead);
+{$ENDIF ZDB2_Thread_Engine_Safe_Flush}
+          end;
         DoStatus('Open ZDB2 DB %s', [Database_File.Text]);
       end;
   except
@@ -2311,7 +3060,7 @@ begin
     if (Stream.Size = 0) then
       begin
         // check stream
-        Engine := TZDB2_Th_Queue.Create(Mode, Stream, True, OnlyRead, Delta, BlockSize, Cipher);
+        Engine := TZDB2_Th_Queue.Create(Cache_Mode, Cache_Memory, Stream, True, OnlyRead, Delta, BlockSize, Cipher);
         Engine.Fast_Append_Space := Fast_Alloc_Space;
         Engine.Auto_Append_Space := Auto_Append_Space;
         if Fast_Alloc_Space then
@@ -2321,11 +3070,11 @@ begin
       end
     else if TZDB2_Core_Space.CheckStream(Stream, Cipher, Found_Backup()) then // check open from cipher and check Fault Shutdown
       begin
-        Engine := TZDB2_Th_Queue.Create(Mode, Stream, True, OnlyRead, Delta, BlockSize, Cipher);
+        Engine := TZDB2_Th_Queue.Create(Cache_Mode, Cache_Memory, Stream, True, OnlyRead, Delta, BlockSize, Cipher);
         Engine.Fast_Append_Space := Fast_Alloc_Space;
         Engine.Auto_Append_Space := Auto_Append_Space;
         // init sequence
-        DoStatus('"%s" Get and Clean sequence table', [umlGetFileName(Database_File).Text]);
+        DoStatus('"%s" load sequence table', [umlGetFileName(Database_File).Text]);
         if Engine.Sync_Get_And_Clean_Sequence_Table(Queue_Table_) then
           begin
             DoStatus('"%s" compute sequence space', [umlGetFileName(Database_File).Text]);
@@ -2336,8 +3085,12 @@ begin
               end;
             SetLength(Queue_Table_, 0);
             SetLength(ID_Size_Buffer, 0);
-            DoStatus('"%s" open done.', [umlGetFileName(Database_File).Text]);
           end;
+        if Engine.Sync_Get_And_Reset_External_Header(External_Header_Data) then
+          begin
+            DoStatus('"%s" load external header data %s', [umlGetFileName(Database_File).Text, umlSizeToStr(External_Header_Data.Size).Text]);
+          end;
+        DoStatus('"%s" open done.', [umlGetFileName(Database_File).Text]);
       end
     else
       begin
@@ -2351,6 +3104,13 @@ begin
                 Build(Data_Class);
                 exit;
               end;
+          end
+        else if Password_Error_Or_Fault_Shutdown_Remove_Database then
+          begin
+            DoStatus('automation restore: a data error occurred and the system has removed the database: %s', [Database_File.Text]);
+            umlDeleteFile(Database_File);
+            Build(Data_Class);
+            exit;
           end;
         DoStatus('"%s" password error or data corruption.', [Database_File.Text]);
       end;
@@ -2385,45 +3145,117 @@ begin
   Last_Build_Class := Data_Class;
 end;
 
-procedure TZDB2_Th_Engine.Flush(WaitQueue_: Boolean);
+procedure TZDB2_Th_Engine.Do_Get_Sequence_Table(Sender: TZDB2_Th_Queue; var Sequence_Table: TZDB2_BlockHandle);
 var
-  Queue_ID_List_: TZDB2_ID_List;
+  tmp: TZDB2_Th_Engine_Data_Instance_Pool;
+  i: Integer;
   __repeat__: TZDB2_Th_Engine_Data_BigList___.TRepeat___;
 begin
-  if Engine = nil then
-      exit;
-
-  if Engine.IsOnlyRead then
-      exit;
-
-  if WaitQueue_ then
-    while Engine.QueueNum > 0 do
-        TCompute.Sleep(1);
-
-  Th_Engine_Data_Pool.Free_Recycle_Pool;
+  tmp := TZDB2_Th_Engine_Data_Instance_Pool.Create;
   Th_Engine_Data_Pool.Lock;
   try
-    Queue_ID_List_ := TZDB2_ID_List.Create;
+    Th_Engine_Data_Pool.Free_Recycle_Pool;
+    SetLength(Sequence_Table, Th_Engine_Data_Pool.num);
+    i := 0;
     if Th_Engine_Data_Pool.num > 0 then
       begin
         __repeat__ := Th_Engine_Data_Pool.Repeat_;
         repeat
           if __repeat__.Queue^.Data <> nil then
             begin
-              if __repeat__.Queue^.Data.FID >= 0 then
-                  Queue_ID_List_.Add(__repeat__.Queue^.Data.FID)
-              else
-                  Th_Engine_Data_Pool.Push_To_Recycle_Pool(__repeat__.Queue);
+              if __repeat__.Queue^.Data.Can_Load then
+                begin
+                  Sequence_Table[i] := __repeat__.Queue^.Data.FID;
+                  tmp.Add(__repeat__.Queue^.Data);
+                  Inc(i);
+                end;
             end;
         until not __repeat__.Next;
-        Th_Engine_Data_Pool.Free_Recycle_Pool;
+        SetLength(Sequence_Table, i)
       end;
-    Engine.Async_Flush_Sequence_Table(Queue_ID_List_);
-    DisposeObject(Queue_ID_List_);
   except
-      Engine.Async_Flush;
+      SetLength(Sequence_Table, 0);
   end;
   Th_Engine_Data_Pool.UnLock;
+  External_Header_Data.Clear;
+  if External_Header_Technology then
+      Owner.Prepare_Flush_External_Header(Self, Sequence_Table, tmp, External_Header_Data); // external header-data
+  DisposeObject(tmp);
+end;
+
+procedure TZDB2_Th_Engine.Flush(WaitQueue_: Boolean);
+begin
+  if Engine = nil then
+      exit;
+
+  if RemoveDatabaseOnDestroy then
+      exit;
+
+  if Engine.Is_Memory_Database or Engine.Is_OnlyRead then
+      exit;
+
+  if WaitQueue_ then
+    begin
+      while Engine.QueueNum > 0 do // wait queue
+          TCompute.Sleep(1);
+    end;
+
+  // check Modification
+  if Engine.QueueNum = 0 then
+    if (not Engine.Is_Modification) and (FFlush_Total_Run_Num > 0) then
+        exit;
+
+  if not OnlyRead then
+    begin
+      Engine.Async_Flush_Backcall_Sequence_Table(Do_Get_Sequence_Table);
+      Engine.Async_Flush_External_Header(External_Header_Data, False);
+      Engine.Async_Flush();
+      Engine.Async_NOP(FFlush_Activted_Num);
+      Engine.Async_INC(FFlush_Total_Run_Num);
+
+      if WaitQueue_ then
+        while Engine.QueueNum > 0 do
+            TCompute.Sleep(1);
+    end;
+end;
+
+procedure TZDB2_Th_Engine.Do_Limit_Physics_Space;
+var
+  tmp: TZDB2_ID_Pool;
+  __repeat__: TZDB2_Th_Engine_Data_BigList___.TRepeat___;
+  tmp_Instance: TZDB2_Th_Engine_Data;
+begin
+  tmp := TZDB2_ID_Pool.Create;
+  Th_Engine_Data_Pool.Lock;
+  try
+    Th_Engine_Data_Pool.Free_Recycle_Pool;
+    if Th_Engine_Data_Pool.num > 0 then
+      begin
+        __repeat__ := Th_Engine_Data_Pool.Repeat_;
+        repeat
+          if __repeat__.Queue^.Data <> nil then
+            begin
+              if __repeat__.Queue^.Data.Can_Free then
+                  tmp.Add(__repeat__.Queue^.Data.ID);
+            end;
+        until (tmp.num >= Rolling_Space_Step) or (not __repeat__.Next);
+      end;
+  except
+  end;
+  Th_Engine_Data_Pool.UnLock;
+
+  try
+    if tmp.num > 0 then
+      with tmp.Repeat_ do
+        repeat
+          tmp_Instance := Th_Engine_ID_Data_Pool[Queue^.Data];
+          if tmp_Instance <> nil then
+              tmp_Instance.Remove(True);
+        until not Next;
+  except
+  end;
+  DisposeObject(tmp);
+  Engine.Async_NOP(FRolling_Activted_Num);
 end;
 
 function TZDB2_Th_Engine.Add(Data_Class: TZDB2_Th_Engine_Data_Class; ID: Integer; ID_Size: Int64): TZDB2_Th_Engine_Data;
@@ -2442,7 +3274,7 @@ begin
 
   if Owner.FLong_Loop_Num > 0 then
     begin
-      Data_Instance.FIn_Temp_Swap_Pool := True;
+      Data_Instance.FIs_Temp_Swap_Pool := True;
       Temp_Swap_Pool.Add(Data_Instance);
     end
   else
@@ -2456,11 +3288,20 @@ begin
       end;
 
       // complete data instance
-      Data_Instance.FIn_Temp_Swap_Pool := False;
+      Data_Instance.FIs_Temp_Swap_Pool := False;
       Data_Instance.Lock;
       Data_Instance.FOwner_Data_Ptr := Owner.Data_Marshal.Add(Data_Instance);
       Data_Instance.FTh_Engine_Data_Ptr := Th_Engine_Data_Pool.Add(Data_Instance);
       Data_Instance.UnLock;
+      Data_Instance.Update_Owner_ID_Pool(-1, Data_Instance.FID);
+
+      // check physics space
+      if (Limit_Max_Physics_Space > 0) and (Engine.CoreSpace_Size >= Limit_Max_Physics_Space) and (FRolling_Activted_Num <= 0) then
+        begin
+          if FLimit_Physics_Space_Is_Running then
+              exit;
+          TCompute.RunM_NP(Do_Limit_Physics_Space, @FLimit_Physics_Space_Is_Running, nil);
+        end;
     end;
   Result := Data_Instance;
 end;
@@ -2468,6 +3309,11 @@ end;
 function TZDB2_Th_Engine.Add(Data_Class: TZDB2_Th_Engine_Data_Class): TZDB2_Th_Engine_Data;
 begin
   Result := Add(Data_Class, -1, 0);
+end;
+
+function TZDB2_Th_Engine.Is_Overflow: Boolean;
+begin
+  Result := (Limit_Max_Physics_Space > 0) and (Engine.CoreSpace_Size + (Limit_Max_Physics_Space div 10) >= Limit_Max_Physics_Space);
 end;
 
 procedure TZDB2_Th_Engine.Progress();
@@ -2491,9 +3337,26 @@ begin
   Th_Engine_Data_Pool.UnLock;
 end;
 
+function TZDB2_Th_Engine.Fragment_Buffer_Num: Int64;
+begin
+  if Engine <> nil then
+      Result := Engine.Fragment_Buffer_Memory
+  else
+      Result := 0;
+end;
+
+function TZDB2_Th_Engine.Fragment_Buffer_Memory: Int64;
+begin
+  if Engine <> nil then
+      Result := Engine.Fragment_Buffer_Num
+  else
+      Result := 0;
+end;
+
 constructor TZDB2_Th_Engine_Pool.Create;
 begin
   inherited Create;
+  FLast_Minimize_Size_Engine := nil;
 end;
 
 procedure TZDB2_Th_Engine_Pool.DoFree(var Data: TZDB2_Th_Engine);
@@ -2503,30 +3366,53 @@ end;
 
 function TZDB2_Th_Engine_Pool.Get_Minimize_Size_Engine: TZDB2_Th_Engine;
 var
+  found_state: Boolean;
   Eng_: PQueueStruct;
 begin
   Result := nil;
   if num > 0 then
     begin
-      Eng_ := nil;
       Lock;
-      with Repeat_ do
-        repeat
-          if (Queue^.Data.Engine <> nil) and (not Queue^.Data.Engine.IsOnlyRead) then
-            begin
-              if Eng_ = nil then
-                  Eng_ := Queue
-              else if Queue^.Data.Engine.CoreSpace_Size < Eng_^.Data.Engine.CoreSpace_Size then
-                  Eng_ := Queue;
-            end;
-        until not Next;
-      UnLock;
+      try
+        Eng_ := nil;
+        found_state := False;
+        with Repeat_ do
+          repeat
+            if FLast_Minimize_Size_Engine = Queue then
+                found_state := True;
+            if (Queue^.Data.Engine <> nil) and (not Queue^.Data.Engine.Is_OnlyRead) and (not Queue^.Data.Is_Overflow) then
+              begin
+                if Eng_ = nil then
+                    Eng_ := Queue
+                else if Queue^.Data.Engine.CoreSpace_Size + Queue^.Data.Engine.Queue_Write_IO_Size.V <
+                  Eng_^.Data.Engine.CoreSpace_Size + Eng_^.Data.Engine.Queue_Write_IO_Size.V then
+                    Eng_ := Queue;
+              end;
+          until not Next;
+        if not found_state then
+            FLast_Minimize_Size_Engine := nil;
 
-      if Eng_ <> nil then
-        begin
-          Result := Eng_^.Data;
-          MoveToLast(Eng_);
-        end;
+        if Eng_ <> nil then
+          begin
+            FLast_Minimize_Size_Engine := Eng_;
+            Result := FLast_Minimize_Size_Engine^.Data;
+            exit;
+          end;
+        // rolling model
+        if FLast_Minimize_Size_Engine = nil then
+          begin
+            if First^.Data.Engine.Is_OnlyRead then
+                exit;
+            FLast_Minimize_Size_Engine := First;
+            Result := FLast_Minimize_Size_Engine^.Data;
+            exit;
+          end;
+        if not FLast_Minimize_Size_Engine^.Data.Engine.Is_OnlyRead then
+            Result := FLast_Minimize_Size_Engine^.Data;
+        FLast_Minimize_Size_Engine := FLast_Minimize_Size_Engine^.Next;
+      finally
+          UnLock;
+      end;
     end;
 end;
 
@@ -2537,29 +3423,28 @@ begin
   Result := nil;
   if num > 0 then
     begin
-      Eng_ := nil;
       Lock;
-      with Repeat_ do
-        repeat
-          if (Queue^.Data.Engine <> nil) and (not Queue^.Data.Engine.IsOnlyRead) then
-            begin
-              if Eng_ = nil then
-                  Eng_ := Queue
-              else if Queue^.Data.Engine.QueueNum < Eng_^.Data.Engine.QueueNum then
-                  Eng_ := Queue;
-            end;
-        until not Next;
-      UnLock;
-
-      if Eng_ <> nil then
-        begin
-          Result := Eng_^.Data;
-          MoveToLast(Eng_);
-        end;
+      try
+        Eng_ := nil;
+        with Repeat_ do
+          repeat
+            if (Queue^.Data.Engine <> nil) and (not Queue^.Data.Engine.Is_OnlyRead) then
+              begin
+                if Eng_ = nil then
+                    Eng_ := Queue
+                else if Queue^.Data.Engine.QueueNum < Eng_^.Data.Engine.QueueNum then
+                    Eng_ := Queue;
+              end;
+          until not Next;
+        if Eng_ <> nil then
+            Result := Eng_^.Data;
+      finally
+          UnLock;
+      end;
     end;
 end;
 
-function TZDB2_Th_Engine_Pool.AllIsOnlyRead(): Boolean;
+function TZDB2_Th_Engine_Pool.All_Is_OnlyRead(): Boolean;
 begin
   Result := False;
   if num > 0 then
@@ -2578,16 +3463,18 @@ begin
   if Sender.State = TCMD_State.csDone then
     begin
       FLoad_Processor.FTh_Pool.Enqueue(Self);
-      FLoad_Processor.Load_Task_Num.UnLock(FLoad_Processor.Load_Task_Num.LockP^ - 1);
+      FLoad_Processor.IO_Thread_Task_Num.UnLock(FLoad_Processor.IO_Thread_Task_Num.LockP^ - 1);
+      FLoad_Processor.Loaded_Num.UnLock(FLoad_Processor.Loaded_Num.LockP^ + 1);
     end
   else
     begin
-      FLoad_Processor.Load_Task_Num.UnLock(FLoad_Processor.Load_Task_Num.LockP^ - 1);
+      FLoad_Processor.IO_Thread_Task_Num.UnLock(FLoad_Processor.IO_Thread_Task_Num.LockP^ - 1);
+      FLoad_Processor.Error_Num.UnLock(FLoad_Processor.Error_Num.LockP^ + 1);
       DelayFreeObj(1.0, Self);
     end;
 end;
 
-constructor TZDB2_Th_Engine_Data_Load_Instance.Create(Load_Processor_: TZDB2_Th_Engine_Load_Processor; Data_: TZDB2_Th_Engine_Data);
+constructor TZDB2_Th_Engine_Data_Load_Instance.Create(Load_Processor_: TZDB2_Th_Engine_Data_Load_Processor; Data_: TZDB2_Th_Engine_Data);
 begin
   inherited Create;
   FStream := TMS64.Create;
@@ -2619,7 +3506,7 @@ begin
   end;
 end;
 
-procedure TZDB2_Th_Engine_Load_Processor.Do_Thread_Run();
+procedure TZDB2_Th_Engine_Data_Load_Processor.Do_Thread_Run();
 var
   i: Int64;
   Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
@@ -2634,24 +3521,29 @@ begin
             Load_Inst_.FOnRun_C := OnRun_C;
             Load_Inst_.FOnRun_M := OnRun_M;
             Load_Inst_.FOnRun_P := OnRun_P;
-            Load_Inst_.FData.Async_Load_Data_M(Load_Inst_.FStream, {$IFDEF FPC}@{$ENDIF FPC}Load_Inst_.Do_Read_Stream_Result);
-            Load_Task_Num.UnLock(Load_Task_Num.LockP^ + 1);
+            Load_Inst_.FData.Async_Load_Data_M(Load_Inst_.FStream, Load_Inst_.Do_Read_Stream_Result);
+            IO_Thread_Task_Num.UnLock(IO_Thread_Task_Num.LockP^ + 1);
           end;
+        while IO_Thread_Task_Num.V > Max_Wait_Task_Num do
+            TCompute.Sleep(10);
       except
       end;
       Inc(i);
     end;
-  while (Load_Task_Num.V + FTh_Pool.Count > 0) do
+  while (IO_Thread_Task_Num.V + FTh_Pool.Count > 0) do
       TCompute.Sleep(10);
   Task_Is_Run := False;
 end;
 
-constructor TZDB2_Th_Engine_Load_Processor.Create(ThNum_: Integer);
+constructor TZDB2_Th_Engine_Data_Load_Processor.Create(ThNum_: Integer);
 begin
   inherited Create;
   tatal_data_num_ := 0;
   buff := nil;
-  Load_Task_Num := TAtomInt64.Create(0);
+  Max_Wait_Task_Num := 1000;
+  IO_Thread_Task_Num := TAtomInt64.Create(0);
+  Loaded_Num := TAtomInt64.Create(0);
+  Error_Num := TAtomInt64.Create(0);
   Task_Is_Run := False;
   OnRun_C := nil;
   OnRun_M := nil;
@@ -2667,71 +3559,54 @@ begin
 {$ENDIF Enabled_ZDB2_Load_Thread}
 end;
 
-destructor TZDB2_Th_Engine_Load_Processor.Destroy;
+destructor TZDB2_Th_Engine_Data_Load_Processor.Destroy;
 begin
   DisposeObject(FTh_Pool);
   if buff <> nil then
       System.FreeMemory(buff);
-  DisposeObject(Load_Task_Num);
+  DisposeObject(IO_Thread_Task_Num);
+  DisposeObject(Loaded_Num);
+  DisposeObject(Error_Num);
   inherited Destroy;
 end;
 
-procedure TZDB2_Th_Engine_Load_Processor.Run();
+procedure TZDB2_Th_Engine_Data_Load_Processor.Run();
 begin
   Task_Is_Run := True;
-  TCompute.RunM_NP({$IFDEF FPC}@{$ENDIF FPC}Do_Thread_Run);
+  TCompute.RunM_NP(Do_Thread_Run);
 end;
 
-procedure TZDB2_Th_Engine_Load_Processor.Wait();
+procedure TZDB2_Th_Engine_Data_Load_Processor.Wait();
 var
   Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
+  tk: TTimeTick;
 begin
+  tk := GetTimeTick;
   while Task_Is_Run do
     begin
       Load_Inst_ := TZDB2_Th_Engine_Data_Load_Instance(FTh_Pool.Dequeue);
       if Load_Inst_ <> nil then
           DisposeObject(Load_Inst_)
       else
+        begin
           TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('full load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
     end;
+  DoStatus('all load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
 end;
 
-procedure TZDB2_Th_Engine_Load_Processor.Wait_C(On_Wait: TOn_Wait_C);
+procedure TZDB2_Th_Engine_Data_Load_Processor.Wait_C(On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_C);
 var
   Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
+  tk: TTimeTick;
 begin
-  while Task_Is_Run do
-    begin
-      Load_Inst_ := TZDB2_Th_Engine_Data_Load_Instance(FTh_Pool.Dequeue);
-      if Assigned(On_Wait) then
-          On_Wait(Load_Inst_);
-      if Load_Inst_ <> nil then
-          DisposeObject(Load_Inst_)
-      else
-          TCompute.Sleep(1);
-    end;
-end;
-
-procedure TZDB2_Th_Engine_Load_Processor.Wait_M(On_Wait: TOn_Wait_M);
-var
-  Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
-begin
-  while Task_Is_Run do
-    begin
-      Load_Inst_ := TZDB2_Th_Engine_Data_Load_Instance(FTh_Pool.Dequeue);
-      if Assigned(On_Wait) then
-          On_Wait(Load_Inst_);
-      if Load_Inst_ <> nil then
-          DisposeObject(Load_Inst_)
-      else
-          TCompute.Sleep(1);
-    end;
-end;
-
-procedure TZDB2_Th_Engine_Load_Processor.Wait_P(On_Wait: TOn_Wait_P);
-var
-  Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
-begin
+  tk := GetTimeTick;
   while Task_Is_Run do
     begin
       Load_Inst_ := TZDB2_Th_Engine_Data_Load_Instance(FTh_Pool.Dequeue);
@@ -2740,8 +3615,298 @@ begin
       if Load_Inst_ <> nil then
           DisposeObject(Load_Inst_)
       else
+        begin
           TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('full load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
     end;
+  DoStatus('all load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+end;
+
+procedure TZDB2_Th_Engine_Data_Load_Processor.Wait_M(On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_M);
+var
+  Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
+  tk: TTimeTick;
+begin
+  tk := GetTimeTick;
+  while Task_Is_Run do
+    begin
+      Load_Inst_ := TZDB2_Th_Engine_Data_Load_Instance(FTh_Pool.Dequeue);
+      if Assigned(On_Wait) then
+          On_Wait(Load_Inst_);
+      if Load_Inst_ <> nil then
+          DisposeObject(Load_Inst_)
+      else
+        begin
+          TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('full load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
+    end;
+  DoStatus('all load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+end;
+
+procedure TZDB2_Th_Engine_Data_Load_Processor.Wait_P(On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_P);
+var
+  Load_Inst_: TZDB2_Th_Engine_Data_Load_Instance;
+  tk: TTimeTick;
+begin
+  tk := GetTimeTick;
+  while Task_Is_Run do
+    begin
+      Load_Inst_ := TZDB2_Th_Engine_Data_Load_Instance(FTh_Pool.Dequeue);
+      if Assigned(On_Wait) then
+          On_Wait(Load_Inst_);
+      if Load_Inst_ <> nil then
+          DisposeObject(Load_Inst_)
+      else
+        begin
+          TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('full load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
+    end;
+  DoStatus('all load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Instance.Do_Read_Block_Result(var Sender: TZDB2_Th_CMD_Mem64_And_State);
+begin
+  if Sender.State = TCMD_State.csDone then
+    begin
+      FLoad_Processor.FTh_Pool.Enqueue(Self);
+      FLoad_Processor.IO_Thread_Task_Num.UnLock(FLoad_Processor.IO_Thread_Task_Num.LockP^ - 1);
+      FLoad_Processor.Loaded_Num.UnLock(FLoad_Processor.Loaded_Num.LockP^ + 1);
+    end
+  else
+    begin
+      FLoad_Processor.IO_Thread_Task_Num.UnLock(FLoad_Processor.IO_Thread_Task_Num.LockP^ - 1);
+      FLoad_Processor.Error_Num.UnLock(FLoad_Processor.Error_Num.LockP^ + 1);
+      DelayFreeObj(1.0, Self);
+    end;
+end;
+
+constructor TZDB2_Th_Engine_Block_Load_Instance.Create(Load_Processor_: TZDB2_Th_Engine_Block_Load_Processor; Data_: TZDB2_Th_Engine_Data);
+begin
+  inherited Create;
+  FMem := TMem64.Create;
+  FLoad_Processor := Load_Processor_;
+  FData := Data_;
+  FOnRun_C := nil;
+  FOnRun_M := nil;
+  FOnRun_P := nil;
+end;
+
+destructor TZDB2_Th_Engine_Block_Load_Instance.Destroy;
+begin
+  DisposeObject(FMem);
+  inherited Destroy;
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Instance.Process;
+begin
+  FMem.Position := 0;
+  try
+    if Assigned(FOnRun_C) then
+        FOnRun_C(FData, FMem);
+    if Assigned(FOnRun_M) then
+        FOnRun_M(FData, FMem);
+    if Assigned(FOnRun_P) then
+        FOnRun_P(FData, FMem);
+  except
+  end;
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Processor.Do_Thread_Run();
+var
+  i: Int64;
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance;
+begin
+  i := 0;
+  while i < tatal_data_num_ do
+    begin
+      try
+        if (buff^[i]^.Data <> nil) and (buff^[i]^.Data.Can_Load) then
+          begin
+            Load_Inst_ := TZDB2_Th_Engine_Block_Load_Instance.Create(Self, buff^[i]^.Data);
+            Load_Inst_.FOnRun_C := OnRun_C;
+            Load_Inst_.FOnRun_M := OnRun_M;
+            Load_Inst_.FOnRun_P := OnRun_P;
+            Load_Inst_.FData.Engine.Async_Get_Block_Data_AsMem64_M(Load_Inst_.FMem,
+              Load_Inst_.FData.ID, Block_Index, Block_Offset, Block_ReadSize, Load_Inst_.Do_Read_Block_Result);
+            IO_Thread_Task_Num.UnLock(IO_Thread_Task_Num.LockP^ + 1);
+          end;
+        while IO_Thread_Task_Num.V > Max_Wait_Task_Num do
+            TCompute.Sleep(10);
+      except
+      end;
+      Inc(i);
+    end;
+  while (IO_Thread_Task_Num.V + FTh_Pool.Count > 0) do
+      TCompute.Sleep(10);
+  Task_Is_Run := False;
+end;
+
+constructor TZDB2_Th_Engine_Block_Load_Processor.Create(ThNum_: Integer);
+begin
+  inherited Create;
+  tatal_data_num_ := 0;
+  buff := nil;
+  Block_Index := 0;
+  Block_Offset := 0;
+  Block_ReadSize := 0;
+  Max_Wait_Task_Num := 1000;
+  IO_Thread_Task_Num := TAtomInt64.Create(0);
+  Loaded_Num := TAtomInt64.Create(0);
+  Error_Num := TAtomInt64.Create(0);
+  Task_Is_Run := False;
+  OnRun_C := nil;
+  OnRun_M := nil;
+  OnRun_P := nil;
+
+{$IFDEF Enabled_ZDB2_Load_Thread}
+  if ThNum_ < 2 then
+      FTh_Pool := TIO_Direct.Create()
+  else
+      FTh_Pool := TIO_Thread.Create(ThNum_);
+{$ELSE Enabled_ZDB2_Load_Thread}
+  FTh_Pool := TIO_Direct.Create();
+{$ENDIF Enabled_ZDB2_Load_Thread}
+end;
+
+destructor TZDB2_Th_Engine_Block_Load_Processor.Destroy;
+begin
+  DisposeObject(FTh_Pool);
+  if buff <> nil then
+      System.FreeMemory(buff);
+  DisposeObject(IO_Thread_Task_Num);
+  DisposeObject(Loaded_Num);
+  DisposeObject(Error_Num);
+  inherited Destroy;
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Processor.Run();
+begin
+  Task_Is_Run := True;
+  TCompute.RunM_NP(Do_Thread_Run);
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Processor.Wait();
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance;
+  tk: TTimeTick;
+begin
+  tk := GetTimeTick;
+  while Task_Is_Run do
+    begin
+      Load_Inst_ := TZDB2_Th_Engine_Block_Load_Instance(FTh_Pool.Dequeue);
+      if Load_Inst_ <> nil then
+          DisposeObject(Load_Inst_)
+      else
+        begin
+          TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('block load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
+    end;
+  DoStatus('all block load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Processor.Wait_C(On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_C);
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance;
+  tk: TTimeTick;
+begin
+  tk := GetTimeTick;
+  while Task_Is_Run do
+    begin
+      Load_Inst_ := TZDB2_Th_Engine_Block_Load_Instance(FTh_Pool.Dequeue);
+      if Assigned(On_Wait) then
+          On_Wait(Load_Inst_);
+      if Load_Inst_ <> nil then
+          DisposeObject(Load_Inst_)
+      else
+        begin
+          TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('block load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
+    end;
+  DoStatus('all block load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Processor.Wait_M(On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_M);
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance;
+  tk: TTimeTick;
+begin
+  tk := GetTimeTick;
+  while Task_Is_Run do
+    begin
+      Load_Inst_ := TZDB2_Th_Engine_Block_Load_Instance(FTh_Pool.Dequeue);
+      if Assigned(On_Wait) then
+          On_Wait(Load_Inst_);
+      if Load_Inst_ <> nil then
+          DisposeObject(Load_Inst_)
+      else
+        begin
+          TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('block load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
+    end;
+  DoStatus('all block load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+end;
+
+procedure TZDB2_Th_Engine_Block_Load_Processor.Wait_P(On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_P);
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Instance;
+  tk: TTimeTick;
+begin
+  tk := GetTimeTick;
+  while Task_Is_Run do
+    begin
+      Load_Inst_ := TZDB2_Th_Engine_Block_Load_Instance(FTh_Pool.Dequeue);
+      if Assigned(On_Wait) then
+          On_Wait(Load_Inst_);
+      if Load_Inst_ <> nil then
+          DisposeObject(Load_Inst_)
+      else
+        begin
+          TCompute.Sleep(1);
+          DoStatus();
+        end;
+      if GetTimeTick - tk > 1000 then
+        begin
+          DoStatus('block load %d/%d error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
+          tk := GetTimeTick;
+        end;
+    end;
+  DoStatus('all block load done: %d/%d, error:%d', [Loaded_Num.V, tatal_data_num_, Error_Num.V]);
 end;
 
 procedure TZDB2_Th_Engine_Marshal.DoFree(var Data: TZDB2_Th_Engine_Data);
@@ -2812,7 +3977,7 @@ begin
 
 {$IFDEF DEBUG}
   DoStatus('%s Recycle Space %s -> %s ', [if_(eng.Database_File = '', '(memory)', umlGetFileName(eng.Database_File).Text),
-    umlSizeToStr(sour_size).Text, umlSizeToStr(eng.Engine.CoreSpace_Size).Text]);
+    umlSizeToStr(sour_size).Text, umlSizeToStr(sour_size - removed_Size).Text]);
 {$ENDIF DEBUG}
 end;
 
@@ -2823,7 +3988,7 @@ begin
   FCritical := TCritical.Create;
   FLong_Loop_Num := 0;
   Data_Marshal := TZDB2_Th_Engine_Marshal_BigList___.Create;
-  Data_Marshal.OnFree := {$IFDEF FPC}@{$ENDIF FPC}DoFree;
+  Data_Marshal.OnFree := DoFree;
   Engine_Pool := TZDB2_Th_Engine_Pool.Create;
   Instance_Recycle_Tool := TZDB2_Th_Engine_Data_Instance_Recycle_Tool___.Create;
   Data_Link_Recycle_Tool := TZDB2_Th_Engine_Data_Link_Recycle_Tool___.Create;
@@ -2834,6 +3999,8 @@ end;
 destructor TZDB2_Th_Engine_Marshal.Destroy;
 begin
   try
+    // stop all copy task.
+    Stop_Copy;
     // flush now.
     Flush(True);
     // temp data swap technology
@@ -2876,13 +4043,17 @@ begin
       with Engine_Pool.Repeat_ do
         repeat
           try
-              Queue^.Data.Th_Engine_Data_Pool.Free_Recycle_Pool;
+            Queue^.Data.Th_Engine_Data_Pool.Lock;
+            Queue^.Data.Th_Engine_Data_Pool.Free_Recycle_Pool;
+            Queue^.Data.Th_Engine_Data_Pool.UnLock;
           except
           end;
         until not Next;
     // free local recycle pool
     try
-        Data_Marshal.Free_Recycle_Pool;
+      Data_Marshal.Lock;
+      Data_Marshal.Free_Recycle_Pool;
+      Data_Marshal.UnLock;
     except
     end;
     // free pool
@@ -3068,22 +4239,43 @@ begin
     end;
 end;
 
+function TZDB2_Th_Engine_Marshal.Fragment_Buffer_Num: Int64;
+begin
+  Result := 0;
+  if Engine_Pool.num > 0 then
+    begin
+      with Engine_Pool.Repeat_ do
+        repeat
+          if Queue^.Data.Engine <> nil then
+              Inc(Result, Queue^.Data.Fragment_Buffer_Num);
+        until not Next;
+    end;
+end;
+
+function TZDB2_Th_Engine_Marshal.Fragment_Buffer_Memory: Int64;
+begin
+  Result := 0;
+  if Engine_Pool.num > 0 then
+    begin
+      with Engine_Pool.Repeat_ do
+        repeat
+          if Queue^.Data.Engine <> nil then
+              Inc(Result, Queue^.Data.Fragment_Buffer_Memory);
+        until not Next;
+    end;
+end;
+
 function TZDB2_Th_Engine_Marshal.Add_Data_To_Minimize_Workload_Engine(): TZDB2_Th_Engine_Data;
 var
   Eng_: TZDB2_Th_Engine;
 begin
   Result := nil;
-  Lock;
   try
-    repeat
-        Eng_ := Engine_Pool.Get_Minimize_Workload_Engine;
-    until (Eng_ = nil) or (not Eng_.OnlyRead);
-
+    Eng_ := Engine_Pool.Get_Minimize_Workload_Engine;
     if Eng_ <> nil then
         Result := Eng_.Add(Current_Data_Class);
   except
   end;
-  UnLock;
 end;
 
 function TZDB2_Th_Engine_Marshal.Add_Data_To_Minimize_Size_Engine(): TZDB2_Th_Engine_Data;
@@ -3091,28 +4283,21 @@ var
   Eng_: TZDB2_Th_Engine;
 begin
   Result := nil;
-  Lock;
   try
-    repeat
-        Eng_ := Engine_Pool.Get_Minimize_Size_Engine;
-    until (Eng_ = nil) or (not Eng_.OnlyRead);
-
+    Eng_ := Engine_Pool.Get_Minimize_Size_Engine;
     if Eng_ <> nil then
         Result := Eng_.Add(Current_Data_Class);
   except
   end;
-  UnLock;
 end;
 
 function TZDB2_Th_Engine_Marshal.Add_Data_To_Engine(Eng_: TZDB2_Th_Engine): TZDB2_Th_Engine_Data;
 begin
   Result := nil;
-  Lock;
   try
       Result := Eng_.Add(Current_Data_Class)
   except
   end;
-  UnLock;
 end;
 
 procedure TZDB2_Th_Engine_Marshal.Wait_Busy_Task;
@@ -3357,6 +4542,30 @@ begin
     end;
 end;
 
+procedure TZDB2_Th_Engine_Marshal.Stop_Copy;
+begin
+  if Engine_Pool.num > 0 then
+    begin
+      Lock;
+      try
+        with Engine_Pool.Repeat_ do
+          repeat
+            try
+                Queue^.Data.Stop_Copy;
+            except
+            end;
+          until not Next;
+      except
+      end;
+      UnLock;
+    end;
+end;
+
+procedure TZDB2_Th_Engine_Marshal.Prepare_Flush_External_Header(Th_Engine_: TZDB2_Th_Engine; var Sequence_Table: TZDB2_BlockHandle; Flush_Instance_Pool: TZDB2_Th_Engine_Data_Instance_Pool; External_Header_Data_: TMem64);
+begin
+
+end;
+
 procedure TZDB2_Th_Engine_Marshal.Flush;
 begin
   Flush(False);
@@ -3367,9 +4576,9 @@ begin
   if WaitQueue_ then
       Wait_Busy_Task;
   Check_Recycle_Pool;
+  Lock;
   if Engine_Pool.num > 0 then
     begin
-      Lock;
       try
         with Engine_Pool.Repeat_ do
           repeat
@@ -3380,11 +4589,28 @@ begin
           until not Next;
       except
       end;
-      UnLock;
     end;
+  UnLock;
   if WaitQueue_ then
       Wait_Busy_Task;
   Check_Recycle_Pool;
+end;
+
+function TZDB2_Th_Engine_Marshal.Flush_Is_Busy: Boolean;
+begin
+  Result := False;
+  Lock;
+  if Engine_Pool.num > 0 then
+    begin
+      try
+        with Engine_Pool.Repeat_ do
+          repeat
+              Result := Result or (Queue^.Data.Flush_Activted_Num > 0);
+          until not Next;
+      except
+      end;
+    end;
+  UnLock;
 end;
 
 procedure TZDB2_Th_Engine_Marshal.Format_Database;
@@ -3407,9 +4633,9 @@ begin
   Build(Current_Data_Class);
 end;
 
-procedure TZDB2_Th_Engine_Marshal.Parallel_Load_C(ThNum_: Integer; On_Run: TZDB2_Th_Engine_On_Data_Event_C; On_Wait: TOn_Wait_C);
+procedure TZDB2_Th_Engine_Marshal.Parallel_Load_C(ThNum_: Integer; On_Run: TOn_ZDB2_Th_Engine_Data_Event_C; On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_C);
 var
-  Load_Inst_: TZDB2_Th_Engine_Load_Processor;
+  Load_Inst_: TZDB2_Th_Engine_Data_Load_Processor;
 begin
   Check_Recycle_Pool;
   if Data_Marshal.num <= 0 then
@@ -3418,7 +4644,7 @@ begin
   Lock;
   Data_Marshal.Lock;
   AtomInc(FLong_Loop_Num);
-  Load_Inst_ := TZDB2_Th_Engine_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
+  Load_Inst_ := TZDB2_Th_Engine_Data_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
   Load_Inst_.tatal_data_num_ := Data_Marshal.num;
   Load_Inst_.buff := Data_Marshal.BuildArrayMemory();
   Load_Inst_.OnRun_C := On_Run;
@@ -3434,9 +4660,9 @@ begin
   Check_Recycle_Pool;
 end;
 
-procedure TZDB2_Th_Engine_Marshal.Parallel_Load_M(ThNum_: Integer; On_Run: TZDB2_Th_Engine_On_Data_Event_M; On_Wait: TOn_Wait_M);
+procedure TZDB2_Th_Engine_Marshal.Parallel_Load_M(ThNum_: Integer; On_Run: TOn_ZDB2_Th_Engine_Data_Event_M; On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_M);
 var
-  Load_Inst_: TZDB2_Th_Engine_Load_Processor;
+  Load_Inst_: TZDB2_Th_Engine_Data_Load_Processor;
 begin
   Check_Recycle_Pool;
   if Data_Marshal.num <= 0 then
@@ -3445,7 +4671,7 @@ begin
   Lock;
   Data_Marshal.Lock;
   AtomInc(FLong_Loop_Num);
-  Load_Inst_ := TZDB2_Th_Engine_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
+  Load_Inst_ := TZDB2_Th_Engine_Data_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
   Load_Inst_.tatal_data_num_ := Data_Marshal.num;
   Load_Inst_.buff := Data_Marshal.BuildArrayMemory();
   Load_Inst_.OnRun_M := On_Run;
@@ -3461,9 +4687,9 @@ begin
   Check_Recycle_Pool;
 end;
 
-procedure TZDB2_Th_Engine_Marshal.Parallel_Load_P(ThNum_: Integer; On_Run: TZDB2_Th_Engine_On_Data_Event_P; On_Wait: TOn_Wait_P);
+procedure TZDB2_Th_Engine_Marshal.Parallel_Load_P(ThNum_: Integer; On_Run: TOn_ZDB2_Th_Engine_Data_Event_P; On_Wait: TOn_ZDB2_Th_Engine_Data_Wait_P);
 var
-  Load_Inst_: TZDB2_Th_Engine_Load_Processor;
+  Load_Inst_: TZDB2_Th_Engine_Data_Load_Processor;
 begin
   Check_Recycle_Pool;
   if Data_Marshal.num <= 0 then
@@ -3472,13 +4698,103 @@ begin
   Lock;
   Data_Marshal.Lock;
   AtomInc(FLong_Loop_Num);
-  Load_Inst_ := TZDB2_Th_Engine_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
+  Load_Inst_ := TZDB2_Th_Engine_Data_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
   Load_Inst_.tatal_data_num_ := Data_Marshal.num;
   Load_Inst_.buff := Data_Marshal.BuildArrayMemory();
   Load_Inst_.OnRun_P := On_Run;
   Data_Marshal.UnLock;
   UnLock;
 
+  try
+    Load_Inst_.Run();
+    Load_Inst_.Wait_P(On_Wait);
+    DisposeObject(Load_Inst_);
+  except
+  end;
+  AtomDec(FLong_Loop_Num);
+  Check_Recycle_Pool;
+end;
+
+procedure TZDB2_Th_Engine_Marshal.Parallel_Block_Load_C(ThNum_, Block_Index, Block_Offset, Block_Read_Size: Integer; On_Run: TOn_ZDB2_Th_Engine_Block_Event_C; On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_C);
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Processor;
+begin
+  Check_Recycle_Pool;
+  if Data_Marshal.num <= 0 then
+      exit;
+
+  Lock;
+  Data_Marshal.Lock;
+  AtomInc(FLong_Loop_Num);
+  Load_Inst_ := TZDB2_Th_Engine_Block_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
+  Load_Inst_.tatal_data_num_ := Data_Marshal.num;
+  Load_Inst_.buff := Data_Marshal.BuildArrayMemory();
+  Load_Inst_.Block_Index := Block_Index;
+  Load_Inst_.Block_Offset := Block_Offset;
+  Load_Inst_.Block_ReadSize := Block_Read_Size;
+  Load_Inst_.OnRun_C := On_Run;
+  Data_Marshal.UnLock;
+  UnLock;
+  try
+    Load_Inst_.Run();
+    Load_Inst_.Wait_C(On_Wait);
+    DisposeObject(Load_Inst_);
+  except
+  end;
+  AtomDec(FLong_Loop_Num);
+  Check_Recycle_Pool;
+end;
+
+procedure TZDB2_Th_Engine_Marshal.Parallel_Block_Load_M(ThNum_, Block_Index, Block_Offset, Block_Read_Size: Integer; On_Run: TOn_ZDB2_Th_Engine_Block_Event_M; On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_M);
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Processor;
+begin
+  Check_Recycle_Pool;
+  if Data_Marshal.num <= 0 then
+      exit;
+
+  Lock;
+  Data_Marshal.Lock;
+  AtomInc(FLong_Loop_Num);
+  Load_Inst_ := TZDB2_Th_Engine_Block_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
+  Load_Inst_.tatal_data_num_ := Data_Marshal.num;
+  Load_Inst_.buff := Data_Marshal.BuildArrayMemory();
+  Load_Inst_.Block_Index := Block_Index;
+  Load_Inst_.Block_Offset := Block_Offset;
+  Load_Inst_.Block_ReadSize := Block_Read_Size;
+  Load_Inst_.OnRun_M := On_Run;
+  Data_Marshal.UnLock;
+  UnLock;
+  try
+    Load_Inst_.Run();
+    Load_Inst_.Wait_M(On_Wait);
+    DisposeObject(Load_Inst_);
+  except
+  end;
+  AtomDec(FLong_Loop_Num);
+  Check_Recycle_Pool;
+end;
+
+procedure TZDB2_Th_Engine_Marshal.Parallel_Block_Load_P(ThNum_, Block_Index, Block_Offset, Block_Read_Size: Integer; On_Run: TOn_ZDB2_Th_Engine_Block_Event_P; On_Wait: TOn_ZDB2_Th_Engine_Block_Wait_P);
+var
+  Load_Inst_: TZDB2_Th_Engine_Block_Load_Processor;
+begin
+  Check_Recycle_Pool;
+  if Data_Marshal.num <= 0 then
+      exit;
+
+  Lock;
+  Data_Marshal.Lock;
+  AtomInc(FLong_Loop_Num);
+  Load_Inst_ := TZDB2_Th_Engine_Block_Load_Processor.Create(umlMin(Data_Marshal.num shr 4, ThNum_));
+  Load_Inst_.tatal_data_num_ := Data_Marshal.num;
+  Load_Inst_.buff := Data_Marshal.BuildArrayMemory();
+  Load_Inst_.Block_Index := Block_Index;
+  Load_Inst_.Block_Offset := Block_Offset;
+  Load_Inst_.Block_ReadSize := Block_Read_Size;
+  Load_Inst_.OnRun_P := On_Run;
+  Data_Marshal.UnLock;
+  UnLock;
   try
     Load_Inst_.Run();
     Load_Inst_.Wait_P(On_Wait);
@@ -3547,7 +4863,7 @@ begin
   Aborted := False;
 
 {$IFDEF FPC}
-  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, @fpc_ParallelFor);
+  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, fpc_ParallelFor);
 {$ELSE FPC}
   ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, procedure(pass: Int64)
     var
@@ -3647,7 +4963,7 @@ begin
   Aborted := False;
 
 {$IFDEF FPC}
-  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, @fpc_ParallelFor);
+  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, fpc_ParallelFor);
 {$ELSE FPC}
   ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, procedure(pass: Int64)
     var
@@ -3747,7 +5063,7 @@ begin
   Aborted := False;
 
 {$IFDEF FPC}
-  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, @fpc_ParallelFor);
+  ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, fpc_ParallelFor);
 {$ELSE FPC}
   ParallelFor(ThNum_, Parallel_, 0, tatal_data_num_ - 1, procedure(pass: Int64)
     var
@@ -4121,43 +5437,52 @@ begin
   Data_Marshal.UnLock;
   UnLock;
 
-  i := 0;
-  j := 0;
-  while (i < tatal_data_num_) and (j < Num_) do
-    begin
-      try
-        if buff^[i]^.Data <> nil then
-          begin
-            buff^[i]^.Data.Lock;
-            Can_Load := buff^[i]^.Data.Can_Load and buff^[i]^.Data.OneWayDataProcessReady;
-            buff^[i]^.Data.UnLock;
-            if Can_Load and buff^[i]^.Data.Remove(remove_data_) then
-                Inc(j);
-          end;
-      except
+  try
+    i := 0;
+    j := 0;
+    while (i < tatal_data_num_) and (j < Num_) do
+      begin
+        try
+          if buff^[i]^.Data <> nil then
+            begin
+              buff^[i]^.Data.Lock;
+              Can_Load := buff^[i]^.Data.Can_Load and buff^[i]^.Data.OneWayDataProcessReady;
+              buff^[i]^.Data.UnLock;
+              if Can_Load and buff^[i]^.Data.Remove(remove_data_) then
+                  Inc(j);
+            end;
+        except
+        end;
+        Inc(i);
       end;
-      Inc(i);
-    end;
 
-  AtomDec(FLong_Loop_Num);
-  System.FreeMemory(buff);
-  Check_Recycle_Pool;
+  finally
+    AtomDec(FLong_Loop_Num);
+    System.FreeMemory(buff);
+    Check_Recycle_Pool;
+  end;
 end;
 
 procedure TZDB2_Th_Engine_Marshal.Remove_First_Data_For_All_Th_Engine(Th_Engine_Max_Space_Size: Int64);
 begin
   if FLong_Loop_Num > 0 then
       exit;
+  if Flush_Is_Busy() then
+      exit;
   if Engine_Pool.num > 0 then
     begin
       Check_Recycle_Pool;
       AtomInc(FLong_Loop_Num);
-      with Engine_Pool.Repeat_ do
-        repeat
-          if Queue^.Data.Engine.CoreSpace_Size > Th_Engine_Max_Space_Size then
-              Do_Remove_First_Data_From_ThEngine(Queue^.Data, Queue^.Data.Engine.CoreSpace_Size - Th_Engine_Max_Space_Size);
-        until not Next;
-      AtomDec(FLong_Loop_Num);
+      try
+        with Engine_Pool.Repeat_ do
+          repeat
+            if Queue^.Data.FFlush_Activted_Num <= 0 then
+              if Queue^.Data.Engine.CoreSpace_Size > Th_Engine_Max_Space_Size then
+                  Do_Remove_First_Data_From_ThEngine(Queue^.Data, Queue^.Data.Engine.CoreSpace_Size - Th_Engine_Max_Space_Size);
+          until not Next;
+      finally
+          AtomDec(FLong_Loop_Num);
+      end;
       Check_Recycle_Pool;
     end;
 end;
@@ -4224,12 +5549,15 @@ begin
     with Engine_Pool.Repeat_ do
       repeat
         if Queue^.Data.Engine <> nil then
-            Result.Append('%d: %s Data-Num:%d IO-Queue:%d Size:%s/%s' + #13#10,
+            Result.Append('%d: %s Data-Num:%d IO-Queue:%d Size:%s/%s Fragment:%d/%s' + #13#10,
             [I__ + 1, umlGetFileName(Queue^.Data.Database_File).Text,
             Queue^.Data.Th_Engine_Data_Pool.num,
             Queue^.Data.Engine.QueueNum,
             umlSizeToStr(Queue^.Data.Engine.CoreSpace_Size).Text,
-            umlSizeToStr(Queue^.Data.Engine.CoreSpace_Physics_Size).Text]);
+            umlSizeToStr(Queue^.Data.Engine.CoreSpace_Physics_Size).Text,
+            Queue^.Data.Engine.Fragment_Buffer_Num,
+            umlSizeToStr(Queue^.Data.Engine.Fragment_Buffer_Memory).Text
+            ]);
       until not Next;
 
   Result.Append('Total Data/Queue:%d/%d'#13#10, [Total, QueueNum]);
@@ -4316,6 +5644,7 @@ begin
           TCompute.Sleep(1);
     end;
 
+  DM.Parallel_Block_Load_C(4, 0, 0, 16, nil, nil);
   DM.Parallel_Load_C(4, nil, nil);
 
   DoStatus('db total:%d', [DM.Total]);
@@ -4412,6 +5741,7 @@ begin
           TCompute.Sleep(1);
     end;
 
+  DM.Flush;
   DM.Wait_Busy_Task;
   DM.Parallel_Load_C(4, nil, nil);
   DM.Wait_Busy_Task;

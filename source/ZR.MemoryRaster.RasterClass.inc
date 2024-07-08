@@ -187,10 +187,10 @@ begin
   SetRGB(Value);
 end;
 
-function TMZR.GetExtra: THashStringList;
+function TMZR.GetExtra: TPascalString_Hash_Pool;
 begin
   if FExtra = nil then
-      FExtra := THashStringList.CustomCreate(128);
+      FExtra := TPascalString_Hash_Pool.Create(128, '');
   Result := FExtra;
 end;
 
@@ -269,6 +269,11 @@ end;
 function TMZR.GetPixelPtr(const X, Y: Integer): PRColor;
 begin
   Result := @(Bits^[ClampInt(X, 0, Width - 1) + ClampInt(Y, 0, Height - 1) * Width]);
+end;
+
+function TMZR.GetFastPixelPtr(const X, Y: Integer): PRColor;
+begin
+  Result := @FBits^[X + Y * Width];
 end;
 
 function TMZR.GetScanLine(Y: Integer): PRColorArray;
@@ -489,8 +494,11 @@ begin
   FIsChanged := False;
   FDrawEngineMap := nil;
 
+  FSerialized_Read_History_Ptr := nil;
+  FSerialized_Write_History_Ptr := nil;
   FSerialized_Engine := nil;
-  FMemorySerializedPosition := -1;
+  FSerialized_ID := -1;
+  FSerialized_Size := 0;
   FActivted := True;
   FActiveTimeTick := 0;
 
@@ -553,11 +561,11 @@ end;
 
 function TMZR.SerializedAndRecycleMemory(RSeri: TZRSerialized): Int64;
 begin
-  if (FSerialized_Engine <> nil) and (FSerialized_Engine <> RSeri) and empty() then
+  if (FSerialized_Engine <> nil) and (FSerialized_Engine <> RSeri) and empty() then // check instance
       UnserializedMemory();
 
   if FSerialized_Engine <> RSeri then
-      Safe_ResetSerialized;
+      Safe_ResetSerialized; // remove old Serialized_Engine
 
   FSerialized_Engine := RSeri;
   if FSerialized_Engine <> nil then
@@ -590,6 +598,25 @@ begin
       Result := 0;
 end;
 
+function TMZR.Is_Serialized(): Boolean;
+begin
+  Result := (FSerialized_Engine <> nil) and (FSerialized_ID >= 0);
+end;
+
+function TMZR.Get_Serialized_Size(RSeri: TZRSerialized): Int64;
+begin
+  Result := 0;
+  if (FSerialized_Engine <> nil) and (FSerialized_Engine = RSeri) and (FSerialized_ID >= 0) then
+      Result := FSerialized_Engine.Get_Raster_Size(Self);
+end;
+
+function TMZR.Get_Serialized_Size(): Int64;
+begin
+  Result := 0;
+  if (FSerialized_Engine <> nil) and (FSerialized_ID >= 0) then
+      Result := FSerialized_Engine.Get_Raster_Size(Self);
+end;
+
 function TMZR.RecycleMemory(): Int64;
 begin
   Result := 0;
@@ -604,23 +631,29 @@ end;
 procedure TMZR.ReadyBits;
 begin
   FActivted := True;
-  if (FBits = nil) and (FWidth > 0) and (FHeight > 0) and (FMemorySerializedPosition >= 0) and (FSerialized_Engine <> nil) then
+  if (FBits = nil) and (FWidth > 0) and (FHeight > 0) and (FSerialized_ID >= 0) and (FSerialized_Engine <> nil) then
       UnserializedMemory();
 end;
 
 procedure TMZR.ResetSerialized;
 begin
   ReadyBits;
+  FSerialized_Read_History_Ptr := nil;
+  FSerialized_Write_History_Ptr := nil;
   FSerialized_Engine := nil;
-  FMemorySerializedPosition := -1;
+  FSerialized_ID := -1;
+  FSerialized_Size := 0;
 end;
 
 procedure TMZR.Safe_ResetSerialized;
 begin
   if FSerialized_Engine <> nil then
       FSerialized_Engine.Remove(Self);
+  FSerialized_Read_History_Ptr := nil;
+  FSerialized_Write_History_Ptr := nil;
   FSerialized_Engine := nil;
-  FMemorySerializedPosition := -1;
+  FSerialized_ID := -1;
+  FSerialized_Size := 0;
 end;
 
 procedure TMZR.SetWorkMemory(Forever: Boolean; WorkMemory: Pointer; NewWidth, NewHeight: Integer);
@@ -782,13 +815,15 @@ begin
   Safe_ResetSerialized;
 end;
 
-procedure TMZR.SwapInstance(dest: TMZR);
+procedure TMZR.SwapInstance(dest: TMZR; Swap_Serialized_: Boolean);
 var
   bak_Bits: PRColorArray;
   bak_Width, bak_Height: Integer;
   bak_FreeBits: Boolean;
+  bak_Serialized_Read_History_Ptr: TSerialized_History_Pool.PQueueStruct;
+  bak_Serialized_Write_History_Ptr: TSerialized_History_Pool.PQueueStruct;
   bak_Serialized_Engine: TZRSerialized;
-  bak_MemorySerializedPosition: Int64;
+  bak_Serialized_ID: Integer;
 begin
   if Self = dest then
       exit;
@@ -800,28 +835,93 @@ begin
   dest.CloseVertex;
   dest.FreeAgg;
 
+  if Swap_Serialized_ then
+    begin
+      if (FSerialized_Engine <> dest.FSerialized_Engine) then
+        begin
+          if FSerialized_Engine <> nil then
+              FSerialized_Engine.Lock;
+          if dest.FSerialized_Engine <> nil then
+              dest.FSerialized_Engine.Lock;
+        end
+      else
+        begin
+          if FSerialized_Engine <> nil then
+              FSerialized_Engine.Lock;
+        end;
+    end;
+
   bak_Bits := FBits;
   bak_Width := FWidth;
   bak_Height := FHeight;
   bak_FreeBits := FFreeBits;
-  bak_Serialized_Engine := FSerialized_Engine;
-  bak_MemorySerializedPosition := FMemorySerializedPosition;
+  if Swap_Serialized_ then
+    begin
+      bak_Serialized_Read_History_Ptr := FSerialized_Read_History_Ptr;
+      bak_Serialized_Write_History_Ptr := FSerialized_Write_History_Ptr;
+      bak_Serialized_Engine := FSerialized_Engine;
+      bak_Serialized_ID := FSerialized_ID;
+    end;
 
   FBits := dest.FBits;
   FWidth := dest.FWidth;
   FHeight := dest.FHeight;
   FFreeBits := dest.FFreeBits;
-  FSerialized_Engine := dest.FSerialized_Engine;
-  FMemorySerializedPosition := dest.FMemorySerializedPosition;
+  if Swap_Serialized_ then
+    begin
+      FSerialized_Read_History_Ptr := dest.FSerialized_Read_History_Ptr;
+      FSerialized_Write_History_Ptr := dest.FSerialized_Write_History_Ptr;
+      FSerialized_Engine := dest.FSerialized_Engine;
+      FSerialized_ID := dest.FSerialized_ID;
+    end;
 
   dest.FBits := bak_Bits;
   dest.FWidth := bak_Width;
   dest.FHeight := bak_Height;
   dest.FFreeBits := bak_FreeBits;
-  dest.FSerialized_Engine := bak_Serialized_Engine;
-  dest.FMemorySerializedPosition := bak_MemorySerializedPosition;
+  if Swap_Serialized_ then
+    begin
+      dest.FSerialized_Read_History_Ptr := bak_Serialized_Read_History_Ptr;
+      dest.FSerialized_Write_History_Ptr := bak_Serialized_Write_History_Ptr;
+      dest.FSerialized_Engine := bak_Serialized_Engine;
+      dest.FSerialized_ID := bak_Serialized_ID;
+    end;
+
+  if Swap_Serialized_ then
+    begin
+      // update Dest Serialized history
+      if dest.FSerialized_Read_History_Ptr <> nil then
+          dest.FSerialized_Read_History_Ptr^.Data := dest;
+      if dest.FSerialized_Write_History_Ptr <> nil then
+          dest.FSerialized_Write_History_Ptr^.Data := dest;
+
+      // update Self Serialized history
+      if FSerialized_Read_History_Ptr <> nil then
+          FSerialized_Read_History_Ptr^.Data := Self;
+      if FSerialized_Write_History_Ptr <> nil then
+          FSerialized_Write_History_Ptr^.Data := Self;
+
+      if (FSerialized_Engine <> dest.FSerialized_Engine) then
+        begin
+          if FSerialized_Engine <> nil then
+              FSerialized_Engine.UnLock;
+          if dest.FSerialized_Engine <> nil then
+              dest.FSerialized_Engine.UnLock;
+        end
+      else
+        begin
+          if FSerialized_Engine <> nil then
+              FSerialized_Engine.UnLock;
+        end;
+    end;
+
   DoChange;
   dest.DoChange;
+end;
+
+procedure TMZR.SwapInstance(dest: TMZR);
+begin
+  SwapInstance(dest, False);
 end;
 
 function TMZR.BitsSame(sour: TMZR): Boolean;
@@ -971,6 +1071,16 @@ end;
 function TMZR.GetCRC32: Cardinal;
 begin
   Result := umlCRC32(@Bits^[0], MemorySize);
+end;
+
+function TMZR.Get_Gradient_L16_MD5: TMD5;
+var
+  tmp: TMZR;
+begin
+  tmp := Clone;
+  tmp.Grayscale_Gradient(16);
+  Result := tmp.GetMD5;
+  DisposeObject(tmp);
 end;
 
 procedure TMZR.SetSize(NewWidth, NewHeight: Integer);
@@ -1444,7 +1554,7 @@ begin
         begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-          FPCParallelFor(@Nested_ParallelFor, 0, Width - 1);
+          FPCParallelFor(Nested_ParallelFor, 0, Width - 1);
 {$ELSE}
           DelphiParallelFor(0, Width - 1, procedure(pass: Integer)
             begin
@@ -1531,7 +1641,7 @@ begin
         begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-          FPCParallelFor(@Nested_ParallelFor, 0, Width - 1);
+          FPCParallelFor(Nested_ParallelFor, 0, Width - 1);
 {$ELSE}
           DelphiParallelFor(0, Width - 1, procedure(pass: Integer)
             begin
@@ -1807,6 +1917,14 @@ begin
   Zoom(Round(RectWidth(R_)), Round(RectHeight(R_)));
 end;
 
+procedure TMZR.FitScaleTo(NewWidth, NewHeight: TGeoFloat; Output: TMZR);
+var
+  R: TRectV2;
+begin
+  R := FitRect(BoundsRectV2, RectV2(0, 0, NewWidth, NewHeight));
+  Output.ZoomFrom(Self, Round(RectWidth(R)), Round(RectHeight(R)));
+end;
+
 function TMZR.FitScaleAsNew(NewWidth, NewHeight: TGeoFloat): TMZR;
 var
   R: TRectV2;
@@ -1841,6 +1959,58 @@ begin
   R_ := FitRect(BoundsRectV2, R);
   Result := NewZR();
   Result.NonlinearZoomFrom(Self, Round(RectWidth(R_)), Round(RectHeight(R_)));
+end;
+
+procedure TMZR.InnerFitScale(Scale_X, Scale_Y: TGeoFloat);
+var
+  nR: TZR;
+begin
+  nR := NewZR();
+  InnerFitScaleTo(Scale_X, Scale_Y, nR);
+  // done
+  SwapInstance(nR);
+  Update;
+  DisposeObject(nR);
+end;
+
+procedure TMZR.InnerFitScale(Scale_: TVec2);
+begin
+  InnerFitScale(Scale_[0], Scale_[1]);
+end;
+
+procedure TMZR.InnerFitScaleTo(Scale_X, Scale_Y: TGeoFloat; Output: TMZR);
+var
+  dest: TRectV2;
+begin
+  // compute inner fix box
+  dest := FitRect(Scale_X, Scale_Y, BoundsRectV20);
+  // build new raster
+  Output.SetSizeR(dest);
+  ProjectionTo(Output, dest, Output.BoundsRectV20, True, 1.0);
+end;
+
+function TMZR.InnerFitScaleAsNew(Scale_X, Scale_Y: TGeoFloat): TMZR;
+begin
+  Result := NewZR();
+  InnerFitScaleTo(Scale_X, Scale_Y, Result);
+end;
+
+procedure TMZR.InnerFitScaleAndFitResizeTo(Scale_X, Scale_Y, NewWidth, NewHeight: TGeoFloat; Output: TMZR);
+var
+  dest1, dest2: TRectV2;
+begin
+  // compute inner fix box
+  dest1 := FitRect(Scale_X, Scale_Y, BoundsRectV20);
+  dest2 := FitRect(dest1, RectV2(0, 0, NewWidth, NewHeight));
+  // build new raster
+  Output.SetSizeR(dest2);
+  ProjectionTo(Output, dest1, Output.BoundsRectV20, True, 1.0);
+end;
+
+function TMZR.InnerFitScaleAndFitResizeAsNew(Scale_X, Scale_Y, NewWidth, NewHeight: TGeoFloat): TMZR;
+begin
+  Result := NewZR();
+  InnerFitScaleAndFitResizeTo(Scale_X, Scale_Y, NewWidth, NewHeight, Result);
 end;
 
 procedure TMZR.SigmaGaussian(const SIGMA: TGeoFloat; const SigmaGaussianKernelFactor: Integer);
@@ -1931,6 +2101,20 @@ begin
     end;
 end;
 
+function TMZR.FastEncryptGrayscale(): PByteBuffer;
+var
+  siz: NativeInt;
+  p: PByteBuffer;
+  I: Integer;
+begin
+  siz := Width * Height;
+  p := System.GetMemory(siz);
+  ReadyBits();
+  for I := 0 to siz - 1 do
+      p^[I] := RColor2FastGray(DirectBits^[I]);
+  Result := p;
+end;
+
 function TMZR.EncryptGrayscale(): PByteBuffer;
 var
   siz: NativeInt;
@@ -1977,7 +2161,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, siz - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, siz - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, siz - 1, procedure(pass: Integer)
         begin
@@ -2025,7 +2209,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, siz - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, siz - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, siz - 1, procedure(pass: Integer)
         begin
@@ -2129,6 +2313,22 @@ begin
   DoChange;
 end;
 
+procedure TMZR.FastGrayscale;
+var
+  I: Integer;
+  p: PRColorEntry;
+begin
+  ReadyBits();
+  for I := (Width * Height) - 1 downto 0 do
+    begin
+      p := @FBits^[I];
+      p^.R := RColor2FastGray(p^.BGRA);
+      p^.G := p^.R;
+      p^.B := p^.R;
+    end;
+  DoChange;
+end;
+
 procedure TMZR.Grayscale;
 var
   I: Integer;
@@ -2145,7 +2345,7 @@ begin
   DoChange;
 end;
 
-procedure TMZR.Gradient(level: Byte);
+procedure TMZR.Grayscale_Gradient(level: Byte);
 var
   I: Integer;
   p: PRColorEntry;
@@ -2168,54 +2368,82 @@ begin
   DoChange;
 end;
 
-procedure TMZR.ExtractGray(var output: TByteZR);
+procedure TMZR.Gradient(level: Byte);
 var
-  I, J: Integer;
+  I: Integer;
+  p: PRColorEntry;
+  f: TGeoFloat;
 begin
-  SetLength(output, FHeight, FWidth);
-  for J := 0 to FHeight - 1 do
-    for I := 0 to FWidth - 1 do
-        output[J, I] := PixelGray[I, J];
+  if level = $FF then
+      Grayscale
+  else
+    begin
+      f := $FF / level;
+      ReadyBits();
+      for I := (Width * Height) - 1 downto 0 do
+        begin
+          p := @FBits^[I];
+          p^.R := Round(Trunc(p^.R / f) * f);
+          p^.G := Round(Trunc(p^.G / f) * f);
+          p^.B := Round(Trunc(p^.B / f) * f);
+        end;
+    end;
+  DoChange;
 end;
 
-procedure TMZR.ExtractRed(var output: TByteZR);
+procedure TMZR.ExtractGray(var Output: TByteZR);
 var
   I, J: Integer;
 begin
-  SetLength(output, FHeight, FWidth);
+  SetLength(Output, FHeight, FWidth);
   for J := 0 to FHeight - 1 do
     for I := 0 to FWidth - 1 do
-        output[J, I] := PixelRed[I, J];
+        Output[J, I] := PixelGray[I, J];
 end;
 
-procedure TMZR.ExtractGreen(var output: TByteZR);
+procedure TMZR.ExtractRed(var Output: TByteZR);
 var
   I, J: Integer;
 begin
-  SetLength(output, FHeight, FWidth);
+  SetLength(Output, FHeight, FWidth);
   for J := 0 to FHeight - 1 do
     for I := 0 to FWidth - 1 do
-        output[J, I] := PixelGreen[I, J];
+        Output[J, I] := PixelRed[I, J];
 end;
 
-procedure TMZR.ExtractBlue(var output: TByteZR);
+procedure TMZR.ExtractGreen(var Output: TByteZR);
 var
   I, J: Integer;
 begin
-  SetLength(output, FHeight, FWidth);
+  SetLength(Output, FHeight, FWidth);
   for J := 0 to FHeight - 1 do
     for I := 0 to FWidth - 1 do
-        output[J, I] := PixelBlue[I, J];
+        Output[J, I] := PixelGreen[I, J];
 end;
 
-procedure TMZR.ExtractAlpha(var output: TByteZR);
+procedure TMZR.ExtractBlue(var Output: TByteZR);
 var
   I, J: Integer;
 begin
-  SetLength(output, FHeight, FWidth);
+  SetLength(Output, FHeight, FWidth);
   for J := 0 to FHeight - 1 do
     for I := 0 to FWidth - 1 do
-        output[J, I] := PixelAlpha[I, J];
+        Output[J, I] := PixelBlue[I, J];
+end;
+
+procedure TMZR.ExtractAlpha(var Output: TByteZR);
+var
+  I, J: Integer;
+begin
+  SetLength(Output, FHeight, FWidth);
+  for J := 0 to FHeight - 1 do
+    for I := 0 to FWidth - 1 do
+        Output[J, I] := PixelAlpha[I, J];
+end;
+
+function TMZR.ComputeArea_MinLoss_ScaleSpace_NoEdge_Clip(clipArea: TRectV2; SS_width, SS_height: TGeoFloat): TRectV2;
+begin
+  Result := MinLoss_RectScaleSpace(clipArea, SS_width, SS_height);
 end;
 
 function TMZR.ComputeAreaScaleSpace_NoEdge_Clip(clipArea: TRectV2; SS_width, SS_height: TGeoFloat): TRectV2;
@@ -2239,6 +2467,18 @@ end;
 function TMZR.ComputeAreaScaleSpace(clipArea: TRect; SS_width, SS_height: Integer): TRect;
 begin
   Result := MakeRect(ComputeAreaScaleSpace(RectV2(clipArea), SS_width, SS_height));
+end;
+
+function TMZR.BuildAreaOffset_MinLoss_ScaleSpace(clipArea: TRectV2; SS_width, SS_height: Integer): TMZR;
+begin
+  Result := NewZR();
+  Result.SetSize(SS_width, SS_height);
+  ProjectionTo(Result, TV2Rect4.Init(MinLoss_RectScaleSpace(clipArea, SS_width, SS_height), 0), TV2Rect4.Init(Result.BoundsRectV2, 0), True, 1.0);
+end;
+
+function TMZR.BuildAreaOffset_MinLoss_ScaleSpace(clipArea: TRect; SS_width, SS_height: Integer): TMZR;
+begin
+  Result := BuildAreaOffset_MinLoss_ScaleSpace(RectV2(clipArea), SS_width, SS_height);
 end;
 
 function TMZR.BuildAreaOffsetScaleSpace(clipArea: TRectV2; SS_width, SS_height: Integer): TMZR;
@@ -2270,6 +2510,87 @@ end;
 function TMZR.BuildAreaCopyAs(clipArea: TRect): TMZR;
 begin
   Result := BuildAreaCopyAs(RectV2(clipArea));
+end;
+
+function TMZR.Build_Jitter_Fit_Box_Raster(rand: TMT19937Random; scale_size, scale_pos: TVec2; XY_Offset_Scale_, Rotate_, Scale_: TGeoFloat; Fit_Matrix_Box_: Boolean; output_Size: TVec2; lock_sampler: Boolean; var sampling_box: TV2R4): TMZR;
+var
+  dest_box: TRectV2;
+  dest_angle: TGeoFloat;
+begin
+  Make_Image_Jitter_Box(rand, BoundsRectV20, scale_size, scale_pos, XY_Offset_Scale_, Rotate_, Scale_, Fit_Matrix_Box_, output_Size, dest_box, dest_angle);
+  sampling_box := TV2R4.Init(dest_box, dest_angle);
+  Result := NewZR();
+  Result.SetSizeF(output_Size[0], output_Size[1], RColor(0, 0, 0, $FF));
+  Result.Vertex.LockSamplerCoord := lock_sampler;
+  ProjectionTo(Result, sampling_box, Result.BoundsV2Rect40, True, 1.0);
+end;
+
+function TMZR.Build_Jitter_Fit_Box_Raster(rand: TMT19937Random; scale_size, scale_pos: TVec2; XY_Offset_Scale_, Rotate_, Scale_: TGeoFloat; Fit_Matrix_Box_: Boolean; output_Size: TVec2; lock_sampler: Boolean): TMZR;
+var
+  dest_box: TRectV2;
+  dest_angle: TGeoFloat;
+  sampling_box: TV2R4;
+begin
+  Make_Image_Jitter_Box(rand, BoundsRectV20, scale_size, scale_pos, XY_Offset_Scale_, Rotate_, Scale_, Fit_Matrix_Box_, output_Size, dest_box, dest_angle);
+  sampling_box := TV2R4.Init(dest_box, dest_angle);
+  Result := NewZR();
+  Result.SetSizeF(output_Size[0], output_Size[1], RColor(0, 0, 0, $FF));
+  Result.Vertex.LockSamplerCoord := lock_sampler;
+  ProjectionTo(Result, sampling_box, Result.BoundsV2Rect40, True, 1.0);
+end;
+
+function TMZR.Build_Jitter_Fit_Box_Raster(scale_size, scale_pos: TVec2; XY_Offset_Scale_, Rotate_, Scale_: TGeoFloat; Fit_Matrix_Box_: Boolean; output_Size: TVec2; lock_sampler: Boolean; var sampling_box: TV2R4): TMZR;
+var
+  dest_box: TRectV2;
+  dest_angle: TGeoFloat;
+begin
+  Make_Image_Jitter_Box(BoundsRectV20, scale_size, scale_pos, XY_Offset_Scale_, Rotate_, Scale_, Fit_Matrix_Box_, output_Size, dest_box, dest_angle);
+  sampling_box := TV2R4.Init(dest_box, dest_angle);
+  Result := NewZR();
+  Result.SetSizeF(output_Size[0], output_Size[1], RColor(0, 0, 0, $FF));
+  Result.Vertex.LockSamplerCoord := lock_sampler;
+  ProjectionTo(Result, sampling_box, Result.BoundsV2Rect40, True, 1.0);
+end;
+
+function TMZR.Build_Jitter_Fit_Box_Raster(scale_size, scale_pos: TVec2; XY_Offset_Scale_, Rotate_, Scale_: TGeoFloat; Fit_Matrix_Box_: Boolean; output_Size: TVec2; lock_sampler: Boolean): TMZR;
+var
+  dest_box: TRectV2;
+  dest_angle: TGeoFloat;
+  sampling_box: TV2R4;
+begin
+  Make_Image_Jitter_Box(BoundsRectV20, scale_size, scale_pos, XY_Offset_Scale_, Rotate_, Scale_, Fit_Matrix_Box_, output_Size, dest_box, dest_angle);
+  sampling_box := TV2R4.Init(dest_box, dest_angle);
+  Result := NewZR();
+  Result.SetSizeF(output_Size[0], output_Size[1], RColor(0, 0, 0, $FF));
+  Result.Vertex.LockSamplerCoord := lock_sampler;
+  ProjectionTo(Result, sampling_box, Result.BoundsV2Rect40, True, 1.0);
+end;
+
+function TMZR.Build_Fit_Box_Raster(scale_size, scale_pos: TVec2; output_Size: TVec2; Fit_Matrix_Box_, lock_sampler: Boolean; var sampling_box: TV2R4): TMZR;
+var
+  dest_box: TRectV2;
+begin
+  dest_box := Compute_Scale_Position_To_Min_Edge_Box_Size(BoundsRectV20, scale_size, scale_pos);
+  if Fit_Matrix_Box_ then
+      dest_box := MinLoss_RectFit(output_Size[0], output_Size[1], dest_box);
+  sampling_box := TV2R4.Init(dest_box, 0);
+  Result := NewZR();
+  Result.SetSizeF(output_Size[0], output_Size[1], RColor(0, 0, 0, $FF));
+  Result.Vertex.LockSamplerCoord := lock_sampler;
+  ProjectionTo(Result, dest_box, Result.BoundsRectV20, True, 1.0);
+end;
+
+function TMZR.Build_Fit_Box_Raster(scale_size, scale_pos: TVec2; output_Size: TVec2; Fit_Matrix_Box_, lock_sampler: Boolean): TMZR;
+var
+  dest_box: TRectV2;
+begin
+  dest_box := Compute_Scale_Position_To_Min_Edge_Box_Size(BoundsRectV20, scale_size, scale_pos);
+  if Fit_Matrix_Box_ then
+      dest_box := MinLoss_RectFit(output_Size[0], output_Size[1], dest_box);
+  Result := NewZR();
+  Result.SetSizeF(output_Size[0], output_Size[1], RColor(0, 0, 0, $FF));
+  Result.Vertex.LockSamplerCoord := lock_sampler;
+  ProjectionTo(Result, dest_box, Result.BoundsRectV20, True, 1.0);
 end;
 
 function TMZR.FastAreaCopyAs(X1, Y1, X2, Y2: TGeoInt): TMZR;
@@ -2415,12 +2736,12 @@ begin
         end;
 end;
 
-function TMZR.ConvexHull(C: TRColor): TVec2List;
+function TMZR.ConvexHull(C: TRColor): TV2L;
 var
   I, J: Integer;
   found: Boolean;
 begin
-  Result := TVec2List.Create;
+  Result := TV2L.Create;
   for J := 0 to Height - 1 do
     begin
       found := False;
@@ -2525,7 +2846,7 @@ procedure TMZR.Line(X1, Y1, X2, Y2: Integer; Color: TRColor; L: Boolean);
     Y2 := ClampInt(Y2, 0, Height);
 
     if Y2 < Y1 then
-        Swap(Y1, Y2);
+        TSwap<Integer>.Do_(Y1, Y2);
 
     p := PixelPtr[X, Y1];
     I := Y2 - Y1 + 1;
@@ -2560,7 +2881,7 @@ procedure TMZR.Line(X1, Y1, X2, Y2: Integer; Color: TRColor; L: Boolean);
     X2 := ClampInt(X2, 0, Width - 1);
 
     if X1 > X2 then
-        Swap(X1, X2);
+        TSwap<Integer>.Do_(X1, X2);
 
     p := PixelPtr[X1, Y];
 
@@ -2956,7 +3277,7 @@ begin
   DrawCrossF(Dst[0], Dst[1], LineDist, Color);
 end;
 
-procedure TMZR.DrawCrossF(Polygon: TVec2List; LineDist: TGeoFloat; Color: TRColor);
+procedure TMZR.DrawCrossF(Polygon: TV2L; LineDist: TGeoFloat; Color: TRColor);
 var
   I: Integer;
 begin
@@ -2964,7 +3285,7 @@ begin
       DrawCrossF(Polygon[I]^, LineDist, Color);
 end;
 
-procedure TMZR.DrawPointListLine(pl: TVec2List; Color: TRColor; wasClose: Boolean);
+procedure TMZR.DrawPointListLine(pl: TV2L; Color: TRColor; wasClose: Boolean);
 var
   I: Integer;
   p1, p2: PVec2;
@@ -3019,7 +3340,7 @@ end;
 
 procedure TMZR.DrawCircle(CC: TVec2; R: TGeoFloat; Color: TRColor);
 var
-  vl: TVec2List;
+  vl: TV2L;
 begin
   if FAgg <> nil then
     begin
@@ -3029,7 +3350,7 @@ begin
     end
   else
     begin
-      vl := TVec2List.Create;
+      vl := TV2L.Create;
       vl.AddCirclePoint(Round(R), CC, R);
       DrawPointListLine(vl, Color, True);
       DisposeObject(vl);
@@ -3039,7 +3360,7 @@ end;
 
 procedure TMZR.FillCircle(CC: TVec2; R: TGeoFloat; Color: TRColor);
 var
-  vl: TVec2List;
+  vl: TV2L;
 begin
   if FAgg <> nil then
     begin
@@ -3049,7 +3370,7 @@ begin
     end
   else
     begin
-      vl := TVec2List.Create;
+      vl := TV2L.Create;
       vl.AddCirclePoint(Round(R), CC, R);
       Vertex.FillPoly(vl, CC, Color);
       DisposeObject(vl);
@@ -3061,7 +3382,7 @@ procedure TMZR.DrawEllipse(CC: TVec2; xRadius, yRadius: TGeoFloat; Color: TRColo
 var
   I, n: Integer;
   S, C: TGeoFloatArray;
-  vl: TVec2List;
+  vl: TV2L;
 begin
   if Round(xRadius) = Round(yRadius) then
       DrawCircle(CC, xRadius, Color)
@@ -3083,7 +3404,7 @@ begin
           S[I] := S[I] * yRadius;
           C[I] := C[I] * xRadius;
         end;
-      vl := TVec2List.Create;
+      vl := TV2L.Create;
       // first quadrant (top right)
       for I := 0 to n do
           vl.Add(CC[0] + C[I], CC[1] - S[I]);
@@ -3116,7 +3437,7 @@ procedure TMZR.FillEllipse(CC: TVec2; xRadius, yRadius: TGeoFloat; Color: TRColo
 var
   I, n: Integer;
   S, C: TGeoFloatArray;
-  vl: TVec2List;
+  vl: TV2L;
 begin
   if Round(xRadius) = Round(yRadius) then
       FillCircle(CC, xRadius, Color)
@@ -3138,7 +3459,7 @@ begin
           S[I] := S[I] * yRadius;
           C[I] := C[I] * xRadius;
         end;
-      vl := TVec2List.Create;
+      vl := TV2L.Create;
       // first quadrant (top right)
       for I := 0 to n do
           vl.Add(CC[0] + C[I], CC[1] - S[I]);
@@ -3257,7 +3578,7 @@ procedure TMZR.FillPolygon(PolygonBuff: TArrayVec2; Color: TRColor);
       begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-        FPCParallelFor(@Nested_ParallelFor, 0, Height - 1);
+        FPCParallelFor(Nested_ParallelFor, 0, Height - 1);
 {$ELSE}
         DelphiParallelFor(0, Height - 1, procedure(pass: Integer)
           var
@@ -3411,7 +3732,7 @@ procedure TMZR.FillPolygon(Polygon: T2DPolygon; Color: TRColor);
       begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-        FPCParallelFor(@Nested_ParallelFor, 0, Height - 1);
+        FPCParallelFor(Nested_ParallelFor, 0, Height - 1);
 {$ELSE}
         DelphiParallelFor(0, Height - 1, procedure(pass: Integer)
           var
@@ -3539,7 +3860,7 @@ procedure TMZR.FillPolygon(Polygon: T2DPolygonGraph; Color: TRColor);
       begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-        FPCParallelFor(@Nested_ParallelFor, 0, Height - 1);
+        FPCParallelFor(Nested_ParallelFor, 0, Height - 1);
 {$ELSE}
         DelphiParallelFor(0, Height - 1, procedure(pass: Integer)
           var
@@ -3751,7 +4072,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(TMZR.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+      FPCParallelFor(TMZR.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(TMZR.Parallel and LocalParallel, 0, Height - 1, procedure(pass: Integer)
         var
@@ -3777,7 +4098,7 @@ begin
   FillNoneBGColorBorder(False, BGColor, BorderColor, BorderSize);
 end;
 
-procedure TMZR.FillNoneBGColorAlphaBorder(parallel_: Boolean; BGColor, BorderColor: TRColor; BorderSize: Integer; output: TMZR);
+procedure TMZR.FillNoneBGColorAlphaBorder(parallel_: Boolean; BGColor, BorderColor: TRColor; BorderSize: Integer; Output: TMZR);
 var
   halfBorderSize: Integer;
 
@@ -3792,7 +4113,7 @@ var
     for I := 0 to Width - 1 do
       if PixelAtNoneBGBorder(I, pass, BGColor, BorderColor, halfBorderSize, detectColor) then
         begin
-          p := output.PixelPtr[I, pass];
+          p := Output.PixelPtr[I, pass];
           p^ := RAlphaColor(BorderColor, TRColorEntry(p^).A);
         end;
   end;
@@ -3808,7 +4129,7 @@ var
       for I := 0 to Width - 1 do
         if PixelAtNoneBGBorder(I, pass, BGColor, BorderColor, halfBorderSize, detectColor) then
           begin
-            p := output.PixelPtr[I, pass];
+            p := Output.PixelPtr[I, pass];
             p^ := RAlphaColor(BorderColor, TRColorEntry(p^).A);
           end;
   end;
@@ -3817,7 +4138,7 @@ begin
   if BGColor = BorderColor then
       exit;
   ReadyBits;
-  output.ReadyBits;
+  Output.ReadyBits;
   halfBorderSize := BorderSize shr 1;
   if halfBorderSize <= 0 then
       halfBorderSize := 1;
@@ -3826,7 +4147,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(TMZR.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+      FPCParallelFor(TMZR.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(TMZR.Parallel and LocalParallel, 0, Height - 1, procedure(pass: Integer)
         var
@@ -3837,7 +4158,7 @@ begin
           for I := 0 to Width - 1 do
             if PixelAtNoneBGBorder(I, pass, BGColor, BorderColor, halfBorderSize, detectColor) then
               begin
-                p := output.PixelPtr[I, pass];
+                p := Output.PixelPtr[I, pass];
                 p^ := RAlphaColor(BorderColor, TRColorEntry(p^).A);
               end;
         end);
@@ -3851,9 +4172,9 @@ begin
   DoChange;
 end;
 
-procedure TMZR.FillNoneBGColorAlphaBorder(BGColor, BorderColor: TRColor; BorderSize: Integer; output: TMZR);
+procedure TMZR.FillNoneBGColorAlphaBorder(BGColor, BorderColor: TRColor; BorderSize: Integer; Output: TMZR);
 begin
-  FillNoneBGColorAlphaBorder(True, BGColor, BorderColor, BorderSize, output);
+  FillNoneBGColorAlphaBorder(True, BGColor, BorderColor, BorderSize, Output);
 end;
 
 procedure TMZR.FillNoneBGColorAlphaBorder(BGColor, BorderColor: TRColor; BorderSize: Integer);
@@ -3960,10 +4281,10 @@ begin
   DoChange;
 end;
 
-procedure TMZR.ProjectionPolygonTo(const sour_Polygon: TVec2List; Dst: TMZR; DestRect: TRectV2; const bilinear_sampling: Boolean; const alpha: TGeoFloat);
+procedure TMZR.ProjectionPolygonTo(const sour_Polygon: TV2L; Dst: TMZR; DestRect: TRectV2; const bilinear_sampling: Boolean; const alpha: TGeoFloat);
 var
   R: TRectV2;
-  nr: TMZR;
+  nR: TMZR;
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
@@ -3973,7 +4294,7 @@ var
   begin
     for I := 0 to Width - 1 do
       if (PointInRect(I, pass, R)) and (sour_Polygon.InHere(Vec2(I, pass))) then
-          nr[I, pass] := PixelLinear[I, pass];
+          nR[I, pass] := PixelLinear[I, pass];
   end;
 {$ENDIF FPC}
 {$ENDIF Parallel}
@@ -3984,19 +4305,19 @@ var
     for pass := 0 to Height - 1 do
       for I := 0 to Width - 1 do
         if (PointInRect(I, pass, R)) and (sour_Polygon.InHere(Vec2(I, pass))) then
-            nr[I, pass] := PixelLinear[I, pass];
+            nR[I, pass] := PixelLinear[I, pass];
   end;
 
 begin
-  nr := NewZR();
-  nr.SetSize(Width, Height, RColor(0, 0, 0, 0));
+  nR := NewZR();
+  nR.SetSize(Width, Height, RColor(0, 0, 0, 0));
   R := sour_Polygon.BoundBox();
 
   if TMZR.Parallel and LocalParallel then
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, Height - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, Height - 1, procedure(pass: Integer)
         var
@@ -4004,7 +4325,7 @@ begin
         begin
           for I := 0 to Width - 1 do
             if (PointInRect(I, pass, R)) and (sour_Polygon.InHere(Vec2(I, pass))) then
-                nr[I, pass] := PixelLinear[I, pass];
+                nR[I, pass] := PixelLinear[I, pass];
         end);
 {$ENDIF FPC}
 {$ELSE Parallel}
@@ -4013,15 +4334,15 @@ begin
     end
   else
       DoFor();
-  nr.ProjectionTo(Dst, R, DestRect, bilinear_sampling, alpha);
-  DisposeObject(nr);
+  nR.ProjectionTo(Dst, R, DestRect, bilinear_sampling, alpha);
+  DisposeObject(nR);
   Dst.DoChange;
 end;
 
 procedure TMZR.ProjectionPolygonTo(const sour_Polygon: T2DPolygonGraph; Dst: TMZR; DestRect: TRectV2; const bilinear_sampling: Boolean; const alpha: TGeoFloat);
 var
   R: TRectV2;
-  nr: TMZR;
+  nR: TMZR;
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
@@ -4031,7 +4352,7 @@ var
   begin
     for I := 0 to Width - 1 do
       if (PointInRect(I, pass, R)) and (sour_Polygon.InHere(Vec2(I, pass))) then
-          nr[I, pass] := PixelLinear[I, pass];
+          nR[I, pass] := PixelLinear[I, pass];
   end;
 {$ENDIF FPC}
 {$ENDIF Parallel}
@@ -4042,19 +4363,19 @@ var
     for pass := 0 to Height - 1 do
       for I := 0 to Width - 1 do
         if (PointInRect(I, pass, R)) and (sour_Polygon.InHere(Vec2(I, pass))) then
-            nr[I, pass] := PixelLinear[I, pass];
+            nR[I, pass] := PixelLinear[I, pass];
   end;
 
 begin
-  nr := NewZR();
-  nr.SetSize(Width, Height, RColor(0, 0, 0, 0));
+  nR := NewZR();
+  nR.SetSize(Width, Height, RColor(0, 0, 0, 0));
   R := sour_Polygon.BoundBox();
 
   if TMZR.Parallel and LocalParallel then
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, Height - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, Height - 1, procedure(pass: Integer)
         var
@@ -4062,7 +4383,7 @@ begin
         begin
           for I := 0 to Width - 1 do
             if (PointInRect(I, pass, R)) and (sour_Polygon.InHere(Vec2(I, pass))) then
-                nr[I, pass] := PixelLinear[I, pass];
+                nR[I, pass] := PixelLinear[I, pass];
         end);
 {$ENDIF FPC}
 {$ELSE Parallel}
@@ -4071,8 +4392,8 @@ begin
     end
   else
       DoFor();
-  nr.ProjectionTo(Dst, R, DestRect, bilinear_sampling, alpha);
-  DisposeObject(nr);
+  nR.ProjectionTo(Dst, R, DestRect, bilinear_sampling, alpha);
+  DisposeObject(nR);
   Dst.DoChange;
 end;
 
@@ -4166,7 +4487,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, Width * Height - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, Width * Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, Width * Height - 1, procedure(pass: Integer)
         begin
@@ -4215,7 +4536,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, Width * Height - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, Width * Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, Width * Height - 1, procedure(pass: Integer)
         begin
@@ -4265,7 +4586,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, Width * Height - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, Width * Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, Width * Height - 1, procedure(pass: Integer)
         begin
@@ -4330,7 +4651,7 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor, 0, Width * Height - 1);
+      FPCParallelFor(Nested_ParallelFor, 0, Width * Height - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, Width * Height - 1, procedure(pass: Integer)
         begin
@@ -5086,6 +5407,7 @@ begin
     m64.Position := 0;
     LoadFromStream(m64);
   except
+      Reset();
   end;
   DisposeObject(m64);
 end;
@@ -5551,11 +5873,11 @@ begin
   Create(False);
 end;
 
-constructor TMR_2D_Matrix.Create(AutoFreeZR_: Boolean);
+constructor TMR_2D_Matrix.Create(AutoFree_MR_List_: Boolean);
 begin
   inherited Create;
   FCritical := TCritical.Create;
-  AutoFreeZR := AutoFreeZR_;
+  AutoFree_MR_List := AutoFree_MR_List_;
 end;
 
 destructor TMR_2D_Matrix.Destroy;
@@ -5577,7 +5899,7 @@ end;
 
 procedure TMR_2D_Matrix.Remove(obj: TMR_List);
 begin
-  if AutoFreeZR then
+  if AutoFree_MR_List then
       DisposeObject(obj);
   inherited Remove(obj);
 end;
@@ -5586,7 +5908,7 @@ procedure TMR_2D_Matrix.Delete(index: Integer);
 begin
   if (index >= 0) and (index < Count) then
     begin
-      if AutoFreeZR then
+      if AutoFree_MR_List then
           DisposeObject(Items[index]);
       inherited Delete(index);
     end;
@@ -5596,7 +5918,7 @@ procedure TMR_2D_Matrix.Clear;
 var
   I: Integer;
 begin
-  if AutoFreeZR then
+  if AutoFree_MR_List then
     for I := 0 to Count - 1 do
         DisposeObject(Items[I]);
   inherited Clear;
@@ -5681,41 +6003,175 @@ begin
   DisposeObject(d);
 end;
 
+procedure TZRSerialized.Do_NoSpace(Trigger: TZDB2_Core_Space; Siz_: Int64; var retry: Boolean);
+begin
+  retry := FZDB2.Fast_AppendSpace(FZDB2_Delta, FZDB2_Block)
+end;
+
+function TZRSerialized.Get_AutoFreeStream: Boolean;
+begin
+  Result := FIOHnd.AutoFree;
+end;
+
+procedure TZRSerialized.Set_AutoFreeStream(const Value: Boolean);
+begin
+  FIOHnd.AutoFree := Value;
+end;
+
 constructor TZRSerialized.Create(stream_: TCore_Stream);
+var
+  n: U_String;
 begin
   inherited Create;
   // init
-  FStream := stream_;
-  FAutoFreeStream := False;
+  InitIOHnd(FIOHnd);
+  if stream_.Size > 0 then
+      stream_.Size := 0;
+
+  if stream_ is TCore_FileStream then
+      n := TCore_FileStream(stream_).filename
+  else if stream_ is TReliableFileStream then
+      n := TReliableFileStream(stream_).filename
+  else
+      n := '';
+  umlFileCreateAsStream(n, stream_, FIOHnd, False);
+  FSerialized_File := n;
+
+  FZDB2 := TZDB2_Core_Space.Create(@FIOHnd);
+  FZDB2.Mode := TZDB2_SpaceMode.smBigData;
+  FZDB2.AutoCloseIOHnd := True;
+  FZDB2.OnNoSpace := Do_NoSpace;
+  FZDB2_Block := $FFFF;
+  FZDB2_Delta := 500 * 1024 * 1024;
+  FZDB2.Open;
+
   FCritical := TCritical.Create;
-  FWriteHistory := TMR_List.Create;
-  FReadHistory := TMR_List.Create;
-  FEnabledWriteHistory := False;
-  FEnabledReadHistory := False;
+  FPixel_Model := TRasterSerialized_Pixel_Model.rspmBGRA;
+
+  FWrite_History_Pool := TSerialized_History_Pool.Create;
+  FRead_History_Pool := TSerialized_History_Pool.Create;
+  FEnabled_Write_History := False;
+  FEnabled_Read_History := False;
+
+  FRemove_Serialized_File_On_Destroy := False;
 
   // update global Pool
-  FInstance_Queue_Ptr := ZR_Serialized_Pool.Add(Self);
+  FInstance_Queue_Ptr := RasterSerialized_Instance_Pool.Add(Self);
+
+  if FSerialized_File <> '' then
+      DoStatus('Inited Serialized: "%s"', [FSerialized_File.Text])
+  else
+      DoStatus('Inited Serialized: "Memory Mode."');
+end;
+
+constructor TZRSerialized.Create_To_File(FileName_: U_String);
+begin
+  inherited Create;
+  // init
+  InitIOHnd(FIOHnd);
+  umlFileCreate(FileName_, FIOHnd);
+
+  FZDB2 := TZDB2_Core_Space.Create(@FIOHnd);
+  FZDB2.Mode := TZDB2_SpaceMode.smBigData;
+  FZDB2.AutoCloseIOHnd := True;
+  FZDB2.OnNoSpace := Do_NoSpace;
+  FZDB2_Block := $FFFF;
+  FZDB2_Delta := 500 * 1024 * 1024;
+  FZDB2.Open;
+
+  FCritical := TCritical.Create;
+  FPixel_Model := TRasterSerialized_Pixel_Model.rspmBGRA;
+
+  FWrite_History_Pool := TSerialized_History_Pool.Create;
+  FRead_History_Pool := TSerialized_History_Pool.Create;
+  FEnabled_Write_History := False;
+  FEnabled_Read_History := False;
+
+  FSerialized_File := FileName_;
+  FRemove_Serialized_File_On_Destroy := False;
+  // update global Pool
+  FInstance_Queue_Ptr := RasterSerialized_Instance_Pool.Add(Self);
+
+  if FSerialized_File <> '' then
+      DoStatus('Inited Serialized: "%s"', [FSerialized_File.Text]);
+end;
+
+constructor TZRSerialized.Create_To_Directory(Directory_, File_Prefix_: U_String);
+var
+  Path_, FileName_: U_String;
+begin
+  inherited Create;
+
+  // generate temp file
+  Path_ := Directory_;
+  if Path_ = '' then
+      Path_ := umlGetCurrentPath();
+  repeat
+      FileName_ := umlCombineFileName(Path_, PFormat('%s%s.ZDB2', [File_Prefix_.Text, umlGenerate_Random_Name().Text]));
+  until not umlFileExists(FileName_);
+  umlCreateDirectory(Path_);
+
+  // init
+  InitIOHnd(FIOHnd);
+  umlFileCreate(FileName_, FIOHnd);
+
+  FZDB2 := TZDB2_Core_Space.Create(@FIOHnd);
+  FZDB2.Mode := TZDB2_SpaceMode.smBigData;
+  FZDB2.AutoCloseIOHnd := True;
+  FZDB2.OnNoSpace := Do_NoSpace;
+  FZDB2_Block := $FFFF;
+  FZDB2_Delta := 500 * 1024 * 1024;
+  FZDB2.Open;
+
+  FCritical := TCritical.Create;
+  FPixel_Model := TRasterSerialized_Pixel_Model.rspmBGRA;
+
+  FWrite_History_Pool := TSerialized_History_Pool.Create;
+  FRead_History_Pool := TSerialized_History_Pool.Create;
+  FEnabled_Write_History := False;
+  FEnabled_Read_History := False;
+
+  FSerialized_File := FileName_;
+  FRemove_Serialized_File_On_Destroy := True;
+  // update global Pool
+  FInstance_Queue_Ptr := RasterSerialized_Instance_Pool.Add(Self);
+
+  if FSerialized_File <> '' then
+      DoStatus('Inited Serialized: "%s"', [FSerialized_File.Text]);
 end;
 
 destructor TZRSerialized.Destroy;
 begin
   // update global Pool
-  ZR_Serialized_Pool.Remove_P(FInstance_Queue_Ptr);
+  RasterSerialized_Instance_Pool.Remove_P(FInstance_Queue_Ptr);
 
   // free
-  ClearHistory();
-  if FAutoFreeStream then
-      DisposeObject(FStream);
+  Clear_History();
+  DisposeObject(FZDB2);
   DisposeObject(FCritical);
-  DisposeObject(FWriteHistory);
-  DisposeObject(FReadHistory);
+  DisposeObject(FWrite_History_Pool);
+  DisposeObject(FRead_History_Pool);
+
+  if FSerialized_File <> '' then
+      DoStatus('Free Serialized: "%s"', [FSerialized_File.Text])
+  else
+      DoStatus('Free Serialized: "Memory Mode."');
+
+  if FRemove_Serialized_File_On_Destroy and (FSerialized_File <> '') and (umlFileExists(FSerialized_File)) then
+    begin
+      umlDeleteFile(FSerialized_File);
+      DoStatus('Remove Serialized: "%s"', [FSerialized_File.Text])
+    end;
   inherited Destroy;
 end;
 
 function TZRSerialized.Write(R: TMZR): Int64;
 var
-  h1, h2: TZRSerializedHeader;
-  p: Int64;
+  H: TZRSerializedHeader;
+  ID: Integer;
+  m64: TMem64;
+  I: Integer;
+  p: PByte;
 begin
   Result := 0;
   if (R = nil) or (R.empty()) then
@@ -5723,38 +6179,61 @@ begin
 
   FCritical.Acquire;
   try
-    h1.Width := R.Width;
-    h1.Height := R.Height;
-    h1.siz := R.Width * R.Height * 4;
-    h1.UsedAgg := R.FAggNeed;
+    H.Width := R.Width;
+    H.Height := R.Height;
+    case FPixel_Model of
+      TRasterSerialized_Pixel_Model.rspmBGRA: H.siz := R.Width * R.Height * 4;
+      TRasterSerialized_Pixel_Model.rspmBGR: H.siz := R.Width * R.Height * 3;
+    end;
+    H.UsedAgg := R.FAggNeed;
+    H.Pixel := FPixel_Model;
 
-    p := FStream.Size;
-    if R.FMemorySerializedPosition >= 0 then
-      begin
-        FStream.Position := R.FMemorySerializedPosition;
-        // overwrite
-        if FStream.Read(h2, SizeOf(TZRSerializedHeader)) = SizeOf(TZRSerializedHeader) then
-          if (h1.Width * h1.Height) = (h2.Width * h2.Height) then
-              p := R.FMemorySerializedPosition;
-      end;
-
-    FStream.Position := p;
+    // remove old
+    if R.FSerialized_ID >= 0 then
+        FZDB2.RemoveData(R.FSerialized_ID, False);
 
     // serialized write
-    if FStream.Write(h1, SizeOf(TZRSerializedHeader)) = SizeOf(TZRSerializedHeader) then
-      if FStream.Write(R.FBits^[0], h1.siz) = h1.siz then
-        begin
-          R.CloseVertex;
-          R.FreeAgg;
-          System.FreeMemory(R.FBits);
-          R.FBits := nil;
-          R.FMemorySerializedPosition := p;
-          Result := h1.siz;
-        end;
+    m64 := TMem64.Create;
+    m64.Size := SizeOf(TZRSerializedHeader) + H.siz;
+    m64.WritePtr(@H, SizeOf(TZRSerializedHeader));
 
-    if FEnabledWriteHistory then
-      if FWriteHistory.IndexOf(R) < 0 then
-          FWriteHistory.Add(R);
+    // write pixel
+    case FPixel_Model of
+      TRasterSerialized_Pixel_Model.rspmBGRA: m64.WritePtr(@R.FBits^[0], H.siz);
+      TRasterSerialized_Pixel_Model.rspmBGR:
+        begin
+          p := m64.PosAsPtr;
+          for I := 0 to (R.Width * R.Height) - 1 do
+            begin
+              PRGB(p)^ := PRGB(@R.DirectBits^[I])^;
+              inc(p, 3);
+            end;
+        end;
+    end;
+
+    // update to zdb2
+    if FZDB2.WriteData(m64, ID, False) then
+      begin
+        // free memory
+        R.CloseVertex;
+        R.FreeAgg;
+        System.FreeMemory(R.FBits);
+        R.FBits := nil;
+        R.FSerialized_ID := ID;
+        R.FSerialized_Size := H.siz;
+        Result := H.siz;
+      end;
+    DisposeObject(m64);
+
+    if FEnabled_Write_History then
+      begin
+        try
+          if (R.FSerialized_Write_History_Ptr <> nil) and (R.FSerialized_Write_History_Ptr^.Instance___ = FWrite_History_Pool) then
+              FWrite_History_Pool.Remove_P(R.FSerialized_Write_History_Ptr);
+          R.FSerialized_Write_History_Ptr := FWrite_History_Pool.Add(R);
+        except
+        end;
+      end;
   finally
       FCritical.Release;
   end;
@@ -5763,9 +6242,12 @@ end;
 function TZRSerialized.Read(R: TMZR): Int64;
 var
   H: TZRSerializedHeader;
+  m64: TMem64;
+  I: Integer;
+  p: PByte;
 begin
   Result := 0;
-  if (R = nil) or (R.FMemorySerializedPosition < 0) then
+  if (R = nil) or (R.FSerialized_ID < 0) then
       exit;
 
   R.CloseVertex;
@@ -5773,35 +6255,98 @@ begin
 
   FCritical.Acquire;
   try
-    if (R.FMemorySerializedPosition >= 0) then
+    if (R.FSerialized_ID >= 0) then
       begin
-        FStream.Position := R.FMemorySerializedPosition;
-        if FStream.Read(H, SizeOf(TZRSerializedHeader)) = SizeOf(TZRSerializedHeader) then
-          if FStream.Position + H.siz <= FStream.Size then
-            begin
-              // recycle memory change
-              if Assigned(R.FBits) and R.FFreeBits then
-                  System.FreeMemory(R.FBits);
+        m64 := TMem64.Create;
+        if FZDB2.ReadData(m64, R.FSerialized_ID) then
+          begin
+            m64.Position := 0;
+            m64.ReadPtr(@H, SizeOf(TZRSerializedHeader));
 
-              // alloc serialized memory
-              R.FBits := System.GetMemory(H.siz);
-              R.FWidth := H.Width;
-              R.FHeight := H.Height;
+            // recycle
+            if Assigned(R.FBits) and R.FFreeBits then
+                System.FreeMemory(R.FBits);
 
-              // restore
-              if FStream.Read(R.FBits^[0], H.siz) = H.siz then
+            // alloc
+            R.FBits := System.GetMemory(H.Width * H.Height * 4);
+            R.FWidth := H.Width;
+            R.FHeight := H.Height;
+
+            // read pixel
+            case H.Pixel of
+              TRasterSerialized_Pixel_Model.rspmBGRA: CopyPtr(m64.PosAsPtr, @R.FBits^[0], H.siz);
+              TRasterSerialized_Pixel_Model.rspmBGR:
                 begin
-                  R.FFreeBits := True;
-                  if H.UsedAgg then
-                      R.OpenAgg;
-                  Result := H.siz;
+                  p := m64.PosAsPtr;
+                  for I := 0 to (H.Width * H.Height) - 1 do
+                    begin
+                      R.DirectBits^[I] := RGB2RGBA(PRGB(p)^);
+                      inc(p, 3);
+                    end;
                 end;
             end;
+
+            R.FFreeBits := True;
+            if H.UsedAgg then
+                R.OpenAgg;
+            Result := H.siz;
+            R.FSerialized_Size := H.siz;
+          end;
+        DisposeObject(m64);
       end;
 
-    if FEnabledReadHistory then
-      if FReadHistory.IndexOf(R) < 0 then
-          FReadHistory.Add(R);
+    if FEnabled_Read_History then
+      begin
+        try
+          if (R.FSerialized_Read_History_Ptr <> nil) and (R.FSerialized_Read_History_Ptr^.Instance___ = FRead_History_Pool) then
+              FRead_History_Pool.Remove_P(R.FSerialized_Read_History_Ptr);
+          R.FSerialized_Read_History_Ptr := FRead_History_Pool.Add(R);
+        except
+        end;
+      end;
+  finally
+      FCritical.Release;
+  end;
+end;
+
+function TZRSerialized.Get_Raster_Size(R: TMZR): Int64;
+var
+  H: TZRSerializedHeader;
+  m64: TMem64;
+  hnd: TZDB2_BlockHandle;
+begin
+  Result := 0;
+  if (R = nil) or (R.FSerialized_ID < 0) then
+      exit;
+
+  FCritical.Acquire;
+  try
+    if (R.FSerialized_ID >= 0) then
+      begin
+        m64 := TMem64.Create;
+        m64.Size := SizeOf(TZRSerializedHeader);
+        hnd := FZDB2.GetSpaceHnd(R.FSerialized_ID);
+        if Length(hnd) > 0 then
+          if FZDB2.Block_IO_Custom_Read(m64.Memory, hnd[0], 0, SizeOf(TZRSerializedHeader)) then
+            begin
+              m64.Position := 0;
+              m64.ReadPtr(@H, SizeOf(TZRSerializedHeader));
+              R.FSerialized_Size := H.siz;
+              Result := H.siz;
+            end;
+        DisposeObject(m64);
+        SetLength(hnd, 0);
+
+        if FEnabled_Read_History then
+          begin
+            try
+              if (R.FSerialized_Read_History_Ptr <> nil) and (R.FSerialized_Read_History_Ptr^.Instance___ = FRead_History_Pool) then
+                  FRead_History_Pool.Remove_P(R.FSerialized_Read_History_Ptr);
+              R.FSerialized_Read_History_Ptr := FRead_History_Pool.Add(R);
+            except
+            end;
+          end;
+      end;
   finally
       FCritical.Release;
   end;
@@ -5813,41 +6358,68 @@ var
 begin
   FCritical.Acquire;
   try
-    for I := FReadHistory.Count - 1 downto 0 do
-      if FReadHistory[I] = R then
-          FReadHistory.Delete(I);
+    // remove old
+    if R.FSerialized_ID >= 0 then
+        FZDB2.RemoveData(R.FSerialized_ID, False);
 
-    for I := FWriteHistory.Count - 1 downto 0 do
-      if FWriteHistory[I] = R then
-          FWriteHistory.Delete(I);
+    if (R.FSerialized_Write_History_Ptr <> nil) and (R.FSerialized_Write_History_Ptr^.Instance___ = FWrite_History_Pool) then
+        FWrite_History_Pool.Remove_P(R.FSerialized_Write_History_Ptr);
+    R.FSerialized_Write_History_Ptr := nil;
+
+    if (R.FSerialized_Read_History_Ptr <> nil) and (R.FSerialized_Read_History_Ptr^.Instance___ = FRead_History_Pool) then
+        FRead_History_Pool.Remove_P(R.FSerialized_Read_History_Ptr);
+    R.FSerialized_Read_History_Ptr := nil;
   finally
       FCritical.Release;
   end;
 end;
 
-procedure TZRSerialized.ClearHistory;
+procedure TZRSerialized.Clear_History;
 begin
   FCritical.Acquire;
   try
-    FReadHistory.Clear;
-    FWriteHistory.Clear;
+    if FRead_History_Pool.Num > 0 then
+      with FRead_History_Pool.Repeat_ do
+        repeat
+            Queue^.Data.FSerialized_Read_History_Ptr := nil;
+        until not Next;
+    FRead_History_Pool.Clear;
+
+    if FWrite_History_Pool.Num > 0 then
+      with FWrite_History_Pool.Repeat_ do
+        repeat
+            Queue^.Data.FSerialized_Write_History_Ptr := nil;
+        until not Next;
+    FWrite_History_Pool.Clear;
   finally
       FCritical.Release;
   end;
+end;
+
+procedure TZRSerialized.Format_Space;
+begin
+  FCritical.Acquire;
+  try
+      FZDB2.Format_Space;
+  finally
+      FCritical.Release;
+  end;
+end;
+
+procedure TZRSerialized.Lock;
+begin
+  FCritical.Acquire;
+end;
+
+procedure TZRSerialized.UnLock;
+begin
+  FCritical.Release;
 end;
 
 function TZRSerialized.StreamSize: Int64;
 begin
   FCritical.Acquire;
-  Result := FStream.Size;
-  FCritical.Release;
-end;
-
-function TZRSerialized.StreamFile: U_String;
-begin
-  Result := '';
-  FCritical.Acquire;
-  if FStream is TCore_FileStream then
-      Result := TCore_FileStream(FStream).FileName;
+  with FZDB2.State^ do
+      Result := Physics - FreeSpace;
   FCritical.Release;
 end;

@@ -12,14 +12,15 @@
 }
 unit ZR.JLS.Lossy;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses ZR.JLS.Global, ZR.JLS.Melcode, ZR.JLS.BitIO;
+uses ZR.Core, ZR.JLS.Global, ZR.JLS.Melcode, ZR.JLS.BitIO;
 
 type
-  TJLSLossy = class
+  TJLSLossy = class(TCore_Object_Intermediate)
   public
   var
     FBitIO: TJLSBitIO;
@@ -40,21 +41,21 @@ type
     function lossy_end_of_run_e(RA: Pixel; rb: Pixel; ix: Pixel; RItype: Int): Pixel;
     { For DECODING line and plane interleaved mode for LOSSY images }
     function lossy_undoscanline(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                            { current scanline }
-      no: Int; COLOR: Int): Int;                  { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no: Int; COLOR: Int): Int; { number of values in it }
     { For DECODING pixel interleaved mode in LOSSY mode }
     function lossy_undoscanline_pixel(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                                  { current scanline }
-      no: Int): Int;                                    { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no: Int): Int; { number of values in it }
 
     { For line and plane interleaved mode in LOSSY mode }
     procedure lossy_doscanline(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                           { current scanline }
-      no: Int; COLOR: Int);                      { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no: Int; COLOR: Int); { number of values in it }
     { For pixel interleavde mode for LOSSY encoding }
     procedure lossy_doscanline_pixel(psl: ppixelarray; { previous scanline }
-      SL: ppixelarray;                                 { current scanline }
-      no: Int);                                        { number of values in it }
+      SL: ppixelarray; { current scanline }
+      no: Int); { number of values in it }
   end;
 
 implementation
@@ -83,11 +84,11 @@ procedure TJLSLossy.lossy_doscanline(psl, SL: ppixelarray; no, COLOR: Int);
 var
   i: Int;
   RA, rb, RC, Rd, { context pixels }
-  ix,             { current pixel }
-  Px: Pixel;      { predicted current pixel }
-  RX: Int;        { reconstructed current pixel }
-  Sign: Int;      { sign of current context }
-  cont: Int;      { context }
+  ix, { current pixel }
+  Px: Pixel; { predicted current pixel }
+  RX: Int; { reconstructed current pixel }
+  Sign: Int; { sign of current context }
+  cont: Int; { context }
   unary: Int;
   RItype: Int;
   RUNcnt: Int;
@@ -385,9 +386,9 @@ var
   c_dd: array [0 .. MAX_COMPONENTS - 1] of Pixel;
   c_xx: array [0 .. MAX_COMPONENTS - 1] of Pixel;
   RA, rb, RC, Rd, { context pixels }
-  ix,             { current pixel }
-  Px: Int;        { predicted current pixel }
-  Sign: Int;      { sign of current context }
+  ix, { current pixel }
+  Px: Int; { predicted current pixel }
+  Sign: Int; { sign of current context }
   cont: Int;
   c_cont: array [0 .. MAX_COMPONENTS - 1] of Int; { context }
   RUNcnt: Int;
@@ -1333,8 +1334,8 @@ begin
 end;
 
 function TJLSLossy.lossy_undoscanline(psl: ppixelarray; { previous scanline }
-  SL: ppixelarray;                                      { current scanline }
-  no: Int; COLOR: Int): Int;                            { number of values in it }
+  SL: ppixelarray; { current scanline }
+  no: Int; COLOR: Int): Int; { number of values in it }
 { *** watch it! actual pixels in the scan line are numbered 1 to no .
   pixels with indices < 1 or > no are dummy "border" pixels  * }
 var
@@ -1588,8 +1589,8 @@ begin
 end;
 
 function TJLSLossy.lossy_undoscanline_pixel(psl: ppixelarray; { previous scanline }
-  SL: ppixelarray;                                            { current scanline }
-  no: Int): Int;                                              { number of values in it }
+  SL: ppixelarray; { current scanline }
+  no: Int): Int; { number of values in it }
 { *** watch it! actual pixels in the scan line are numbered 1 to no .
   pixels with indices < 1 or > no are dummy "border" pixels }
 var

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.Status;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -75,6 +76,7 @@ var
   ConsoleOutput: Boolean;
   OnDoStatusHook: TDoStatus_C;
   StatusThreadID: Boolean;
+  One_Step_Status_Limit: Integer;
 
 implementation
 
@@ -189,12 +191,19 @@ end;
 
 procedure DoStatus(const v: Pointer);
 begin
-  DoStatus(Format('0x%p', [v]));
+  try
+      DoStatus(Format('0x%p', [v]));
+  except
+  end;
 end;
 
 procedure DoStatus(const v: SystemString; const Args: array of const);
 begin
-  DoStatus(Format(v, Args));
+  try
+      DoStatus(Format(v, Args));
+  except
+      DoStatus('format text error %s', [v]);
+  end;
 end;
 
 procedure DoStatus(const v: SystemString);
@@ -249,21 +258,21 @@ type
 
   PNo_Ln_Text = ^TNo_Ln_Text;
 
-  TEvent_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PEvent_Struct__>;
+  TEvent_Pool___Decl = TZR_BL<PEvent_Struct__>;
 
   TEvent_Pool__ = class(TEvent_Pool___Decl)
   public
     procedure DoFree(var Data: PEvent_Struct__); override;
   end;
 
-  TText_Queue_Data_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PText_Queue_Data>;
+  TText_Queue_Data_Pool___Decl = TZR_BL<PText_Queue_Data>;
 
   TText_Queue_Data_Pool__ = class(TText_Queue_Data_Pool___Decl)
   public
     procedure DoFree(var Data: PText_Queue_Data); override;
   end;
 
-  TNo_Ln_Text_Pool___Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PNo_Ln_Text>;
+  TNo_Ln_Text_Pool___Decl = TZR_BL<PNo_Ln_Text>;
 
   TNo_Ln_Text_Pool__ = class(TNo_Ln_Text_Pool___Decl)
   public
@@ -296,7 +305,6 @@ var
   Text_Queue_Data_Pool__: TText_Queue_Data_Pool__;
   Status_Critical__: TCritical;
   No_Ln_Text_Pool__: TNo_Ln_Text_Pool__;
-  Hooked_OnCheckThreadSynchronize: TOnCheckThreadSynchronize;
 
 function GetOrCreateStatusNoLnData_(Th_: TCore_Thread): PNo_Ln_Text;
 var
@@ -379,7 +387,11 @@ end;
 
 procedure DoStatusNoLn(const v: SystemString; const Args: array of const);
 begin
-  DoStatusNoLn(Format(v, Args));
+  try
+      DoStatusNoLn(Format(v, Args));
+  except
+      DoStatusNoLn('format text error %s', [v]);
+  end;
 end;
 
 procedure DoStatusNoLn;
@@ -482,17 +494,21 @@ begin
 end;
 
 procedure CheckDoStatus(Th: TCore_Thread);
+var
+  i: Integer;
 begin
   if Status_Critical__ = nil then
       exit;
-  if (Th = nil) or (Th.ThreadID <> MainThreadID) then
+  if (Th = nil) or (Th.ThreadID <> Core_Main_Thread_ID) then
       exit;
   Status_Critical__.Acquire;
   try
-    while Text_Queue_Data_Pool__.Num > 0 do
+    i := 0;
+    while (Text_Queue_Data_Pool__.Num > 0) and (i < One_Step_Status_Limit) do
       begin
         _InternalOutput(Text_Queue_Data_Pool__.First^.Data^.S, Text_Queue_Data_Pool__.First^.Data^.ID);
         Text_Queue_Data_Pool__.Next;
+        inc(i);
       end;
   finally
       Status_Critical__.Release;
@@ -510,7 +526,7 @@ var
   pSS: PText_Queue_Data;
 begin
   Th := TCore_Thread.CurrentThread;
-  if (Th = nil) or (Th.ThreadID <> MainThreadID) then
+  if (Th = nil) or (Th.ThreadID <> Core_Main_Thread_ID) then
     begin
       new(pSS);
       if StatusThreadID then
@@ -615,7 +631,7 @@ end;
 
 procedure Wait_DoStatus_Queue;
 begin
-  if TCompute.CurrentThread.ThreadID <> MainThreadID then
+  if TCompute.CurrentThread.ThreadID <> Core_Main_Thread_ID then
     begin
       while Get_DoStatus_Queue_Num > 0 do
           TCompute.Sleep(1);
@@ -630,11 +646,20 @@ begin
     end;
 end;
 
+var
+  Hooked_OnCheckThreadSynchronize: TOn_Check_Thread_Synchronize;
+  Hooked_OnRaiseInfo: TOn_Raise_Info;
+
 procedure DoCheckThreadSynchronize;
 begin
   DoStatus();
   if Assigned(Hooked_OnCheckThreadSynchronize) then
       Hooked_OnCheckThreadSynchronize();
+end;
+
+procedure RaiseInfo(const n: string);
+begin
+  DoStatus('core exception ' + n);
 end;
 
 procedure _DoInit;
@@ -648,11 +673,15 @@ begin
   LastDoStatus := '';
   IDEOutput := False;
   ConsoleOutput := True;
-  OnDoStatusHook := {$IFDEF FPC}@{$ENDIF FPC}InternalDoStatus;
+  OnDoStatusHook := InternalDoStatus;
   StatusThreadID := True;
+  One_Step_Status_Limit := 20;
 
   Hooked_OnCheckThreadSynchronize := ZR.Core.OnCheckThreadSynchronize;
-  ZR.Core.OnCheckThreadSynchronize := {$IFDEF FPC}@{$ENDIF FPC}DoCheckThreadSynchronize;
+  ZR.Core.OnCheckThreadSynchronize := DoCheckThreadSynchronize;
+
+  Hooked_OnRaiseInfo := ZR.Core.On_Raise_Info;
+  ZR.Core.On_Raise_Info := RaiseInfo;
 end;
 
 procedure _DoFree;
@@ -663,6 +692,8 @@ begin
   Status_Critical__.Free;
   Status_Active__ := True;
   Status_Critical__ := nil;
+  ZR.Core.OnCheckThreadSynchronize := Hooked_OnCheckThreadSynchronize;
+  ZR.Core.On_Raise_Info := Hooked_OnRaiseInfo;
 end;
 
 initialization

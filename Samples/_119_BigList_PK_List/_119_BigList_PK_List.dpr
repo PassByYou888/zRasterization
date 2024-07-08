@@ -1,7 +1,7 @@
 program _119_BigList_PK_List;
 
 uses
-  FastMM5 in '..\..\Tools\Common\FastMM5.pas',
+  FastMM5,
   Vcl.Forms,
   BigList_PK_List_Frm in 'BigList_PK_List_Frm.pas' {BigList_PK_List_Form};
 

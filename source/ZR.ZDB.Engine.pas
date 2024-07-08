@@ -4,12 +4,13 @@
 
 unit ZR.ZDB.Engine;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
 uses SysUtils, Classes,
-  ZR.ListEngine, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib, ZR.TextDataEngine,
+  ZR.ListEngine, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib, ZR.TextDataEngine, ZR.Notify,
   ZR.Json,
   ZR.Core, ZR.MemoryStream, ZR.ZDB.ObjectData_LIB, ZR.ZDB,
   ZR.DFE, ZR.ZDB.ItemStream_LIB;
@@ -96,7 +97,7 @@ type
   end;
 
   // Base Data Struct
-  TDBEnginePascalString = class(TCore_Object)
+  TDBEnginePascalString = class(TCore_Object_Intermediate)
   protected
     FDBStorePos: Int64;
     dbEng: TDBStore;
@@ -122,7 +123,7 @@ type
   end;
 
   // Base DataBase Struct
-  TDBListDF = class(TCore_Object)
+  TDBListDF = class(TCore_Object_Intermediate)
   protected
     FHashListBuff: TCore_ListForObj;
   public
@@ -144,7 +145,7 @@ type
   end;
 
   // Base DataBase Struct
-  TDBListVL = class(TCore_Object)
+  TDBListVL = class(TCore_Object_Intermediate)
   protected
     FHashListBuff: TCore_ListForObj;
     procedure do_ImportCSV(const sour: TPascalString; const king, Data: TArrayPascalString);
@@ -174,7 +175,7 @@ type
   end;
 
   // Base DataBase Struct
-  TDBListVT = class(TCore_Object)
+  TDBListVT = class(TCore_Object_Intermediate)
   protected
     FHashListBuff: TCore_ListForObj;
     procedure do_ImportCSV(const sour: TPascalString; const king, Data: TArrayPascalString);
@@ -204,7 +205,7 @@ type
   end;
 
   // Base DataBase Struct
-  TDBListTE = class(TCore_Object)
+  TDBListTE = class(TCore_Object_Intermediate)
   protected
     FHashListBuff: TCore_ListForObj;
   public
@@ -225,7 +226,7 @@ type
   end;
 
   // Base DataBase Struct
-  TDBListJson = class(TCore_Object)
+  TDBListJson = class(TCore_Object_Intermediate)
   protected
     FHashListBuff: TCore_ListForObj;
     procedure do_ImportCSV(const sour: TPascalString; const king, Data: TArrayPascalString);
@@ -250,7 +251,7 @@ type
   end;
 
   // Base DataBase Struct
-  TDBListPascalString = class(TCore_Object)
+  TDBListPascalString = class(TCore_Object_Intermediate)
   protected
     FHashListBuff: TCore_ListForObj;
   public
@@ -323,7 +324,7 @@ type
   TRemove_P = reference to procedure(StorePos: Int64; RemoveSuccesed: Boolean);
 {$ENDIF FPC}
 
-  TQueryTask = class(TCore_Object)
+  TQueryTask = class(TCore_Object_Intermediate)
   protected
     FDBEng: TDBStore;
     FInited: Boolean;
@@ -367,6 +368,7 @@ type
   TQueryThread = class(TCore_Thread)
   public
     StoreEngine: TDBStore;
+    Activted: Boolean;
     Paused: Boolean;
     PausedIdleTime: Double;
     RemoveQueue, RemoveCompletedQueue: TInt64HashPointerList;
@@ -382,7 +384,7 @@ type
 
     procedure Execute; override;
 
-    constructor Create(CreateSuspended: Boolean);
+    constructor Create(StoreEngine_: TDBStore);
     destructor Destroy; override;
 
     procedure RemoveDeleteProc(p: Pointer);
@@ -418,7 +420,7 @@ type
     property CacheID: Cardinal read ID;
   end;
 
-  TDBStore = class(TCore_InterfacedObject)
+  TDBStore = class(TCore_InterfacedObject_Intermediate)
   protected
     FDBEngine: TObjectDataManagerOfCache;
     FStoreFieldPos: Int64;
@@ -452,7 +454,7 @@ type
     FUserString: SystemString;
   protected
     procedure ReadHeaderInfo;
-    procedure ThreadFreeEvent(Sender: TObject);
+    procedure ThreadFreeEvent;
     procedure DoCreateInit; virtual;
     procedure InstanceCacheObjectFreeProc(Obj: TCore_Object);
     procedure ProcessNewInstanceCache(StorePos: Int64; Obj: TCore_Object; siz: NativeInt);
@@ -692,7 +694,7 @@ procedure ZDB_ThSync(t: TCore_Thread; Sync: Boolean; proc: TThreadMethod);
 begin
   try
     if Sync then
-        TCore_Thread.Synchronize(t, proc)
+        TCompute.SyncM(t, proc)
     else
         proc();
   except
@@ -1024,7 +1026,7 @@ begin
   lst := TListPascalString.Create;
   lst.LoadFromStream(stream);
   lst.FillTo(Buff);
-  ImportCSV_M(Buff, {$IFDEF FPC}@{$ENDIF FPC}do_ImportCSV);
+  ImportCSV_M(Buff, do_ImportCSV);
   DisposeObject(lst);
   SetLength(Buff, 0);
 end;
@@ -1251,7 +1253,7 @@ begin
   lst := TListPascalString.Create;
   lst.LoadFromStream(stream);
   lst.FillTo(Buff);
-  ImportCSV_M(Buff, {$IFDEF FPC}@{$ENDIF FPC}do_ImportCSV);
+  ImportCSV_M(Buff, do_ImportCSV);
   DisposeObject(lst);
   SetLength(Buff, 0);
 end;
@@ -1547,7 +1549,7 @@ begin
   lst := TListPascalString.Create;
   lst.LoadFromStream(stream);
   lst.FillTo(Buff);
-  ImportCSV_M(Buff, {$IFDEF FPC}@{$ENDIF FPC}do_ImportCSV);
+  ImportCSV_M(Buff, do_ImportCSV);
   DisposeObject(lst);
   SetLength(Buff, 0);
 end;
@@ -1845,7 +1847,7 @@ begin
   Result := False;
   if FStoped or FProcessQueryDone then
     begin
-      ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+      ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
       Exit;
     end;
 
@@ -1865,14 +1867,14 @@ begin
         begin
           if not FDBEng.QueryPrev(FState) then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           dec(FState.index);
-          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoTriggerQuery);
+          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoTriggerQuery);
           if FState.Aborted then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           Result := True;
@@ -1881,14 +1883,14 @@ begin
         begin
           if not FDBEng.QueryNext(FState) then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           inc(FState.index);
-          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoTriggerQuery);
+          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoTriggerQuery);
           if FState.Aborted then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           Result := True;
@@ -1905,14 +1907,14 @@ begin
         begin
           if not FDBEng.QueryLast(FState) then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           FState.index := FDBEng.Count - 1;
-          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoTriggerQuery);
+          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoTriggerQuery);
           if FState.Aborted then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           Result := True;
@@ -1921,14 +1923,14 @@ begin
         begin
           if not FDBEng.QueryFirst(FState) then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           FState.index := 0;
-          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoTriggerQuery);
+          ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoTriggerQuery);
           if FState.Aborted then
             begin
-              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, {$IFDEF FPC}@{$ENDIF FPC}DoQueryDone);
+              ZDB_ThSync(FDBEng.FQueryThread, FSyncTrigger, DoQueryDone);
               Exit;
             end;
           Result := True;
@@ -1967,7 +1969,7 @@ begin
   if StoreEngine = nil then
       Exit;
 
-  ZDB_ThSync(Self, True, {$IFDEF FPC}@{$ENDIF FPC}PickQueryQueue);
+  ZDB_ThSync(Self, True, PickQueryQueue);
 
   i := 0;
   for i := 0 to PickedQueryQueue.Count - 1 do
@@ -1976,14 +1978,14 @@ begin
       QT.FProcessQueryDone := not QT.ProcessQuery;
     end;
 
-  ZDB_ThSync(Self, True, {$IFDEF FPC}@{$ENDIF FPC}SyncQueryDone);
+  ZDB_ThSync(Self, True, SyncQueryDone);
 
   Paused := (StoreEngine.FQueryQueue.Count = 0) and (RemoveQueue.Count = 0);
 
   if Paused then
     begin
       StoreEngine.FQueryThreadLastActivtedTime := Now;
-      ZDB_ThSync(Self, True, {$IFDEF FPC}@{$ENDIF FPC}SyncUpdateCacheState);
+      ZDB_ThSync(Self, True, SyncUpdateCacheState);
     end;
 end;
 
@@ -2071,21 +2073,21 @@ begin
         begin
           StoreEngine.FCacheAnnealingState := Format('cleanup instance:%d(%s) stream:%d(%s)',
             [
-            StoreEngine.FCache.Count,
-            umlSizeToStr(StoreEngine.FUsedInstanceCacheMemory).Text,
-            StoreEngine.FStreamCache.Count,
-            umlSizeToStr(StoreEngine.FUsedStreamCacheMemory).Text
-            ]);
+              StoreEngine.FCache.Count,
+              umlSizeToStr(StoreEngine.FUsedInstanceCacheMemory).Text,
+              StoreEngine.FStreamCache.Count,
+              umlSizeToStr(StoreEngine.FUsedStreamCacheMemory).Text
+              ]);
           StoreEngine.Recache;
         end;
     end
   else if Allowed then
       StoreEngine.FCacheAnnealingState := Format('Annealing Cooldown %d instance:%s stream:%s',
       [
-      Round(StoreEngine.CacheAnnealingTime - PausedIdleTime),
-      umlSizeToStr(StoreEngine.FUsedInstanceCacheMemory).Text,
-      umlSizeToStr(StoreEngine.FUsedStreamCacheMemory).Text
-      ]);
+        Round(StoreEngine.CacheAnnealingTime - PausedIdleTime),
+        umlSizeToStr(StoreEngine.FUsedInstanceCacheMemory).Text,
+        umlSizeToStr(StoreEngine.FUsedStreamCacheMemory).Text
+        ]);
 end;
 
 procedure TQueryThread.SyncUpdateCacheState;
@@ -2093,11 +2095,11 @@ begin
   if StoreEngine <> nil then
       StoreEngine.FCacheAnnealingState := Format('instance:%d(%s) stream:%d(%s)',
       [
-      StoreEngine.FCache.Count,
-      umlSizeToStr(StoreEngine.FUsedInstanceCacheMemory).Text,
-      StoreEngine.FStreamCache.Count,
-      umlSizeToStr(StoreEngine.FUsedStreamCacheMemory).Text
-      ]);
+        StoreEngine.FCache.Count,
+        umlSizeToStr(StoreEngine.FUsedInstanceCacheMemory).Text,
+        StoreEngine.FStreamCache.Count,
+        umlSizeToStr(StoreEngine.FUsedStreamCacheMemory).Text
+        ]);
 end;
 
 procedure TQueryThread.Execute;
@@ -2105,37 +2107,40 @@ var
   cloop: NativeInt;
 begin
   cloop := 0;
-  while StoreEngine <> nil do
+  while Activted do
     begin
       PausedIdleTime := 0;
       while Paused do
         begin
           Sleep(10);
           PausedIdleTime := PausedIdleTime + 0.01;
-
-          ZDB_ThSync(Self, True, {$IFDEF FPC}@{$ENDIF FPC}SyncCheckCache);
+          ZDB_ThSync(Self, True, SyncCheckCache);
         end;
 
       AsyncQuery();
       if (cloop = 0) or (cloop > 1000) then
         begin
           cloop := 0;
-          ZDB_ThSync(Self, True, {$IFDEF FPC}@{$ENDIF FPC}SyncUpdateCacheState);
+          ZDB_ThSync(Self, True, SyncUpdateCacheState);
         end;
 
       inc(cloop);
     end;
+  ZDB_ThSync(Self, True, StoreEngine.ThreadFreeEvent);
+  DelayFreeObj(1.0, Self);
 end;
 
-constructor TQueryThread.Create(CreateSuspended: Boolean);
+constructor TQueryThread.Create(StoreEngine_: TDBStore);
 begin
-  inherited Create(CreateSuspended);
-  FreeOnTerminate := True;
+  inherited Create(True);
+  FreeOnTerminate := False;
+  StoreEngine := StoreEngine_;
+  Activted := True;
   Paused := True;
 
   RemoveQueue := TInt64HashPointerList.CustomCreate(1024);
   RemoveQueue.AutoFreeData := True;
-  RemoveQueue.OnFreePtr := {$IFDEF FPC}@{$ENDIF FPC}RemoveDeleteProc;
+  RemoveQueue.OnFreePtr := RemoveDeleteProc;
   RemoveCompletedQueue := TInt64HashPointerList.CustomCreate(1024);
   RemoveCompletedQueue.AutoFreeData := False;
   PickedQueryQueue := TCore_ListForObj.Create;
@@ -2226,7 +2231,7 @@ begin
       if FDBEngine.IsOnlyRead then
           RaiseInfo('/Store field error!');
       if not(FDBEngine.CreateField('/Store', '') and
-        FDBEngine.GetPathField('/Store', FStoreFieldPos)) then
+          FDBEngine.GetPathField('/Store', FStoreFieldPos)) then
           RaiseInfo('reinit /Store field error!');
     end;
 
@@ -2236,7 +2241,7 @@ begin
   FCount := f.HeaderCount;
 end;
 
-procedure TDBStore.ThreadFreeEvent(Sender: TObject);
+procedure TDBStore.ThreadFreeEvent();
 begin
   FQueryThreadTerminate := True;
 end;
@@ -2245,8 +2250,7 @@ procedure TDBStore.DoCreateInit;
 begin
   FQueryQueue := TCore_ListForObj.Create;
 
-  FQueryThread := TQueryThread.Create(True);
-  FQueryThread.StoreEngine := Self;
+  FQueryThread := TQueryThread.Create(Self);
 
   FQueryThreadTerminate := False;
   FQueryThreadLastActivtedTime := Now;
@@ -2270,8 +2274,8 @@ begin
   FMinimizeCacheOfFileSize := DefaultMinimizeCacheOfFileSize;
   FCacheAnnealingState := '';
 
-  FCache.OnObjectFreeProc := {$IFDEF FPC}@{$ENDIF FPC}InstanceCacheObjectFreeProc;
-  FStreamCache.OnObjectFreeProc := {$IFDEF FPC}@{$ENDIF FPC}StreamCacheObjectFreeProc;
+  FCache.OnObjectFreeProc := InstanceCacheObjectFreeProc;
+  FStreamCache.OnObjectFreeProc := StreamCacheObjectFreeProc;
 
   FResultDF := TDBEngineDF.Create;
   FResultVL := TDBEngineVL.Create;
@@ -2280,7 +2284,6 @@ begin
   FResultJson := TDBEngineJson.Create;
   FResultPascalString := TDBEnginePascalString.Create;
 
-  FQueryThread.OnTerminate := {$IFDEF FPC}@{$ENDIF FPC}ThreadFreeEvent;
   FQueryThread.Suspended := False;
 
   FUserPointer := nil;
@@ -2405,12 +2408,12 @@ destructor TDBStore.Destroy;
 var
   i: Integer;
 begin
-  FQueryThread.StoreEngine := nil;
+  FQueryThread.Activted:=False;
   FQueryThread.Paused := False;
 
   // wait thread
   while not FQueryThreadTerminate do
-      CheckThreadSynchronize;
+      Check_Soft_Thread_Synchronize(10, False);
 
   for i := 0 to FQueryQueue.Count - 1 do
       DisposeObject(FQueryQueue[i]);
@@ -2905,14 +2908,14 @@ begin
 
   if ReverseBuild then
     begin
-      f := {$IFDEF FPC}@{$ENDIF FPC}QueryLast;
-      n := {$IFDEF FPC}@{$ENDIF FPC}QueryPrev;
+      f := QueryLast;
+      n := QueryPrev;
       qState.index := Count - 1;
     end
   else
     begin
-      f := {$IFDEF FPC}@{$ENDIF FPC}QueryFirst;
-      n := {$IFDEF FPC}@{$ENDIF FPC}QueryNext;
+      f := QueryFirst;
+      n := QueryNext;
       qState.index := 0;
     end;
 
@@ -2947,14 +2950,14 @@ begin
 
   if ReverseQuery then
     begin
-      f := {$IFDEF FPC}@{$ENDIF FPC}QueryLast;
-      n := {$IFDEF FPC}@{$ENDIF FPC}QueryPrev;
+      f := QueryLast;
+      n := QueryPrev;
       qState.index := Count - 1;
     end
   else
     begin
-      f := {$IFDEF FPC}@{$ENDIF FPC}QueryFirst;
-      n := {$IFDEF FPC}@{$ENDIF FPC}QueryNext;
+      f := QueryFirst;
+      n := QueryNext;
       qState.index := 0;
     end;
 
@@ -3096,7 +3099,7 @@ end;
 procedure TDBStore.WaitQueryThread;
 begin
   while not FQueryThread.Paused do
-      CheckThreadSynchronize(1);
+      Check_Soft_Thread_Synchronize(10);
 end;
 
 procedure TDBStore.WaitQueryThread(waitTime: TTimeTick);
@@ -3105,7 +3108,7 @@ var
 begin
   st := GetTimeTick + waitTime;
   while (not FQueryThread.Paused) and (waitTime > 0) and (GetTimeTick < st) do
-      CheckThreadSynchronize;
+      Check_Soft_Thread_Synchronize(10);
 end;
 
 function TDBStore.QueryProcessing: Boolean;
@@ -3967,19 +3970,19 @@ DefaultCacheAnnealingTime := 15.0;
 DefaultMinimizeCacheOfFileSize := 16 * 1024 * 1024; // 16M
 
 {$IFDEF CPU64}
-DefaultCacheBufferLength := 10000 * 100;              // 1000000
-DefaultIndexCacheBufferLength := 10000 * 100;         // 1000000
+DefaultCacheBufferLength := 10000 * 100; // 1000000
+DefaultIndexCacheBufferLength := 10000 * 100; // 1000000
 DefaultMinimizeInstanceCacheSize := 64 * 1024 * 1024; // 64M
 DefaultMaximumInstanceCacheSize := 256 * 1024 * 1024; // 256M
-DefaultMinimizeStreamCacheSize := 96 * 1024 * 1024;   // 96M
-DefaultMaximumStreamCacheSize := 128 * 1024 * 1024;   // 128M
+DefaultMinimizeStreamCacheSize := 96 * 1024 * 1024; // 96M
+DefaultMaximumStreamCacheSize := 128 * 1024 * 1024; // 128M
 {$ELSE}
-DefaultCacheBufferLength := 10000 * 10;               // 100000
-DefaultIndexCacheBufferLength := 10000 * 10;          // 100000
+DefaultCacheBufferLength := 10000 * 10; // 100000
+DefaultIndexCacheBufferLength := 10000 * 10; // 100000
 DefaultMinimizeInstanceCacheSize := 32 * 1024 * 1024; // 32M
 DefaultMaximumInstanceCacheSize := 128 * 1024 * 1024; // 128M
-DefaultMinimizeStreamCacheSize := 24 * 1024 * 1024;   // 24M
-DefaultMaximumStreamCacheSize := 32 * 1024 * 1024;    // 32M
+DefaultMinimizeStreamCacheSize := 24 * 1024 * 1024; // 24M
+DefaultMaximumStreamCacheSize := 32 * 1024 * 1024; // 32M
 {$ENDIF}
 
 finalization

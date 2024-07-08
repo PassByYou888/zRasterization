@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.Lossless;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

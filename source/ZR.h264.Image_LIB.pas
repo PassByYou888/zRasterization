@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Image_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -14,7 +15,7 @@ const
   QPARAM_AUTO = 52;
 
 type
-  TPlanarImage = class
+  TPlanarImage = class(TCore_Object_Intermediate)
   private
     w, h: int32_t;
     qp: uint8_t;
@@ -22,7 +23,7 @@ type
   public
     frame_num: int32_t;
     plane: array [0 .. 2] of uint8_p; // pointers to image planes (0 - luma; 1,2 - chroma U/V)
-    stride, stride_c: int32_t;        // plane strides
+    stride, stride_c: int32_t; // plane strides
 
     property QParam: uint8_t read qp write SetQParam;
     property width: int32_t read w;

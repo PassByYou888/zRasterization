@@ -15,7 +15,7 @@ uses
   Winapi.Messages, Winapi.Windows, Winapi.ShellAPI,
 
   ZR.Core, ZR.ListEngine,
-  ZR.ZDB.ObjectData_LIB, ZR.ZDB, ZR.ZDB.ItemStream_LIB, ZR.Expression,
+  ZR.ZDB.ObjectData_LIB, ZR.ZDB, ZR.ZDB.ItemStream_LIB, ZR.Expression, ZR.Notify,
   ZR.MemoryStream, ZR.MemoryRaster, ZR.Geometry2D, ZR.Status, ZR.PascalStrings,
   ZR.UnicodeMixedLib, ZR.DrawEngine, ZR.DrawEngine.SlowFMX;
 
@@ -63,6 +63,7 @@ type
 var
   FMX_FontBuildForm: TFMX_FontBuildForm;
 
+procedure Update_All_From_Inherited_To_MainForm;
 function EnumFontsProc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: Integer; Data: Pointer): Integer; stdcall;
 procedure GetSystemFonts(FontList: TStrings);
 function WaitShellExecute(sCMD, sWorkPath: string; ShowStatus: Boolean): DWord;
@@ -73,6 +74,15 @@ implementation
 
 
 uses StyleModuleUnit;
+
+procedure Update_All_From_Inherited_To_MainForm;
+var
+  i: Integer;
+begin
+  for i := Application.ComponentCount - 1 downto 0 do
+    if (Application.Components[i] is TForm) and (TForm(Application.Components[i]) <> Application.MainForm) then
+        TForm(Application.Components[i]).Parent := Application.MainForm;
+end;
 
 function EnumFontsProc(var LogFont: TLogFont; var TextMetric: TTextMetric; FontType: Integer; Data: Pointer): Integer; stdcall;
 var
@@ -137,7 +147,6 @@ begin
   if WasOK then
     begin
       repeat
-        Sleep(10);
         WasOK := ReadFile(StdOutPipeRead, buffer, BuffSize, BytesRead, nil);
         if (WasOK) and (BytesRead > 0) then
           begin
@@ -152,6 +161,7 @@ begin
                     DoStatus(n);
               end;
           end;
+        TCompute.Sleep(1);
       until (not WasOK) or (BytesRead = 0);
       try
         WaitForSingleObject(pi.hProcess, Infinite);
@@ -214,7 +224,9 @@ end;
 
 procedure TFMX_FontBuildForm.sysTimerTimer(Sender: TObject);
 begin
+  Action_BuildFont.Enabled := TCompute.ActivtedTask = 0;
   DoStatus();
+  CheckThread;
   Invalidate;
 end;
 
@@ -269,6 +281,10 @@ begin
     '|color(0,1,0.2)|color text'#13#10 +
     '|color(0.5,1,0.5)|color text'#13#10;
 
+  SysPost.PostExecuteP_NP(0.1, procedure
+    begin
+      Update_All_From_Inherited_To_MainForm();
+    end);
 end;
 
 destructor TFMX_FontBuildForm.Destroy;
@@ -283,7 +299,10 @@ var
   Cmd_: TPascalString;
   p: PPascalString;
 begin
-  FMX_FONTConsoleBuild := umlCombineFileName(TPath.GetLibraryPath,'FMX_FONTConsoleBuild.EXE');
+  if not umlFileExists(TPath.GetLibraryPath+'FMX_FONTConsoleBuild.EXE') then
+      exit;
+
+  FMX_FONTConsoleBuild := TPath.GetLibraryPath+'FMX_FONTConsoleBuild.EXE';
   for i := 0 to fontListBox.Count - 1 do
     if fontListBox.ListItems[i].IsChecked then
       begin

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.inter_pred;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 

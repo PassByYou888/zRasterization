@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB.LocalManager;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -52,7 +53,7 @@ type
 
   TZDBStorePosTransformNotify = procedure(const Data: Pointer; const TransformBuff: PZDBStorePosTransformArray) of object;
 
-  TZDBPipeline = class(TCore_InterfacedObject)
+  TZDBPipeline = class(TCore_InterfacedObject_Intermediate)
   private
     FQueryCounter: Int64;
     FCurrentFragmentTime: TTimeTick;
@@ -150,7 +151,7 @@ type
 
   PCompressDoneNotify = ^TCompressDoneNotify;
 
-  TZDBLocalManager = class(TCore_InterfacedObject, IDBStoreBaseNotify, ICadencerProgressInterface)
+  TZDBLocalManager = class(TCore_InterfacedObject_Intermediate, IDBStoreBaseNotify, ICadencerProgressInterface)
   protected
     FRootPath: SystemString;
     FDBPool: THashObjectList;
@@ -1172,7 +1173,7 @@ begin
       end;
     end;
 
-  FDBPool.ProgressM({$IFDEF FPC}@{$ENDIF FPC}ZDBEngProgress);
+  FDBPool.ProgressM(ZDBEngProgress);
 end;
 
 procedure TZDBLocalManager.DoQueryFragmentData(pipe: TZDBPipeline; FragmentSour: TMS64);
@@ -1196,7 +1197,7 @@ begin
   except
   end;
 
-  with ProgressPost.PostExecuteM(False, pipe.QueryDoneFreeDelayTime, {$IFDEF FPC}@{$ENDIF FPC}DelayFreePipe) do
+  with ProgressPost.PostExecuteM(False, pipe.QueryDoneFreeDelayTime, DelayFreePipe) do
     begin
       Data1 := pipe;
       Ready();
@@ -1216,7 +1217,7 @@ begin
         pl := TZDBPipeline(FQueryPipelineList[i]);
         if (pl.SourceDB = sour.OutputDB) and (pl.Activted) then
           begin
-            with ProgressPost.PostExecuteM(False, 1.0, {$IFDEF FPC}@{$ENDIF FPC}DelayFreePipe) do
+            with ProgressPost.PostExecuteM(False, 1.0, DelayFreePipe) do
               begin
                 Data1 := sour;
                 Ready();
@@ -1273,7 +1274,7 @@ begin
 
   SourceDatabaseName_ := dPipe.SourceDB.Name;
   replaceN := dPipe.UserVariant;
-  with ProgressPost.PostExecuteM(False, 2.0, {$IFDEF FPC}@{$ENDIF FPC}DelayReplaceDB) do
+  with ProgressPost.PostExecuteM(False, 2.0, DelayReplaceDB) do
     begin
       Data3 := SourceDatabaseName_;
       Data4 := replaceN;
@@ -1315,7 +1316,7 @@ begin
 
   if dbBusy then
     begin
-      with ProgressPost.PostExecuteM(False, 1.0, {$IFDEF FPC}@{$ENDIF FPC}DelayReplaceDB) do
+      with ProgressPost.PostExecuteM(False, 1.0, DelayReplaceDB) do
         begin
           Data3 := SourceDatabaseName_;
           Data4 := replaceN;
@@ -1414,7 +1415,7 @@ var
   fn, n: SystemString;
 begin
   Clear;
-  Arr := umlGetFileListWithFullPath(RootPath);
+  Arr := umlGet_File_Full_Array(RootPath);
   for fn in Arr do
     begin
       n := umlGetFileName(fn);
@@ -1610,8 +1611,8 @@ begin
       nd := InitDB(n, False);
 
   pl := QueryDB(False, True, False, Database_.Name, 'Copying', True, 0.0, 0, 0, 0, 0);
-  pl.OnDataFilter_M := {$IFDEF FPC}@{$ENDIF FPC}DoQueryCopy;
-  pl.OnDataDone_M := {$IFDEF FPC}@{$ENDIF FPC}DoCopyDone;
+  pl.OnDataFilter_M := DoQueryCopy;
+  pl.OnDataDone_M := DoCopyDone;
   pl.UserVariant := nd.Name;
   pl.ClearStorePosTransform;
   Result := pl;
@@ -1653,8 +1654,8 @@ begin
       nd := InitNewDB(n);
 
   pl := QueryDB(False, True, False, Database_.Name, n, False, 0.0, 0, 0, 0, 0);
-  pl.OnDataFilter_M := {$IFDEF FPC}@{$ENDIF FPC}DoQueryCopy;
-  pl.OnDataDone_M := {$IFDEF FPC}@{$ENDIF FPC}DoCompressDone;
+  pl.OnDataFilter_M := DoQueryCopy;
+  pl.OnDataDone_M := DoCompressDone;
   pl.UserVariant := nd.Name;
   pl.ClearStorePosTransform;
   Result := pl;
@@ -1669,7 +1670,7 @@ end;
 
 procedure TZDBLocalManager.ReplaceDB(dataBaseName_, replaceN: SystemString);
 begin
-  with ProgressPost.PostExecuteM(False, 0, {$IFDEF FPC}@{$ENDIF FPC}DelayReplaceDB) do
+  with ProgressPost.PostExecuteM(False, 0, DelayReplaceDB) do
     begin
       Data3 := dataBaseName_;
       Data4 := replaceN;
@@ -1863,7 +1864,7 @@ begin
   Result.QueryDoneFreeDelayTime := QueryDoneFreeDelayTime;
   Result.WriteFragmentBuffer := True;
 
-  Result.FQueryTask := Result.SourceDB.QueryM(Result.PipelineName, ReverseQuery, {$IFDEF FPC}@{$ENDIF FPC}Result.Query, {$IFDEF FPC}@{$ENDIF FPC}Result.QueryDone);
+  Result.FQueryTask := Result.SourceDB.QueryM(Result.PipelineName, ReverseQuery, Result.Query, Result.QueryDone);
   try
     if Assigned(NotifyIntf) then
         NotifyIntf.CreateQuery(Result);
@@ -2213,7 +2214,7 @@ begin
   LM.PostData('test', 'hello world');
   wait_ := True;
 {$IFDEF FPC}
-  LM.QueryDBP(True, True, False, 'test', 'test_output', True, 1.0, 1, 0, 0, 0, @do_fpc_Query, @do_fpc_Query_Done);
+  LM.QueryDBP(True, True, False, 'test', 'test_output', True, 1.0, 1, 0, 0, 0, do_fpc_Query, do_fpc_Query_Done);
 {$ELSE FPC}
   LM.QueryDBP(True, True, False, 'test', 'test_output', True, 1.0, 1, 0, 0, 0,
       procedure(dPipe: TZDBPipeline; var qState: TQueryState; var Allowed: Boolean)
@@ -2231,7 +2232,7 @@ begin
   while wait_ do
     begin
       LM.Progress;
-      CheckThread;
+      CheckThread(10);
     end;
 
   DisposeObject(LM);

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB2.Thread.APP;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

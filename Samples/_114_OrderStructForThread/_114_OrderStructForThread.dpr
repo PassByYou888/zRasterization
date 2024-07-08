@@ -4,6 +4,7 @@ program _114_OrderStructForThread;
 
 
 uses
+  FastMM5,
   System.SysUtils, ZR.Core, ZR.Status;
 
 // 该demo演示了线程2往线程1发数据并进行处理的编程范式

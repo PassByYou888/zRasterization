@@ -3,11 +3,12 @@
 { ****************************************************************************** }
 unit ZR.Core;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses SysUtils, Classes, Types, Variants, SyncObjs, TypInfo,
+uses SysUtils, Classes, Types, Variants, SyncObjs,
   {$IFDEF FPC}
   ZR.FPC.GenericList, fgl,
   {$ELSE FPC}
@@ -17,8 +18,13 @@ uses SysUtils, Classes, Types, Variants, SyncObjs, TypInfo,
 
 {$Region 'core defines + class'}
 type
+  // prototype define
   THash = Cardinal;
   THash64 = UInt64;
+  PMD5 = ^TMD5;
+  TMD5 = array [0 .. 15] of Byte;
+  TInt32_Array = array of Integer;
+  TUInt32_Array = array of Cardinal;
   TBytes = SysUtils.TBytes;
   TPoint = Types.TPoint;
   TTimeTick = UInt64;
@@ -33,6 +39,7 @@ type
   TUInt64Buffer = Array [0 .. MaxInt div SizeOf(UInt64) - 1] of UInt64;
   PUInt64Buffer = ^TUInt64Buffer;
 
+  // class define
   TCore_Object = TObject;
   TCore_Persistent = TPersistent;
   TCore_Stream = TStream;
@@ -72,7 +79,7 @@ type
     property ListData: PPointerList read GetList;
   end;
 
-  TCore_ListForObj = specialize TGenericsList<TCore_Object>;
+  TCore_ListForObj = TGenericsList<TCore_Object>;
   TCore_ForObjectList = array of TCore_Object;
   PCore_ForObjectList = ^TCore_ForObjectList;
   {$ELSE FPC}
@@ -87,18 +94,22 @@ type
   end;
 
   TGenericsList<t> = class(System.Generics.Collections.TList<t>)
-  private type
+  public type
     TGArry = array of t;
     PGArry = ^TGArry;
   public var Arry: TGArry;
+    constructor Create;
+    destructor Destroy; override;
     function ListData: PGArry;
   end;
 
   TGenericsObjectList<t: class> = class(System.Generics.Collections.TList<t>)
-  private type
+  public type
     TGArry = array of t;
     PGArry = ^TGArry;
   public var Arry: TGArry;
+    constructor Create;
+    destructor Destroy; override;
     function ListData: PGArry;
   end;
 
@@ -106,6 +117,9 @@ type
   PCore_PointerList = ^TCore_PointerList;
 
   TCore_List = class(TGenericsList<Pointer>)
+  public
+    constructor Create;
+    destructor Destroy; override;
     function ListData: PCore_PointerList;
   end;
 
@@ -113,6 +127,9 @@ type
   PCore_ForObjectList = ^TCore_ForObjectList;
 
   TCore_ListForObj = class(TGenericsList<TCore_Object>)
+  public
+    constructor Create;
+    destructor Destroy; override;
     function ListData: PCore_ForObjectList;
   end;
   {$ENDIF FPC}
@@ -129,6 +146,43 @@ type
     procedure Clear;
   end;
 {$EndRegion 'core defines + class'}
+{$Region 'Intermediate-tool-layer'}
+  TCore_Object_Intermediate = class(TCore_Object)
+  public
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
+  TCore_InterfacedObject_Intermediate = class(TCore_InterfacedObject)
+  public
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
+  TCore_Persistent_Intermediate = class(TCore_Persistent)
+  public
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
+{$EndRegion 'Intermediate-tool-layer'}
+{$Region 'CPS-Tool'}
+  // caller per second tool
+  TCPS_Tool = record
+  private
+    First_Caller_Time: TTimeTick;
+    Last_Begin_Caller_Time: TTimeTick;
+    Last_End_Caller_Time: TTimeTick;
+    Last_Analysis_Time: TTimeTick;
+    Caller_Num: Int64;
+  public
+    CPS: Double; // caller per second
+    CPU_Time: TTimeTick; // caller used cpu time
+    procedure Reset;
+    procedure Begin_Caller;
+    procedure End_Caller;
+  end;
+{$EndRegion 'CPS-Tool'}
 {$Region 'Critical'}
   TSoftCritical = class
   private
@@ -150,7 +204,6 @@ type
 {$ENDIF SoftCritical}
   TCritical = class;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
   TAtomVar<T_> = class
   public type
     PT_ = ^T_;
@@ -177,33 +230,33 @@ type
     property Value: T_ read GetValue write SetValue;
   end;
   // Bool
-  TAtomBoolean = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Boolean>;
+  TAtomBoolean = TAtomVar<Boolean>;
   TAtomBool = TAtomBoolean;
   // number
-  TAtomSmallInt = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<SmallInt>;
-  TAtomShortInt = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<ShortInt>;
-  TAtomInteger = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Integer>;
+  TAtomSmallInt = TAtomVar<SmallInt>;
+  TAtomShortInt = TAtomVar<ShortInt>;
+  TAtomInteger = TAtomVar<Integer>;
   TAtomInt8 = TAtomSmallInt;
   TAtomInt16 = TAtomShortInt;
   TAtomInt32 = TAtomInteger;
   TAtomInt = TAtomInteger;
-  TAtomInt64 = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Int64>;
-  TAtomByte = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Byte>;
-  TAtomWord = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Word>;
-  TAtomCardinal = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Cardinal>;
+  TAtomInt64 = TAtomVar<Int64>;
+  TAtomByte = TAtomVar<Byte>;
+  TAtomWord = TAtomVar<Word>;
+  TAtomCardinal = TAtomVar<Cardinal>;
   TAtomUInt8 = TAtomByte;
   TAtomUInt16 = TAtomWord;
   TAtomUInt32 = TAtomCardinal;
   TAtomDWord = TAtomCardinal;
-  TAtomUInt64 = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<UInt64>;
-  TAtomTimeTick = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<TTimeTick>;
+  TAtomUInt64 = TAtomVar<UInt64>;
+  TAtomTimeTick = TAtomVar<TTimeTick>;
   // float
-  TAtomSingle = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Single>;
+  TAtomSingle = TAtomVar<Single>;
   TAtomFloat = TAtomSingle;
-  TAtomDouble = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Double>;
-  TAtomExtended = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<Extended>;
+  TAtomDouble = TAtomVar<Double>;
+  TAtomExtended = TAtomVar<Extended>;
   // string
-  TAtomString = {$IFDEF FPC}specialize {$ENDIF FPC}TAtomVar<string>;
+  TAtomString = TAtomVar<string>;
 
   TCritical = class
   private
@@ -240,9 +293,21 @@ type
     procedure Dec_(var x: Cardinal; const v: Cardinal); overload;
   end;
 {$EndRegion 'Critical'}
+{$Region 'Swap'}
+  TSwap<T_> = class
+  public
+    class procedure Do_(var v1, v2: T_); static;
+  end;
+{$EndRegion 'Swap'}
+{$Region 'IF'}
+  TIF<T_> = class
+  public
+    class function Do_(Bool_: Boolean; Yes_, No_: T_): T_; static;
+  end;
+{$EndRegion 'IF'}
 {$Region 'OrderStruct'}
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TOrderStruct<T_> = class(TCore_Object)
+
+  TOrderStruct<T_> = class(TCore_Object_Intermediate)
   public type
     POrderStruct = ^TOrderStruct_;
     TOrderStruct_ = record
@@ -271,8 +336,7 @@ type
     property OnFree: TOnFreeOrderStruct read FOnFreeOrderStruct write FOnFreeOrderStruct;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TOrderPtrStruct<T_> = class(TCore_Object)
+  TOrderPtrStruct<T_> = class(TCore_Object_Intermediate)
   public type
     PT_ = ^T_;
     POrderPtrStruct = ^TOrderPtrStruct_;
@@ -286,7 +350,7 @@ type
     FLast: POrderPtrStruct;
     FNum: NativeInt;
     FOnFreeOrderStruct: TOnFreeOrderPtrStruct;
-    procedure DoInternalFree(p: POrderPtrStruct);
+    procedure DoInternalFree(const p: POrderPtrStruct);
   public
     constructor Create; virtual;
     destructor Destroy; override;
@@ -302,8 +366,7 @@ type
     property OnFree: TOnFreeOrderPtrStruct read FOnFreeOrderStruct write FOnFreeOrderStruct;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TCriticalOrderStruct<T_> = class(TCore_Object)
+  TCriticalOrderStruct<T_> = class(TCore_Object_Intermediate)
   public type
     POrderStruct = ^TOrderStruct_;
     TOrderStruct_ = record
@@ -335,8 +398,7 @@ type
     property OnFree: TOnFreeCriticalOrderStruct read FOnFreeCriticalOrderStruct write FOnFreeCriticalOrderStruct;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TCriticalOrderPtrStruct<T_> = class(TCore_Object)
+  TCriticalOrderPtrStruct<T_> = class(TCore_Object_Intermediate)
   public type
     PT_ = ^T_;
     POrderPtrStruct = ^TOrderPtrStruct_;
@@ -351,7 +413,7 @@ type
     FLast: POrderPtrStruct;
     FNum: NativeInt;
     FOnFreeCriticalOrderStruct: TOnFreeCriticalOrderPtrStruct;
-    procedure DoInternalFree(p: POrderPtrStruct);
+    procedure DoInternalFree(const p: POrderPtrStruct);
   public
     property Critical__: TCritical read FCritical__;
     constructor Create; virtual;
@@ -370,14 +432,14 @@ type
   end;
 {$EndRegion 'OrderStruct'}
 {$REGION 'BigList'}
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TZR_BL<T_> = class(TCore_Object)
+
+  TZR_BL<T_> = class(TCore_Object_Intermediate)
   public type
 
     P_ = ^T_;
     PQueueStruct = ^TQueueStruct;
     PPQueueStruct = ^PQueueStruct;
-    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<T_>;
+    T___ = TZR_BL<T_>;
 
     TQueueStruct = record
       Data: T_;
@@ -409,6 +471,7 @@ type
       procedure Discard;
       function Next: Boolean;
       property Right: Boolean read Next;
+      property Instance: T___ read Instance___;
     end;
 
     TInvert_Repeat___ = record
@@ -433,11 +496,12 @@ type
       procedure Discard;
       function Prev: Boolean;
       property Left: Boolean read Prev;
+      property Instance: T___ read Instance___;
     end;
 
     TArray_T_ = array of T_;
-    TOrder_Data_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<T_>;
-    TRecycle_Pool__ = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<PQueueStruct>;
+    TOrder_Data_Pool = TOrderStruct<T_>;
+    TRecycle_Pool__ = TOrderStruct<PQueueStruct>;
     TQueueArrayStruct = array [0 .. (MaxInt div SizeOf(Pointer) - 1)] of PQueueStruct;
     PQueueArrayStruct = ^TQueueArrayStruct;
     TOnStruct_Event = procedure(var p: T_) of object;
@@ -460,11 +524,14 @@ type
     FNum: NativeInt;
     FOnAdd: TOnStruct_Event;
     FOnFree: TOnStruct_Event;
+    FOnFree_For_Pair_Tool: TOnStruct_Event;
+    FAccept_Sort: Boolean;
     FChanged: Boolean;
     FList: Pointer;
     procedure DoInternalFree(p: PQueueStruct);
+    function Get_Critical__: TCritical;
   public
-    property Critical__: TCritical read FCritical__;
+    property Critical__: TCritical read Get_Critical__;
     constructor Create;
     destructor Destroy; override;
     procedure DoFree(var Data: T_); virtual;
@@ -508,6 +575,7 @@ type
     procedure For_P(OnFor: TQueneStructFor_P); overload;
     function ToArray(): TArray_T_;
     function ToOrder(): TOrder_Data_Pool;
+    property Accept_Sort: Boolean read FAccept_Sort write FAccept_Sort;
     procedure Sort_C(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_C); overload;
     procedure Sort_C(OnSort: TSort_C); overload;
     procedure Sort_M(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_M); overload;
@@ -533,14 +601,12 @@ type
 {$ENDIF DEBUG}
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TCritical_ZR_BL<T_> = class(TCore_Object)
+  TCritical_ZR_BL<T_> = class(TCore_Object_Intermediate)
   public type
-
     P_ = ^T_;
     PQueueStruct = ^TQueueStruct;
     PPQueueStruct = ^PQueueStruct;
-    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<T_>;
+    T___ = TCritical_ZR_BL<T_>;
 
     TQueueStruct = record
       Data: T_;
@@ -572,6 +638,7 @@ type
       procedure Discard;
       function Next: Boolean;
       property Right: Boolean read Next;
+      property Instance: T___ read Instance___;
     end;
 
     TInvert_Repeat___ = record
@@ -596,11 +663,12 @@ type
       procedure Discard;
       function Prev: Boolean;
       property Left: Boolean read Prev;
+      property Instance: T___ read Instance___;
     end;
 
     TArray_T_ = array of T_;
-    TOrder_Data_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<T_>;
-    TRecycle_Pool__ = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<PQueueStruct>;
+    TOrder_Data_Pool = TOrderStruct<T_>;
+    TRecycle_Pool__ = TOrderStruct<PQueueStruct>;
     TQueueArrayStruct = array [0 .. (MaxInt div SizeOf(Pointer) - 1)] of PQueueStruct;
     PQueueArrayStruct = ^TQueueArrayStruct;
     TOnStruct_Event = procedure(var p: T_) of object;
@@ -623,11 +691,14 @@ type
     FNum: NativeInt;
     FOnAdd: TOnStruct_Event;
     FOnFree: TOnStruct_Event;
+    FOnFree_For_Pair_Tool: TOnStruct_Event;
+    FAccept_Sort: Boolean;
     FChanged: Boolean;
     FList: Pointer;
     procedure DoInternalFree(p: PQueueStruct);
+    function Get_Critical__: TCritical;
   public
-    property Critical__: TCritical read FCritical__;
+    property Critical__: TCritical read Get_Critical__;
     constructor Create;
     destructor Destroy; override;
     procedure DoFree(var Data: T_); virtual;
@@ -637,7 +708,8 @@ type
     procedure UnLock;
     function Get_Recycle_Pool_Num: NativeInt;
     procedure Push_To_Recycle_Pool(p: PQueueStruct);
-    procedure Free_Recycle_Pool;
+    procedure Free_Recycle_Pool(Lock_: Boolean); overload;
+    procedure Free_Recycle_Pool; overload;
     procedure Clear;
     property First: PQueueStruct read FFirst;
     property Last: PQueueStruct read FLast;
@@ -674,6 +746,7 @@ type
     procedure For_P(OnFor: TQueneStructFor_P); overload;
     function ToArray(): TArray_T_;
     function ToOrder(): TOrder_Data_Pool;
+    property Accept_Sort: Boolean read FAccept_Sort write FAccept_Sort;
     procedure Sort_C(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_C); overload;
     procedure Sort_C(OnSort: TSort_C); overload;
     procedure Sort_M(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_M); overload;
@@ -699,53 +772,73 @@ type
 {$ENDIF DEBUG}
   end;
 
-{$IFDEF FPC}
-  generic TC_ZR_BL<T_> = class(specialize TCritical_ZR_BL<T_>);
-{$ELSE FPC}
   TC_ZR_BL<T_> = class(TCritical_ZR_BL<T_>);
-{$ENDIF FPC}
 
-{$IFDEF FPC}
-  generic TBig_Object_List<T_: TCore_Object> = class(specialize TZR_BL<T_>)
-{$ELSE FPC}
   TBig_Object_List<T_: class> = class(TZR_BL<T_>)
-{$ENDIF FPC}
   public
     AutoFreeObject: Boolean;
     constructor Create(AutoFreeObject_: Boolean);
     procedure DoFree(var Data: T_); override;
   end;
 
-{$IFDEF FPC}
-  generic TCritical_Big_Object_List<T_: TCore_Object> = class(specialize TCritical_ZR_BL<T_>)
-{$ELSE FPC}
+  TObject_BigList<T_: class> = class(TBig_Object_List<T_>);
+
   TCritical_Big_Object_List<T_: class> = class(TCritical_ZR_BL<T_>)
-{$ENDIF FPC}
   public
     AutoFreeObject: Boolean;
     constructor Create(AutoFreeObject_: Boolean);
     procedure DoFree(var Data: T_); override;
   end;
 
-{$IFDEF FPC}
-  generic TC_Big_Object_List<T_: TCore_Object> = class(specialize TCritical_Big_Object_List<T_>);
-{$ELSE FPC}
   TC_Big_Object_List<T_: class> = class(TCritical_Big_Object_List<T_>);
-{$ENDIF FPC}
 
 {$ENDREGION 'BigList'}
-{$REGION 'Hash-Pair'}
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TPair_Pool<T1_, T2_> = class(TCore_Object)
+{$REGION 'Pair'}
+  TPair2<T1, T2> = packed record
+    Primary: T1;
+    Second: T2;
+    class function Init(Primary_: T1; Second_: T2): TPair2<T1, T2>; static;
+  end;
+
+  TPair3<T1, T2, T3> = packed record
+    Primary: T1;
+    Second: T2;
+    Third: T3;
+    class function Init(Primary_: T1; Second_: T2; Third_: T3): TPair3<T1, T2, T3>; static;
+  end;
+
+  TPair4<T1, T2, T3, T4> = packed record
+    Primary: T1;
+    Second: T2;
+    Third: T3;
+    Fourth: T4;
+    class function Init(Primary_: T1; Second_: T2; Third_: T3; Fourth_: T4): TPair4<T1, T2, T3, T4>; static;
+  end;
+
+  TPair5<T1, T2, T3, T4, T5> = packed record
+    Primary: T1;
+    Second: T2;
+    Third: T3;
+    Fourth: T4;
+    Five: T5;
+    class function Init(Primary_: T1; Second_: T2; Third_: T3; Fourth_: T4; Five_: T5): TPair5<T1, T2, T3, T4, T5>; static;
+  end;
+
+  TPair6<T1, T2, T3, T4, T5, T6> = packed record
+    Primary: T1;
+    Second: T2;
+    Third: T3;
+    Fourth: T4;
+    Five: T5;
+    Six: T6;
+    class function Init(Primary_: T1; Second_: T2; Third_: T3; Fourth_: T4; Five_: T5; Six_: T6): TPair6<T1, T2, T3, T4, T5, T6>; static;
+  end;
+
+  TPair2_Tool<T1_, T2_> = class(TCore_Object_Intermediate)
   public type
-
-    TPair = record
-      Primary: T1_;
-      Second: T2_;
-    end;
-
+    TPair = TPair2<T1_, T2_>;
     PPair = ^TPair;
-    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    TPair_ZR_BL__ = TZR_BL<TPair>;
     PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
     List: TPair_ZR_BL__;
@@ -757,18 +850,11 @@ type
     function Add_Pair(Primary: T1_; Second: T2_): PPair__;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TPair_Third_Pool<T1_, T2_, T3_> = class(TCore_Object)
+  TPair3_Tool<T1_, T2_, T3_> = class(TCore_Object_Intermediate)
   public type
-
-    TPair = record
-      Primary: T1_;
-      Second: T2_;
-      Third: T3_;
-    end;
-
+    TPair = TPair3<T1_, T2_, T3_>;
     PPair = ^TPair;
-    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    TPair_ZR_BL__ = TZR_BL<TPair>;
     PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
     List: TPair_ZR_BL__;
@@ -780,19 +866,11 @@ type
     function Add_Pair(Primary: T1_; Second: T2_; Third: T3_): PPair__;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TPair_Fourth_Pool<T1_, T2_, T3_, T4_> = class(TCore_Object)
+  TPair4_Tool<T1_, T2_, T3_, T4_> = class(TCore_Object_Intermediate)
   public type
-
-    TPair = record
-      Primary: T1_;
-      Second: T2_;
-      Third: T3_;
-      Fourth: T4_;
-    end;
-
+    TPair = TPair4<T1_, T2_, T3_, T4_>;
     PPair = ^TPair;
-    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    TPair_ZR_BL__ = TZR_BL<TPair>;
     PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
     List: TPair_ZR_BL__;
@@ -804,20 +882,11 @@ type
     function Add_Pair(Primary: T1_; Second: T2_; Third: T3_; Fourth: T4_): PPair__;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TPair_Five_Pool<T1_, T2_, T3_, T4_, T5_> = class(TCore_Object)
+  TPair5_Tool<T1_, T2_, T3_, T4_, T5_> = class(TCore_Object_Intermediate)
   public type
-
-    TPair = record
-      Primary: T1_;
-      Second: T2_;
-      Third: T3_;
-      Fourth: T4_;
-      Five: T5_;
-    end;
-
+    TPair = TPair5<T1_, T2_, T3_, T4_, T5_>;
     PPair = ^TPair;
-    TPair_ZR_BL__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair>;
+    TPair_ZR_BL__ = TZR_BL<TPair>;
     PPair__ = TPair_ZR_BL__.PQueueStruct;
   public
     List: TPair_ZR_BL__;
@@ -829,38 +898,71 @@ type
     function Add_Pair(Primary: T1_; Second: T2_; Third: T3_; Fourth: T4_; Five: T5_): PPair__;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TBig_Hash_Pair_Pool<TKey_, TValue_> = class(TCore_Object)
+  TPair6_Tool<T1_, T2_, T3_, T4_, T5_, T6_> = class(TCore_Object_Intermediate)
+  public type
+    TPair = TPair6<T1_, T2_, T3_, T4_, T5_, T6_>;
+    PPair = ^TPair;
+    TPair_ZR_BL__ = TZR_BL<TPair>;
+    PPair__ = TPair_ZR_BL__.PQueueStruct;
+  public
+    List: TPair_ZR_BL__;
+    property L: TPair_ZR_BL__ read List;
+    constructor Create;
+    destructor Destroy; override;
+    procedure DoFree(var Data: TPair); virtual;
+    procedure DoAdd(var Data: TPair); virtual;
+    function Add_Pair(Primary: T1_; Second: T2_; Third: T3_; Fourth: T4_; Five: T5_; Six: T6_): PPair__;
+  end;
+{$ENDREGION 'Pair'}
+{$Region 'Hash-Tool'}
+  TBig_Hash_Pair_Pool<TKey_, TValue_> = class(TCore_Object_Intermediate)
   public type
     PKey_ = ^TKey_;
-    PValue = ^TValue_;
-    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TBig_Hash_Pair_Pool<TKey_, TValue_>;
-    TValue_Pair_Pool__ = {$IFDEF FPC}specialize {$ENDIF FPC} TPair_Fourth_Pool<TKey_, TValue_, Pointer, THash>;
+    PValue_ = ^TValue_;
+    PKey = PKey_;
+    PValue = PValue_;
+    T___ = TBig_Hash_Pair_Pool<TKey_, TValue_>;
+    TValue_Pair_Pool__ = TPair4_Tool<TKey_, TValue_, Pointer, THash>;
     PPair_Pool_Value__ = TValue_Pair_Pool__.PPair__;
     TPair = TValue_Pair_Pool__.TPair;
-    TKey_Hash_Buffer = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TValue_Pair_Pool__>;
-    TPool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PPair_Pool_Value__>;
+    TKey_Hash_Buffer = TGenericsList<TValue_Pair_Pool__>;
+    TPool___ = TZR_BL<PPair_Pool_Value__>;
     TPool_Queue_Ptr___ = TPool___.PQueueStruct;
     TRepeat___ = TPool___.TRepeat___;
     TInvert_Repeat___ = TPool___.TInvert_Repeat___;
     TArray_Key = array of TKey_;
-    TOrder_Key = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TKey_>;
+    TOrder_Key = TOrderStruct<TKey_>;
     TArray_Value = array of TValue_;
-    TOrder_Value = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TValue_>;
+    TOrder_Value = TOrderStruct<TValue_>;
+    // event
     TOn_Event = procedure(var Key: TKey_; var Value: TValue_) of object;
+    TOn_Get_Key = procedure(const Key_: PKey_; var Hash:THash) of object;
+    TOn_Compare_Key = procedure(const Key_1, Key_2: PKey_; var IsSame:Boolean) of object;
+    TOn_Compare_Value = procedure(const Value_1, Value_2: PValue_; var IsSame:Boolean) of object;
+    TOn_Sort_Key_C = function(var L, R: TKey_): Integer;
+    TOn_Sort_Key_M = function(var L, R: TKey_): Integer of object;
+    TOn_Sort_Value_C = function(var L, R: TValue_): Integer;
+    TOn_Sort_Value_M = function(var L, R: TValue_): Integer of object;
     TBig_Hash_Pool_For_C = procedure(p: PPair_Pool_Value__; var Aborted: Boolean);
     TBig_Hash_Pool_For_M = procedure(p: PPair_Pool_Value__; var Aborted: Boolean) of object;
 {$IFDEF FPC}
     TBig_Hash_Pool_For_P = procedure(p: PPair_Pool_Value__; var Aborted: Boolean) is nested;
+    TOn_Sort_Key_P = function(var L, R: TKey_): Integer is nested;
+    TOn_Sort_Value_P = function(var L, R: TValue_): Integer is nested;
 {$ELSE FPC}
     TBig_Hash_Pool_For_P = reference to procedure(p: PPair_Pool_Value__; var Aborted: Boolean);
+    TOn_Sort_Key_P = reference to function(var L, R: TKey_): Integer;
+    TOn_Sort_Value_P = reference to function(var L, R: TValue_): Integer;
 {$ENDIF FPC}
   private
     FQueue_Pool: TPool___;
     FHash_Buffer: TKey_Hash_Buffer;
-    FNull_Value: TValue_;
+    FNULL_VALUE: TValue_;
     FOnAdd: TOn_Event;
     FOnFree: TOn_Event;
+    FOn_Get_Key: TOn_Get_Key;
+    FOn_Compare_Key: TOn_Compare_Key;
+    FOn_Compare_Value: TOn_Compare_Value;
     function Get_Value_List(const Key_: TKey_; var Key_Hash_: THash): TValue_Pair_Pool__;
     procedure Free_Value_List(Key_Hash_: THash);
     procedure Get_Key_Data_Ptr(const Key_P: PKey_; var p: PByte; var Size: NativeInt);
@@ -868,18 +970,25 @@ type
     procedure Internal_Do_Free(var Data: TPair);
   public
     class function Null_Key: TKey_;
-    class function Null_Value: TValue_;
+    class function NULL_VALUE: TValue_;
     property Queue_Pool: TPool___ read FQueue_Pool;
     property OnAdd: TOn_Event read FOnAdd write FOnAdd;
     property OnFree: TOn_Event read FOnFree write FOnFree;
-    constructor Create(const HashSize_: integer; const Null_Value_: TValue_);
+    property On_Get_Key: TOn_Get_Key read FOn_Get_Key write FOn_Get_Key;
+    property On_Compare_Key: TOn_Compare_Key read FOn_Compare_Key write FOn_Compare_Key;
+    property On_Compare_Value: TOn_Compare_Value read FOn_Compare_Value write FOn_Compare_Value;
+    constructor Create(const HashSize_: integer; const NULL_VALUE_: TValue_); overload;
+    constructor Create(const HashSize_: integer); overload;
     destructor Destroy; override;
+    procedure CreateBefore; virtual;
+    procedure CreateAfter; virtual;
     procedure DoFree(var Key: TKey_; var Value: TValue_); virtual;
     procedure DoAdd(var Key: TKey_; var Value: TValue_); virtual;
     function Get_Key_Hash(const Key_: TKey_): THash; virtual;
     function Compare_Key(const Key_1, Key_2: TKey_): Boolean; virtual;
     function Compare_Value(const Value_1, Value_2: TValue_): Boolean; virtual;
     procedure Extract_Queue_Pool_Third;
+    function GetHashSize: Integer;
     procedure Clear;
     function Exists_Key(const Key: TKey_): Boolean;
     function Exists_Value(const Data: TValue_): Boolean;
@@ -894,8 +1003,8 @@ type
     property Count: NativeInt read Num;
     function GetSum: NativeInt;
     property Sum: NativeInt read GetSum;
-    function Get_Value_Ptr(const Key: TKey_): PValue; overload;
-    function Get_Value_Ptr(const Key: TKey_; const Default_: TValue_): PValue; overload;
+    function Get_Value_Ptr(const Key: TKey_): PValue_; overload;
+    function Get_Value_Ptr(const Key: TKey_; const Default_: TValue_): PValue_; overload;
     function Get_Default_Value(const Key: TKey_; const Default_: TValue_): TValue_;
     procedure Set_Default_Value(const Key: TKey_; const Default_: TValue_);
     function Repeat_(): TRepeat___; overload;
@@ -907,6 +1016,12 @@ type
     procedure For_P(OnFor: TBig_Hash_Pool_For_P); overload;
     procedure Push_To_Recycle_Pool(p: PPair_Pool_Value__);
     procedure Free_Recycle_Pool;
+    procedure Sort_Key_C(OnSort: TOn_Sort_Key_C);
+    procedure Sort_Key_M(OnSort: TOn_Sort_Key_M);
+    procedure Sort_Key_P(OnSort: TOn_Sort_Key_P);
+    procedure Sort_Value_C(OnSort: TOn_Sort_Value_C);
+    procedure Sort_Value_M(OnSort: TOn_Sort_Value_M);
+    procedure Sort_Value_P(OnSort: TOn_Sort_Value_P);
     function ToPool(): TPool___;
     function ToArray_Key(): TArray_Key;
     function ToOrder_Key(): TOrder_Key;
@@ -914,39 +1029,55 @@ type
     function ToOrder_Value(): TOrder_Value;
   end;
 
-  {$IFDEF FPC}generic{$ENDIF FPC}
-  TCritical_Big_Hash_Pair_Pool<TKey_, TValue_> = class(TCore_Object)
+  TCritical_Big_Hash_Pair_Pool<TKey_, TValue_> = class(TCore_Object_Intermediate)
   public type
     PKey_ = ^TKey_;
-    PValue = ^TValue_;
-    T___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_Big_Hash_Pair_Pool<TKey_, TValue_>;
-    TValue_Pair_Pool__ = {$IFDEF FPC}specialize {$ENDIF FPC} TPair_Fourth_Pool<TKey_, TValue_, Pointer, THash>;
+    PValue_ = ^TValue_;
+    PKey = PKey_;
+    PValue = PValue_;
+    T___ = TCritical_Big_Hash_Pair_Pool<TKey_, TValue_>;
+    TValue_Pair_Pool__ = TPair4_Tool<TKey_, TValue_, Pointer, THash>;
     PPair_Pool_Value__ = TValue_Pair_Pool__.PPair__;
     TPair = TValue_Pair_Pool__.TPair;
-    TKey_Hash_Buffer = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TValue_Pair_Pool__>;
-    TPool___ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PPair_Pool_Value__>;
+    TKey_Hash_Buffer = TGenericsList<TValue_Pair_Pool__>;
+    TPool___ = TZR_BL<PPair_Pool_Value__>;
     TPool_Queue_Ptr___ = TPool___.PQueueStruct;
     TRepeat___ = TPool___.TRepeat___;
     TInvert_Repeat___ = TPool___.TInvert_Repeat___;
     TArray_Key = array of TKey_;
-    TOrder_Key = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TKey_>;
+    TOrder_Key = TOrderStruct<TKey_>;
     TArray_Value = array of TValue_;
-    TOrder_Value = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TValue_>;
+    TOrder_Value = TOrderStruct<TValue_>;
+    // event
     TOn_Event = procedure(var Key: TKey_; var Value: TValue_) of object;
+    TOn_Get_Key = procedure(const Key_: PKey_; var Hash:THash) of object;
+    TOn_Compare_Key = procedure(const Key_1, Key_2: PKey_; var IsSame:Boolean) of object;
+    TOn_Compare_Value = procedure(const Value_1, Value_2: PValue_; var IsSame:Boolean) of object;
+    TOn_Sort_Key_C = function(var L, R: TKey_): Integer;
+    TOn_Sort_Key_M = function(var L, R: TKey_): Integer of object;
+    TOn_Sort_Value_C = function(var L, R: TValue_): Integer;
+    TOn_Sort_Value_M = function(var L, R: TValue_): Integer of object;
     TBig_Hash_Pool_For_C = procedure(p: PPair_Pool_Value__; var Aborted: Boolean);
     TBig_Hash_Pool_For_M = procedure(p: PPair_Pool_Value__; var Aborted: Boolean) of object;
 {$IFDEF FPC}
     TBig_Hash_Pool_For_P = procedure(p: PPair_Pool_Value__; var Aborted: Boolean) is nested;
+    TOn_Sort_Key_P = function(var L, R: TKey_): Integer is nested;
+    TOn_Sort_Value_P = function(var L, R: TValue_): Integer is nested;
 {$ELSE FPC}
     TBig_Hash_Pool_For_P = reference to procedure(p: PPair_Pool_Value__; var Aborted: Boolean);
+    TOn_Sort_Key_P = reference to function(var L, R: TKey_): Integer;
+    TOn_Sort_Value_P = reference to function(var L, R: TValue_): Integer;
 {$ENDIF FPC}
   private
     FCritical__: TCritical;
     FQueue_Pool: TPool___;
     FHash_Buffer: TKey_Hash_Buffer;
-    FNull_Value: TValue_;
+    FNULL_VALUE: TValue_;
     FOnAdd: TOn_Event;
     FOnFree: TOn_Event;
+    FOn_Get_Key: TOn_Get_Key;
+    FOn_Compare_Key: TOn_Compare_Key;
+    FOn_Compare_Value: TOn_Compare_Value;
     function Get_Value_List(const Key_: TKey_; var Key_Hash_: THash): TValue_Pair_Pool__;
     procedure Free_Value_List(Key_Hash_: THash);
     procedure Get_Key_Data_Ptr(const Key_P: PKey_; var p: PByte; var Size: NativeInt);
@@ -954,19 +1085,26 @@ type
     procedure Internal_Do_Free(var Data: TPair);
   public
     class function Null_Key: TKey_;
-    class function Null_Value: TValue_;
+    class function NULL_VALUE: TValue_;
     property Critical__: TCritical read FCritical__;
     property Queue_Pool: TPool___ read FQueue_Pool;
     property OnAdd: TOn_Event read FOnAdd write FOnAdd;
     property OnFree: TOn_Event read FOnFree write FOnFree;
-    constructor Create(const HashSize_: integer; const Null_Value_: TValue_);
+    property On_Get_Key: TOn_Get_Key read FOn_Get_Key write FOn_Get_Key;
+    property On_Compare_Key: TOn_Compare_Key read FOn_Compare_Key write FOn_Compare_Key;
+    property On_Compare_Value: TOn_Compare_Value read FOn_Compare_Value write FOn_Compare_Value;
+    constructor Create(const HashSize_: integer; const NULL_VALUE_: TValue_); overload;
+    constructor Create(const HashSize_: integer); overload;
     destructor Destroy; override;
+    procedure CreateBefore; virtual;
+    procedure CreateAfter; virtual;
     procedure DoFree(var Key: TKey_; var Value: TValue_); virtual;
     procedure DoAdd(var Key: TKey_; var Value: TValue_); virtual;
     function Get_Key_Hash(const Key_: TKey_): THash; virtual;
     function Compare_Key(const Key_1, Key_2: TKey_): Boolean; virtual;
     function Compare_Value(const Value_1, Value_2: TValue_): Boolean; virtual;
     procedure Extract_Queue_Pool_Third;
+    function GetHashSize: Integer;
     procedure Clear;
     function Exists_Key(const Key: TKey_): Boolean;
     function Exists_Value(const Data: TValue_): Boolean;
@@ -981,8 +1119,8 @@ type
     property Count: NativeInt read Num;
     function GetSum: NativeInt;
     property Sum: NativeInt read GetSum;
-    function Get_Value_Ptr(const Key: TKey_): PValue; overload;
-    function Get_Value_Ptr(const Key: TKey_; const Default_: TValue_): PValue; overload;
+    function Get_Value_Ptr(const Key: TKey_): PValue_; overload;
+    function Get_Value_Ptr(const Key: TKey_; const Default_: TValue_): PValue_; overload;
     function Get_Default_Value(const Key: TKey_; const Default_: TValue_): TValue_;
     procedure Set_Default_Value(const Key: TKey_; const Default_: TValue_);
     function Repeat_(): TRepeat___; overload;
@@ -994,6 +1132,12 @@ type
     procedure For_P(OnFor: TBig_Hash_Pool_For_P); overload;
     procedure Push_To_Recycle_Pool(p: PPair_Pool_Value__);
     procedure Free_Recycle_Pool;
+    procedure Sort_Key_C(OnSort: TOn_Sort_Key_C);
+    procedure Sort_Key_M(OnSort: TOn_Sort_Key_M);
+    procedure Sort_Key_P(OnSort: TOn_Sort_Key_P);
+    procedure Sort_Value_C(OnSort: TOn_Sort_Value_C);
+    procedure Sort_Value_M(OnSort: TOn_Sort_Value_M);
+    procedure Sort_Value_P(OnSort: TOn_Sort_Value_P);
     function ToPool(): TPool___;
     function ToArray_Key(): TArray_Key;
     function ToOrder_Key(): TOrder_Key;
@@ -1001,7 +1145,48 @@ type
     function ToOrder_Value(): TOrder_Value;
   end;
 
-{$ENDREGION 'Hash-Pair'}
+  TBig_Hash_Object_Pool<TKey_, TValue_: class> = class(TBig_Hash_Pair_Pool<TKey_, TValue_>)
+  public
+    AutoFree: Boolean;
+    constructor Create(const HashSize_: integer; const AutoFree_: Boolean);
+    procedure DoFree(var Key: TKey_; var Value: TValue_); override;
+  end;
+
+  TCritical_Big_Hash_Object_Pool<TKey_, TValue_: class> = class(TCritical_Big_Hash_Pair_Pool<TKey_, TValue_>)
+  public
+    AutoFree: Boolean;
+    constructor Create(const HashSize_: integer; const AutoFree_: Boolean);
+    procedure DoFree(var Key: TKey_; var Value: TValue_); override;
+  end;
+
+{$EndRegion 'Hash-Tool'}
+{$REGION 'soft_synchronize_technology'}
+  // soft thread-synchronize simulator
+  TOnSynchronize_C_NP = procedure();
+  TOnSynchronize_M_NP = procedure() of object;
+{$IFDEF FPC}
+  TOnSynchronize_P_NP = procedure() is nested;
+{$ELSE FPC}
+  TOnSynchronize_P_NP = reference to procedure();
+{$ENDIF FPC}
+
+  TSoft_Synchronize_Tool = class(TCore_Object_Intermediate)
+  private type
+    TSynchronize_Data___ = TPair4<TOnSynchronize_C_NP, TOnSynchronize_M_NP, TOnSynchronize_P_NP, PBoolean>;
+    TSynchronize_Queue___ = TCritical_ZR_BL<TSynchronize_Data___>;
+  private
+    SyncQueue__: TSynchronize_Queue___;
+  public
+    Soft_Synchronize_Main_Thread: TCore_Thread;
+    constructor Create(Soft_Synchronize_Main_Thread_: TCore_Thread);
+    destructor Destroy; override;
+    function Check_Synchronize(Check_Time_: TTimeTick): NativeInt;
+    procedure Synchronize(Thread_: TCore_Thread; OnSync: TOnSynchronize_P_NP);
+    procedure Synchronize_C(Thread_: TCore_Thread; OnSync: TOnSynchronize_C_NP);
+    procedure Synchronize_M(Thread_: TCore_Thread; OnSync: TOnSynchronize_M_NP);
+    procedure Synchronize_P(Thread_: TCore_Thread; OnSync: TOnSynchronize_P_NP);
+  end;
+{$ENDREGION 'soft_synchronize_technology'}
 {$Region 'ThreadPost'}
   TThreadPost_C1 = procedure();
   TThreadPost_C2 = procedure(Data1: Pointer);
@@ -1023,7 +1208,7 @@ type
   TThreadPost_P4 = reference to procedure(Data1: Pointer; Data2: TCore_Object);
 {$ENDIF FPC}
 
-  TThreadPost = class(TCore_Object)
+  TThreadPost = class(TCore_Object_Intermediate)
   private type
     TThread_Post_Data = record
       On_C1: TThreadPost_C1;
@@ -1045,7 +1230,7 @@ type
       procedure Init;
     end;
 
-    TThread_Post_Data_Order_Struct__ = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderPtrStruct<TThread_Post_Data>;
+    TThread_Post_Data_Order_Struct__ = TOrderPtrStruct<TThread_Post_Data>;
   protected
     FCritical: TCritical;
     FThreadID: TThreadID;
@@ -1109,25 +1294,26 @@ type
     procedure Sync_Wait_PostP4(Data1: Pointer; Data2: TCore_Object; OnSync: TThreadPost_P4);
   end;
 
+  TThread_Post = TThreadPost;
 {$EndRegion 'ThreadPost'}
-{$Region 'ComputeThread'}
+{$Region 'Compute_Thread'}
   TCompute = class;
 
   TRun_Thread_C = procedure(ThSender: TCompute);
   TRun_Thread_M = procedure(ThSender: TCompute) of object;
-  TRun_Thread_C_NP = procedure();
-  TRun_Thread_M_NP = procedure() of object;
+  TRun_Thread_C_NP = TOnSynchronize_C_NP;
+  TRun_Thread_M_NP = TOnSynchronize_M_NP;
+  TRun_Thread_P_NP = TOnSynchronize_P_NP;
   {$IFDEF FPC}
   TRun_Thread_P = procedure(ThSender: TCompute) is nested;
-  TRun_Thread_P_NP = procedure() is nested;
   {$ELSE FPC}
   TRun_Thread_P = reference to procedure(ThSender: TCompute);
-  TRun_Thread_P_NP = reference to procedure();
   {$ENDIF FPC}
-  TCoreCompute_Thread_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TCompute>;
+  TCoreCompute_Thread_Pool = TZR_BL<TCompute>;
 
   TCompute = class(TCore_Thread)
   private
+    FSync_Tool: TSoft_Synchronize_Tool;
     Thread_Pool_Queue_Data_Ptr: TCoreCompute_Thread_Pool.PQueueStruct;
     OnRun_C: TRun_Thread_C;
     OnRun_M: TRun_Thread_M;
@@ -1155,7 +1341,9 @@ type
 
     constructor Create;
     destructor Destroy; override;
-    class procedure Set_Thread_Info(Thread_Info_: string);
+    function Sync_Tool: TSoft_Synchronize_Tool;
+    class procedure Set_Thread_Info(Thread_Info_: string); overload;
+    class procedure Set_Thread_Info(const Fmt: string; const Args: array of const); overload;
     class function Get_Core_Thread_Pool: TCoreCompute_Thread_Pool;
     class function Get_Core_Thread_Dispatch_Critical: TCritical;
     class function Wait_Thread(): NativeInt;
@@ -1167,14 +1355,20 @@ type
     class function GetMaxActivtedParallel(): Integer;
 
     // build-in synchronization
-    class procedure Sync(const OnRun_: TRun_Thread_P_NP); overload;
-    class procedure Sync(const Thread_: TThread; OnRun_: TRun_Thread_P_NP); overload;
+    class procedure Sync(OnRun_: TRun_Thread_P_NP); overload;
+    class procedure Sync(Thread_: TThread; OnRun_: TRun_Thread_P_NP); overload;
     class procedure SyncC(OnRun_: TRun_Thread_C_NP); overload;
-    class procedure SyncC(const Thread_: TThread; OnRun_: TRun_Thread_C_NP); overload;
+    class procedure SyncC(Thread_: TThread; OnRun_: TRun_Thread_C_NP); overload;
     class procedure SyncM(OnRun_: TRun_Thread_M_NP); overload;
-    class procedure SyncM(const Thread_: TThread; OnRun_: TRun_Thread_M_NP); overload;
-    class procedure SyncP(const OnRun_: TRun_Thread_P_NP); overload;
-    class procedure SyncP(const Thread_: TThread; OnRun_: TRun_Thread_P_NP); overload;
+    class procedure SyncM(Thread_: TThread; OnRun_: TRun_Thread_M_NP); overload;
+    class procedure SyncP(OnRun_: TRun_Thread_P_NP); overload;
+    class procedure SyncP(Thread_: TThread; OnRun_: TRun_Thread_P_NP); overload;
+
+    // build-in synchronization to
+    class procedure Sync_To(Dest_Thread_:TCompute; OnRun_: TRun_Thread_P_NP);
+    class procedure SyncC_To(Dest_Thread_:TCompute; OnRun_: TRun_Thread_C_NP);
+    class procedure SyncM_To(Dest_Thread_:TCompute; OnRun_: TRun_Thread_M_NP);
+    class procedure SyncP_To(Dest_Thread_:TCompute; OnRun_: TRun_Thread_P_NP);
 
     // build-in asynchronous thread
     class procedure RunC(const Data: Pointer; const Obj: TCore_Object; const OnRun, OnDone: TRun_Thread_C); overload;
@@ -1251,9 +1445,10 @@ type
 
   // TCompute alias
   TComputeThread = TCompute;
-{$EndRegion 'ComputeThread'}
+  TComp = TCompute;
+{$EndRegion 'Compute_Thread'}
 {$Region 'MT19937Random'}
-  TMT19937Random = class(TCore_Object)
+  TMT19937Random = class(TCore_Object_Intermediate)
   private
     FInternalCritical: TCritical;
     FRndInstance: Pointer;
@@ -1280,7 +1475,7 @@ type
 
   TRandom = TMT19937Random;
 
-  TMT19937 = class
+  TMT19937 = class(TCore_Object_Intermediate)
   public
     class function CoreToDelphi: Boolean; static;
     class function InstanceNum(): Integer; static;
@@ -1306,9 +1501,10 @@ type
 {$Region 'Parallel-API'}
 
 function Max_Thread_Supported: Integer;
+function Get_System_Critical_Num: NativeInt;
 function Get_System_Critical_Recycle_Pool_Num: NativeInt;
 function Get_MT19937_POOL_Num: NativeInt;
-function Get_Object_Lock_Pool_Num: NativeInt;
+function Get_Atom_Lock_Pool_Num: NativeInt;
 function Get_Parallel_Granularity: Integer;
 procedure Set_Parallel_Granularity(Thread_Num: Integer);
 procedure Set_IDLE_Compute_Wait_Time_Tick(Tick_: TTimeTick);
@@ -1392,26 +1588,46 @@ procedure ParallelFor(parallel: Boolean; OnFor: TDelphiParallel_P64; b, e: Int64
 {$EndRegion 'Parallel-API'}
 {$Region 'core api'}
 
+// dual main-thread Simulator
+procedure Begin_Simulator_Main_Thread(Simulator_Main_Proc_: TOnSynchronize_C_NP);
+function Simulator_Main_Thread_Activted: Boolean;
+
 // NoP = No Operation. It's the empty function, whose purpose is only for the
 // debugging, or for the piece of code where intentionaly nothing is planned to be.
 procedure Nop;
-
 // debug state
 function IsDebuging: Boolean;
 
-// process Synchronize
+// check soft thread phototype
+var On_Check_Soft_Thread_Synchronize: function(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean;
+function Do_Check_Soft_Thread_Synchronize(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean;
+
+// check system thread phototype
+var On_Check_System_Thread_Synchronize: function(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean;
+function Do_Check_System_Thread_Synchronize(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean;
+
+// check synchronize api
 function IsMainThread: Boolean;
+function Check_Soft_Thread_Synchronize: Boolean; overload;
+function Check_Soft_Thread_Synchronize(Timeout: TTimeTick): Boolean; overload;
+function Check_Soft_Thread_Synchronize(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean; overload;
+procedure Check_System_Thread_Synchronize; overload;
+function Check_System_Thread_Synchronize(Timeout: TTimeTick): Boolean; overload;
+function Check_System_Thread_Synchronize(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean; overload;
 procedure CheckThreadSynchronize; overload;
-function CheckThreadSynchronize(Timeout: Integer): Boolean; overload;
+function CheckThreadSynchronize(Timeout: TTimeTick): Boolean; overload;
 procedure CheckThreadSync; overload;
-function CheckThreadSync(Timeout: Integer): Boolean; overload;
+function CheckThreadSync(Timeout: TTimeTick): Boolean; overload;
 procedure CheckThread; overload;
-function CheckThread(Timeout: Integer): Boolean; overload;
+function CheckThread(Timeout: TTimeTick): Boolean; overload;
+
+// compiler define
 function Get_Compiler_Version: string;
 
 // core thread pool
 procedure FreeCoreThreadPool;
 
+// dipose object
 function DisposeObject(const Obj: TObject): Boolean; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
 procedure DisposeObject(const objs: array of TObject); overload;
 function FreeObj(const Obj: TObject): Boolean; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
@@ -1420,6 +1636,7 @@ procedure FreeObject(const objs: array of TObject); overload;
 function DisposeObjectAndNil(var Obj): Boolean; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 function FreeObjAndNil(var Obj): Boolean; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 
+// object lock
 procedure LockObject(Obj: TObject);
 procedure UnLockObject(Obj: TObject);
 
@@ -1466,6 +1683,18 @@ const
 
 function Get_CRC32(const Data: PByte; const Size: NativeInt): THash; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 function Hash_Key_Mod(const hash: THash; const Num: integer): integer; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
+
+type
+  TBool_Signal_Array = array of Boolean;
+  PBool_Signal_Array = array of PBoolean;
+  TInteger_Signal_Array = array of Integer;
+  PInteger_Signal_Array = array of PInteger;
+
+procedure Wait_All_Signal(var arry: TBool_Signal_Array; const signal_: Boolean); overload;
+procedure Wait_All_Signal(const arry: PBool_Signal_Array; const signal_: Boolean); overload;
+procedure Wait_All_Signal(var arry: TInteger_Signal_Array; const signal_: Integer); overload;
+procedure Wait_All_Signal(const arry: PInteger_Signal_Array; const signal_: Integer); overload;
+
 function DeltaStep(const value_, Delta_: NativeInt): NativeInt; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 procedure AtomInc(var x: Int64); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
 procedure AtomInc(var x: Int64; const v: Int64); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
@@ -1501,7 +1730,7 @@ function GetCrashTimeTick(): TTimeTick;
 function SameF(const A, B: Double; Epsilon: Double = 0): Boolean; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
 function SameF(const A, B: Single; Epsilon: Single = 0): Boolean; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
 
-// MT19937 random num
+// MT19937 random
 function MT19937CoreToDelphi: Boolean;
 function MT19937InstanceNum(): Integer;
 procedure SetMT19937Seed(seed: Integer);
@@ -1566,25 +1795,6 @@ function N2LE(const Value: Cardinal): Cardinal; {$IFDEF INLINE_ASM} inline;{$END
 function N2LE(const Value: Int64): Int64; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
 function N2LE(const Value: UInt64): UInt64; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
 
-procedure Swap(var v1, v2: Byte); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Word); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Integer); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Cardinal); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Int64); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: UInt64); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-{$IFDEF OVERLOAD_NATIVEINT}
-procedure Swap(var v1, v2: NativeInt); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: NativeUInt); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-{$ENDIF OVERLOAD_NATIVEINT}
-procedure Swap(var v1, v2: string); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Single); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Double); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure Swap(var v1, v2: Pointer); {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-procedure SwapVariant(var v1, v2: Variant);
-function Swap(const v: Word): Word; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-function Swap(const v: Cardinal): Cardinal; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-function Swap(const v: UInt64): UInt64; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM} overload;
-
 function SAR16(const Value: SmallInt; const Shift: Byte): SmallInt; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 function SAR32(const Value: Integer; Shift: Byte): Integer; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 function SAR64(const Value: Int64; Shift: Byte): Int64; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
@@ -1608,6 +1818,42 @@ function GetOffset(const p_: Pointer; const offset_: NativeInt): Pointer; {$IFDE
 function GetPtr(const p_: Pointer; const offset_: NativeInt): Pointer; {$IFDEF INLINE_ASM} inline;{$ENDIF INLINE_ASM}
 
 {$EndRegion 'core api'}
+{$Region 'core var'}
+
+type
+  TOn_Check_Thread_Synchronize = procedure();
+  TOn_Raise_Info = procedure(const n: string);
+  TOn_Instance_Info = procedure(const Instance_: string);
+
+var
+  On_Raise_Info: TOn_Raise_Info;
+  Inc_Instance_Num: TOn_Instance_Info;
+  Dec_Instance_Num: TOn_Instance_Info;
+  // Soft-Synchronize
+  Core_Main_Thread: TCore_Thread; // custom main-thread
+  Core_Main_Thread_ID: TThreadID; // custom main-thread-id
+  Used_Soft_Synchronize: Boolean; // used soft thread synchronize simulator
+  MainThread_Sync_Tool: TSoft_Synchronize_Tool; // soft synchronize tool for main-thread
+  // Check Synchronize for main-thread
+  Enabled_Check_Thread_Synchronize_System: Boolean;
+  Main_Thread_Synchronize_Running: Boolean;
+  OnCheckThreadSynchronize: TOn_Check_Thread_Synchronize;
+  // caller of per second tool
+  CPS_Check_Soft_Thread, CPS_Check_System_Thread: TCPS_Tool;
+  // DelphiParallelFor and FPCParallelFor work in parallel
+  WorkInParallelCore: TAtomBool;
+  // same WorkInParallelCore
+  ParallelCore: TAtomBool;
+  // default is True
+  GlobalMemoryHook: TAtomBool;
+  // core init time
+  CoreInitedTimeTick: TTimeTick;
+  // The life time of working in asynchronous thread consistency,
+  MT19937LifeTime: TTimeTick;
+  // MainThread TThreadPost
+  MainThreadProgress: TThreadPost;
+  MainThreadPost: TThreadPost;
+{$EndRegion 'core var'}
 {$Region 'core-const'}
 const
   {$IF Defined(WIN32)}
@@ -1670,41 +1916,14 @@ const
   fmShareDenyWrite = SysUtils.fmShareDenyWrite;
   fmShareDenyNone  = SysUtils.fmShareDenyNone;
 {$EndRegion 'core-const'}
-{$Region 'core var'}
-
-type TOnCheckThreadSynchronize = procedure();
-
-var
-  // Synchronize
-  Enabled_Check_Thread_Synchronize_System: Boolean;
-  Main_Thread_Synchronize_Running: Boolean;
-  Main_Thread_OnCheck_Runing: Boolean;
-  OnCheckThreadSynchronize: TOnCheckThreadSynchronize;
-
-  // DelphiParallelFor and FPCParallelFor work in parallel
-  WorkInParallelCore: TAtomBool;
-  // same WorkInParallelCore
-  ParallelCore: TAtomBool;
-
-  // default is True
-  GlobalMemoryHook: TAtomBool;
-
-  // core init time
-  CoreInitedTimeTick: TTimeTick;
-
-  // The life time of working in asynchronous thread consistency,
-  MT19937LifeTime: TTimeTick;
-
-  // MainThread TThreadPost
-  MainThreadProgress: TThreadPost;
-  MainThreadPost: TThreadPost;
-{$EndRegion 'core var'}
 {$Region 'compatible'}
 {$I ZR.Core.Compatible.inc}
 {$EndRegion 'compatible'}
 
 implementation
 
+{$I ZR.Core.CPS.inc}
+{$I ZR.Core.Intermediate.inc}
 {$I ZR.Core.Cirtical.inc}
 {$I ZR.Core.Atomic.inc}
 {$I ZR.Core.MT19937.inc}
@@ -1718,7 +1937,18 @@ begin
     {$IFDEF AUTOREFCOUNT}Obj.DisposeOf;{$ELSE AUTOREFCOUNT}Obj.Free;{$ENDIF AUTOREFCOUNT}
     Result := True;
   except
-    Result := False;
+    {$IFDEF FPC} // fixed fpc 3.2.2 compiler internal error, by.qq600585
+      if Assigned(On_Raise_Info) then
+        On_Raise_Info('DisposeObject error');
+      Result := False;
+    {$ELSE FPC}
+      on E: Exception do
+        begin
+          if Assigned(On_Raise_Info) then
+            On_Raise_Info('DisposeObject error ' + E.Message);
+          Result := False;
+        end;
+    {$ENDIF FPC}
   end;
 end;
 
@@ -1970,12 +2200,14 @@ end;
 
 procedure RaiseInfo(const n: string);
 begin
+  if Assigned(On_Raise_Info) then
+    On_Raise_Info(n);
   raise Exception.Create(n);
 end;
 
 procedure RaiseInfo(const n: string; const Args: array of const);
 begin
-  raise Exception.Create(Format(n, Args));
+  RaiseInfo(Format(n, Args));
 end;
 
 function IsMobile: Boolean;
@@ -2009,7 +2241,7 @@ end;
 
 function GetCrashTimeTick(): TTimeTick;
 begin
-  Result := $FFFFFFFFFFFFFFFF - GetTimeTick();
+  Result := TTimeTick($FFFFFFFFFFFFFFFF) - GetTimeTick();
 end;
 
 function SameF(const A, B: Double; Epsilon: Double = 0): Boolean;
@@ -2060,7 +2292,6 @@ end;
 
 {$ELSE}
 
-
 function TCore_InterfacedObject._AddRef: Integer;
 begin
   Result := 1;
@@ -2079,12 +2310,44 @@ procedure TCore_InterfacedObject.BeforeDestruction;
 begin
 end;
 
+constructor TGenericsList<t>.Create;
+begin
+  inherited Create;
+  {$IFDEF Intermediate_Instance_Tool}
+  Inc_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+end;
+
+destructor TGenericsList<t>.Destroy;
+begin
+  {$IFDEF Intermediate_Instance_Tool}
+  Dec_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+  inherited Destroy;
+end;
+
 function TGenericsList<t>.ListData: PGArry;
 begin
   // set array pointer
   Arry := TGArry(Pointer(inherited List));
   // @ array
   Result := @Arry;
+end;
+
+constructor TGenericsObjectList<t>.Create;
+begin
+  inherited Create;
+  {$IFDEF Intermediate_Instance_Tool}
+  Inc_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+end;
+
+destructor TGenericsObjectList<t>.Destroy;
+begin
+  {$IFDEF Intermediate_Instance_Tool}
+  Dec_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+  inherited Destroy;
 end;
 
 function TGenericsObjectList<t>.ListData: PGArry;
@@ -2095,9 +2358,41 @@ begin
   Result := @Arry;
 end;
 
+constructor TCore_List.Create;
+begin
+  inherited Create;
+  {$IFDEF Intermediate_Instance_Tool}
+  Inc_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+end;
+
+destructor TCore_List.Destroy;
+begin
+  {$IFDEF Intermediate_Instance_Tool}
+  Dec_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+  inherited Destroy;
+end;
+
 function TCore_List.ListData: PCore_PointerList;
 begin
   Result := PCore_PointerList(inherited ListData);
+end;
+
+constructor TCore_ListForObj.Create;
+begin
+  inherited Create;
+  {$IFDEF Intermediate_Instance_Tool}
+  Inc_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+end;
+
+destructor TCore_ListForObj.Destroy;
+begin
+  {$IFDEF Intermediate_Instance_Tool}
+  Dec_Instance_Num(UnitName + '.pas (' + ClassName + ')');
+  {$ENDIF Intermediate_Instance_Tool}
+  inherited Destroy;
 end;
 
 function TCore_ListForObj.ListData: PCore_ForObjectList;
@@ -2152,17 +2447,6 @@ begin
   inherited Clear;
 end;
 
-{$I ZR.Core.ThreadPost.inc}
-{$I ZR.Core.ComputeThread.inc}
-
-{$IFDEF FPC}
-  {$I ZR.Core.FPCParallelFor.inc}
-{$ELSE FPC}
-  {$I ZR.Core.DelphiParallelFor.inc}
-{$ENDIF FPC}
-
-{$I ZR.Core.AtomVar.inc}
-
 procedure Nop;
 begin
 end;
@@ -2183,71 +2467,73 @@ end;
 
 function IsMainThread: Boolean;
 begin
-  Result := TCore_Thread.CurrentThread.ThreadID = MainThreadID;
+  Result := TCore_Thread.CurrentThread.ThreadID = Core_Main_Thread_ID;
+end;
+
+function Check_Soft_Thread_Synchronize: Boolean;
+begin
+  Result := Check_Soft_Thread_Synchronize(0);
+end;
+
+function Check_Soft_Thread_Synchronize(Timeout: TTimeTick): Boolean;
+begin
+  Result := Check_Soft_Thread_Synchronize(Timeout, True);
+end;
+
+function Check_Soft_Thread_Synchronize(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean;
+begin
+  if Assigned(On_Check_Soft_Thread_Synchronize) then
+    Result := On_Check_Soft_Thread_Synchronize(Timeout, Run_Hook_Event_)
+  else
+    Result := False;
+end;
+
+procedure Check_System_Thread_Synchronize;
+begin
+  Check_System_Thread_Synchronize(0);
+end;
+
+function Check_System_Thread_Synchronize(Timeout: TTimeTick): Boolean;
+begin
+  Check_System_Thread_Synchronize(Timeout, True);
+end;
+
+function Check_System_Thread_Synchronize(Timeout: TTimeTick; Run_Hook_Event_:Boolean): Boolean;
+begin
+  if Assigned(On_Check_System_Thread_Synchronize) then
+    Result := On_Check_System_Thread_Synchronize(Timeout, Run_Hook_Event_)
+  else
+    Result := False;
 end;
 
 procedure CheckThreadSynchronize;
 begin
-  CheckThreadSynchronize(0);
+  Check_System_Thread_Synchronize(0);
 end;
 
-function CheckThreadSynchronize(Timeout: Integer): Boolean;
+function CheckThreadSynchronize(Timeout: TTimeTick): Boolean;
 begin
-  Result := False;
-
-  if (TCore_Thread.CurrentThread.ThreadID <> MainThreadID) then
-    begin
-      if Timeout > 0 then
-          TCore_Thread.Sleep(Timeout);
-      Result := False;
-    end
-  else if Enabled_Check_Thread_Synchronize_System then
-    begin
-      MainThreadProgress.Progress(MainThreadID);
-
-      if not Main_Thread_Synchronize_Running then
-        begin
-          Main_Thread_Synchronize_Running := True;
-          try
-              Result := CheckSynchronize(Timeout);
-          except
-              Result := False;
-          end;
-          Main_Thread_Synchronize_Running := False;
-        end;
-
-      if not Main_Thread_OnCheck_Runing then
-        begin
-          Main_Thread_OnCheck_Runing := True;
-          try
-            if Assigned(OnCheckThreadSynchronize) then
-                OnCheckThreadSynchronize();
-          except
-              Result := False;
-          end;
-          Main_Thread_OnCheck_Runing := False;
-        end;
-    end;
+  Result := Check_System_Thread_Synchronize(Timeout);
 end;
 
 procedure CheckThreadSync;
 begin
-  CheckThreadSynchronize(0);
+  Check_System_Thread_Synchronize(0);
 end;
 
-function CheckThreadSync(Timeout: Integer): Boolean;
+function CheckThreadSync(Timeout: TTimeTick): Boolean;
 begin
-  Result := CheckThreadSynchronize(Timeout);
+  Result := Check_System_Thread_Synchronize(Timeout);
 end;
 
 procedure CheckThread;
 begin
-  CheckThreadSynchronize(0);
+  Check_System_Thread_Synchronize(0);
 end;
 
-function CheckThread(Timeout: Integer): Boolean;
+function CheckThread(Timeout: TTimeTick): Boolean;
 begin
-  Result := CheckThreadSynchronize(Timeout);
+  Result := Check_System_Thread_Synchronize(Timeout);
 end;
 
 function Get_Compiler_Version: string;
@@ -2288,6 +2574,7 @@ begin
       {$ELSEIF defined(VER340)}'Delphi 10.4'
       {$ELSEIF defined(VER350)}'Delphi 11'
       {$ELSEIF defined(VER360)}'Delphi 11.x or 12 last...'
+      {$ELSEIF defined(VER370)}'Delphi 12 or 13 last...'
       {$ELSE}'Unknow Delphi Compiler'
       {$IFEND}
     {$ENDIF CONDITIONALEXPRESSIONS}
@@ -2295,32 +2582,71 @@ begin
   {$IFDEF CPU64} + ' 64 bit' {$ELSE CPU64} + ' 32 bit' {$ENDIF CPU64};
 end;
 
+{$I ZR.Core.SoftSynchronize.inc}
+{$I ZR.Core.ThreadPost.inc}
+{$I ZR.Core.ComputeThread.inc}
+
+{$IFDEF FPC}
+  {$I ZR.Core.FPCParallelFor.inc}
+{$ELSE FPC}
+  {$I ZR.Core.DelphiParallelFor.inc}
+{$ENDIF FPC}
+
+{$I ZR.Core.AtomVar.inc}
 {$I ZR.Core.OrderData.inc}
 {$I ZR.Core.BigList.inc}
 {$I ZR.Core.Hash_Pair.inc}
+{$I ZR.Core.Hash_Tool.inc}
 
 initialization
+  // float exception
   SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
+  // raise event
+  On_Raise_Info := nil;
+  // instance trace
+  Inc_Instance_Num := ___Inc_Instance_Num___;
+  Dec_Instance_Num := ___Dec_Instance_Num___;
+  // cirtial recycle pool
   Init_System_Critical_Recycle_Pool();
+  // thread Technology
+  Core_Main_Thread := TCore_Thread.CurrentThread;
+  Core_Main_Thread_ID := MainThreadID;
+  Used_Soft_Synchronize := {$IFDEF Core_Thread_Soft_Synchronize}True{$ELSE Core_Thread_Soft_Synchronize}False{$ENDIF Core_Thread_Soft_Synchronize};
+  MainThread_Sync_Tool := TSoft_Synchronize_Tool.Create(Core_Main_Thread);
+  On_Check_Soft_Thread_Synchronize := Do_Check_Soft_Thread_Synchronize;
+  On_Check_System_Thread_Synchronize := Do_Check_System_Thread_Synchronize;
   OnCheckThreadSynchronize := nil;
+  // cps
+  CPS_Check_Soft_Thread.Reset;
+  CPS_Check_System_Thread.Reset;
+  // parallel
   WorkInParallelCore := TAtomBool.Create(True);
   ParallelCore := WorkInParallelCore;
+  // MM hook
   GlobalMemoryHook := TAtomBool.Create(True);
+  // timetick
   Core_RunTime_Tick := C_Tick_Day * 3;
   Core_Step_Tick := TCore_Thread.GetTickCount();
+  // global cirtical
   Init_Critical_System();
+  // random
   InitMT19937Rand();
   CoreInitedTimeTick := GetTimeTick();
+  // thread pool
   InitCoreThreadPool(
     if_(IsDebuging, 2, CpuCount * 2),
     if_(IsDebuging, 2, {$IFDEF LimitMaxParallelThread}8{$ELSE LimitMaxParallelThread}CpuCount * 2{$ENDIF LimitMaxParallelThread}));
-  MainThreadProgress := TThreadPost.Create(MainThreadID);
+  // thread progress
+  MainThreadProgress := TThreadPost.Create(Core_Main_Thread_ID);
   MainThreadProgress.OneStep := False;
+  MainThreadPost := MainThreadProgress;
+  // thread Synchronize state
   Enabled_Check_Thread_Synchronize_System := True;
   Main_Thread_Synchronize_Running := False;
-  Main_Thread_OnCheck_Runing := False;
-  MainThreadPost := MainThreadProgress;
 finalization
+  On_Raise_Info := nil;
+  OnCheckThreadSynchronize := nil;
+  Check_Soft_Thread_Synchronize(0);
   FreeCoreThreadPool;
   MainThreadProgress.Free;
   FreeMT19937Rand();
@@ -2329,5 +2655,6 @@ finalization
   WorkInParallelCore := nil;
   GlobalMemoryHook.Free;
   GlobalMemoryHook := nil;
+  DisposeObjectAndNil(MainThread_Sync_Tool);
   Free_System_Critical_Recycle_Pool();
 end.

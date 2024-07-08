@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.Decoder;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -24,8 +25,8 @@ type
   TJLSDecoder = class(TJLSBaseCodec)
   public
     Shift: Int;
-    got_lse: Int;     { got an LSE marker }
-    got_table: Int;   { got a mapping table }
+    got_lse: Int; { got an LSE marker }
+    got_table: Int; { got a mapping table }
     got_restart: Int; { got a restart marker indicatino }
 
     procedure initbuffers(comp: Int);
@@ -356,9 +357,9 @@ begin
 
   { Check to see if lossless or lossy }
   if (FImageInfo._near = 0) then
-      lossy := False
+      Lossy := False
   else
-      lossy := True;
+      Lossy := True;
 
   { Check for 16 or 8 bit mode }
   if (alpha0 <= MAXA16) and (alpha0 > MAXA8) then
@@ -465,7 +466,7 @@ begin
       Exit;
     end;
 
-  if (lossy = True) then
+  if (Lossy = True) then
     begin
       { compute auxiliary parameters for _near-lossless (globals) }
       quant := 2 * FImageInfo._near + 1;
@@ -484,7 +485,7 @@ begin
       inc(bpp);
 
   { compute bits per sample for unencoded prediction errors }
-  if (lossy = True) then
+  if (Lossy = True) then
     begin
       FImageInfo.qbpp := 1;
       while (1 shl FImageInfo.qbpp) < FImageInfo.qbeta do
@@ -577,7 +578,7 @@ begin
           { Prepare the quantization LUTs }
           prepareLUTs();
 
-          if (lossy = True) then
+          if (Lossy = True) then
               prepare_qtables(FImageInfo.alpha, FImageInfo._near); { prepare div/mul tables for _near-lossless quantization }
 
         end
@@ -631,7 +632,7 @@ begin
             end;
 
           if ((head_scan[n_s]^.color_mode <> PLANE_INT) or (head_scan[n_s]^.comp <> 1) or
-            (head_scan[n_s]^.comp_ids[0] <> n_s + 1)) then
+              (head_scan[n_s]^.comp_ids[0] <> n_s + 1)) then
             begin
               DoStatus('This implementation supports multiple scans only in PLANE INTERLEAVED mode.');
               Result := False;
@@ -646,7 +647,7 @@ begin
       n := 0;
 
       { Initialize stats arrays }
-      if (lossy = True) then
+      if (Lossy = True) then
           init_stats(FImageInfo.qbeta)
       else
           init_stats(FImageInfo.alpha);
@@ -660,7 +661,7 @@ begin
             /*           Line interleaved mode with single file received           */
             /*********************************************************************** }
 
-          if (lossy = False) then
+          if (Lossy = False) then
             begin
               { LOSSLESS MODE }
               inc(n);
@@ -815,7 +816,7 @@ begin
                 /*           Pixel interleaved mode with single file received          */
                 /*********************************************************************** }
 
-              if (lossy = False) then
+              if (Lossy = False) then
                 begin
 
                   { LOSSLESS MODE }
@@ -926,7 +927,7 @@ begin
               { *           Plane interleaved mode                * }
               { *********************************************************************** }
 
-              if (lossy = False) then
+              if (Lossy = False) then
                 begin
                   { LOSSLESS MODE }
                   inc(n);
@@ -1014,7 +1015,7 @@ begin
 
                       inc(n);
                     end; { End of line loop in PLANE_INT }
-                end;     { End of each component for PLANE_INT }
+                end; { End of each component for PLANE_INT }
 
             end; { End of non LINE_INT }
 

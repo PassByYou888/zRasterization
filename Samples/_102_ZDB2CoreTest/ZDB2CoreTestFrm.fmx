@@ -1,0 +1,167 @@
+object ZDB2CoreTestForm: TZDB2CoreTestForm
+  Left = 0
+  Top = 0
+  Caption = 'ZDB2.0 Core Demo. Create by.qq600585'
+  ClientHeight = 898
+  ClientWidth = 1210
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object Memo: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Lines.Strings = (
+      #35813'demo'#28436#31034#20102'zdb2.0'#26368#26680#24515#30340#23384#20648#31354#38388#35745#31639#26426#21046
+      'zdb2.0'#26377#35768#22810#39640#32423#26694#26550#37117#20381#36182#20110#24213#23618#30340#31354#38388#31649#29702#21644#35745#31639
+      ''
+      'by.qq600585'
+      ''
+      '')
+    Align = Bottom
+    Position.Y = 775.000000000000000000
+    Size.Width = 1210.000000000000000000
+    Size.Height = 123.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Viewport.Width = 1206.000000000000000000
+    Viewport.Height = 119.000000000000000000
+  end
+  object pb: TPaintBox
+    Align = Client
+    ClipChildren = True
+    ClipParent = True
+    Size.Width = 1210.000000000000000000
+    Size.Height = 775.000000000000000000
+    Size.PlatformDefault = False
+    OnMouseMove = pbMouseMove
+    OnPaint = pbPaint
+    object write_Layout: TLayout
+      Anchors = [akTop, akRight]
+      Position.X = 946.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 249.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      object Label1: TLabel
+        Align = Left
+        Size.Width = 57.000000000000000000
+        Size.Height = 33.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        Text = #25968#25454#38271#24230
+        TabOrder = 0
+      end
+      object write_size_Edit: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = VertCenter
+        TabOrder = 1
+        Text = '32*1024'
+        Position.X = 57.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 192.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        object EditButton_write_: TEditButton
+          CanFocus = False
+          Cursor = crArrow
+          Size.Width = 44.000000000000000000
+          Size.Height = 18.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = #20889#20837
+          OnClick = EditButton_write_Click
+        end
+        object EditButton_fill_space: TEditButton
+          CanFocus = False
+          Cursor = crArrow
+          Position.X = 44.000000000000000000
+          Size.Width = 72.000000000000000000
+          Size.Height = 18.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          Text = #22635#28385#31354#38388
+          OnClick = EditButton_fill_spaceClick
+        end
+      end
+    end
+    object Button_Print_ID: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 1114.000000000000000000
+      Position.Y = 48.000000000000000000
+      TabOrder = 5
+      Text = #26465#30446'ID'
+      OnClick = Button_Print_IDClick
+    end
+    object remove_Layout: TLayout
+      Anchors = [akTop, akRight]
+      Position.X = 1042.000000000000000000
+      Position.Y = 80.000000000000000000
+      Size.Width = 153.000000000000000000
+      Size.Height = 33.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object Label2: TLabel
+        Align = Left
+        Size.Width = 57.000000000000000000
+        Size.Height = 33.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Trailing
+        Text = #26465#30446'ID'
+        TabOrder = 0
+      end
+      object remove_Edit: TEdit
+        Touch.InteractiveGestures = [LongTap, DoubleTap]
+        Align = VertCenter
+        TabOrder = 1
+        Text = '-1'
+        Position.X = 57.000000000000000000
+        Position.Y = 5.000000000000000000
+        Size.Width = 96.000000000000000000
+        Size.Height = 22.000000000000000000
+        Size.PlatformDefault = False
+        object EditButton_remove: TEditButton
+          CanFocus = False
+          Cursor = crArrow
+          Size.Width = 44.000000000000000000
+          Size.Height = 18.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          Text = #21024#38500
+          OnClick = EditButton_removeClick
+        end
+      end
+    end
+    object Button_reset: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 1114.000000000000000000
+      Position.Y = 152.000000000000000000
+      TabOrder = 2
+      Text = #37325#32622
+      OnClick = Button_resetClick
+    end
+    object Button_query: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 1114.000000000000000000
+      Position.Y = 120.000000000000000000
+      TabOrder = 3
+      Text = #27169#25311#26597#35810
+      OnClick = Button_queryClick
+    end
+    object Button_flush: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 1026.000000000000000000
+      Position.Y = 48.000000000000000000
+      TabOrder = 4
+      Text = 'flush'
+      OnClick = Button_flushClick
+    end
+  end
+  object Timer1: TTimer
+    Interval = 10
+    OnTimer = Timer1Timer
+    Left = 560
+    Top = 272
+  end
+end

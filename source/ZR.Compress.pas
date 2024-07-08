@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.Compress;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -73,7 +74,7 @@ type
       True: (Value: TCCUInt64;);
   end;
 
-  TCompressor = class(TCore_Object)
+  TCompressor = class(TCore_Object_Intermediate)
   private const
     ChunkHeadSize = $3000;
     ChunkSize = $FFFF - ChunkHeadSize;
@@ -456,8 +457,8 @@ begin
       sour.read(siz, 8);
       cSiz := 0;
 
-      buff := GetMemory(PrepareBuffSize);
-      decryptBuff := GetMemory(PrepareBuffSize);
+      buff := System.GetMemory(PrepareBuffSize);
+      decryptBuff := System.GetMemory(PrepareBuffSize);
       while cSiz < siz do
         begin
           if sour.read(bufSiz, 2) <> 2 then
@@ -469,8 +470,8 @@ begin
           DecompressTo.write(decryptBuff^, deBufSiz);
           inc(cSiz, deBufSiz);
         end;
-      FreeMemory(buff);
-      FreeMemory(decryptBuff);
+      System.FreeMemory(buff);
+      System.FreeMemory(decryptBuff);
     end;
 end;
 

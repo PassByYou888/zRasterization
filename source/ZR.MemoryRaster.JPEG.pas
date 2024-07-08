@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -21,7 +22,7 @@ type
 
   // TMemoryJpegRaster is a Delphi and fpc class, which can be used to load Jpeg files into TMemoryRaster.
   // It relays the Jpeg functionality in the non-Windows TJpegImage class to this TMemoryRaster
-  TMemoryJpegZR = class(TCore_Object)
+  TMemoryJpegZR = class(TCore_Object_Intermediate)
   private
     // the temporary TMemoryRaster that can be either the full image or the tilesized bitmap when UseTiledDrawing is activated.
     FZR: TMZR;
@@ -272,11 +273,11 @@ constructor TMemoryJpegZR.Create;
 begin
   inherited;
   FImage := TJpegImage.Create(nil);
-  FImage.OnUpdate := {$IFDEF FPC}@{$ENDIF FPC}ImageUpdate;
+  FImage.OnUpdate := ImageUpdate;
 {$IFDEF JPEG_Debug}
-  FImage.OnDebugOut := {$IFDEF FPC}@{$ENDIF FPC}ImageDebug;
+  FImage.OnDebugOut := ImageDebug;
 {$ENDIF JPEG_Debug}
-  FImage.OnCreateMap := {$IFDEF FPC}@{$ENDIF FPC}ImageCreateMap;
+  FImage.OnCreateMap := ImageCreateMap;
   FImage.DCTCodingMethod := dmFast;
   FUseTiledDrawing := False;
 end;
@@ -303,7 +304,7 @@ begin
       MS.Free;
   end;
   // Load the default OnCreateMap event for TJpegGraphic
-  FImage.OnCreateMap := {$IFDEF FPC}@{$ENDIF FPC}ImageCreateMap;
+  FImage.OnCreateMap := ImageCreateMap;
 end;
 
 procedure TMemoryJpegZR.SetZR(Source: PRGBArray; Source_width, Source_height: Integer);

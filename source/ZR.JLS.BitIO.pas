@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.BitIO;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -24,8 +25,9 @@ const
   BITBUFSIZE = (8 * SizeOf(Cardinal));
 
 type
-  TJLSBitIO = class
-  public var
+  TJLSBitIO = class(TCore_Object_Intermediate)
+  public
+  var
     FInputStream: TCore_Stream;
     FOutputStream: TCore_Stream;
     zeroLUT: array [0 .. 255] of Int; { table to find out number of leading zeros }
@@ -37,7 +39,7 @@ type
       the byte buffer when flushing the input bit buffer .
     }
 
-    FP: Int;          { index into byte buffer }
+    FP: Int; { index into byte buffer }
     truebufsize: Int; { true size of byte buffer ( <= BUFSIZE) }
     foundeof: Boolean;
 

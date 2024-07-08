@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.MapIterator;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

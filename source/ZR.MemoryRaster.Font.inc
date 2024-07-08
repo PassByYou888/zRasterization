@@ -488,7 +488,7 @@ begin
   if FontInited then
     begin
       while SystemFont.V = nil do
-          CheckThreadSynchronize(1);
+          Check_Soft_Thread_Synchronize(1);
       DisposeObject(SystemFont.V);
     end;
 
@@ -777,7 +777,7 @@ begin
       if Status_ then
           DoStatus('build %s space...', [fontInfo_.Text]);
       RP.Margins := 4;
-      RP.Build(C_MAXWORD * 1024, C_MAXWORD * 1024);
+      RP.Build_Dynamic(C_MAXWORD * 1024, C_MAXWORD * 1024);
 
       FActivtedWord := 0;
       FWidth := Round(RP.MaxWidth);
@@ -1026,7 +1026,7 @@ begin
       Result := Point(w, h);
 end;
 
-function TFontZR.TextSize(const s: TFontZRString; charVec2List: TVec2List): TVec2;
+function TFontZR.TextSize(const s: TFontZRString; charVec2List: TV2L): TVec2;
 var
   I: Integer;
   c: TFontZRChar;
@@ -1103,11 +1103,11 @@ var
   r: TRect;
   vSiz: TVec2;
   wp: TDeflectionPolygon;
-  vl: TVec2List;
+  vl: TV2L;
   WI: Integer;
 begin
   // compute rotate: also matrix transform
-  vl := TVec2List.Create;
+  vl := TV2L.Create;
   vSiz := TextSize(Text, vl);
   wp := TDeflectionPolygon.Create;
   wp.Position := Vec2Mul(vSiz, Axis);
@@ -1165,11 +1165,11 @@ var
   r: TRect;
   vSiz: TVec2;
   wp: TDeflectionPolygon;
-  vl: TVec2List;
+  vl: TV2L;
   WI: Integer;
 begin
   // compute rotate: also matrix transform
-  vl := TVec2List.Create;
+  vl := TV2L.Create;
   vSiz := TextSize(Text, vl);
   wp := TDeflectionPolygon.Create;
   wp.Position := Vec2Mul(vSiz, Axis);
@@ -1250,18 +1250,18 @@ begin
   // reset blend parameter
   VM := Dst.Vertex;
   bak_userData := VM.UserData;
-  VM.ComputeNearest := {$IFDEF FPC}@{$ENDIF FPC}font_raster_ComputeNearest_;
-  VM.ComputeLinear := {$IFDEF FPC}@{$ENDIF FPC}font_raster_ComputeLinear_;
-  VM.ComputeBlend := {$IFDEF FPC}@{$ENDIF FPC}font_raster_ComputeBlend_;
+  VM.ComputeNearest := font_raster_ComputeNearest_;
+  VM.ComputeLinear := font_raster_ComputeLinear_;
+  VM.ComputeBlend := font_raster_ComputeBlend_;
   VM.UserData := @DD;
 
   // vertex draw
   VM.DrawRect(TV2Rect4.Init(fontRect, 0), DstRect, tmp, bilinear_sampling, alpha);
 
   // restore blend parameter
-  VM.ComputeBlend := {$IFDEF FPC}@{$ENDIF FPC}Vertex_ComputeBlend;
-  VM.ComputeNearest := {$IFDEF FPC}@{$ENDIF FPC}Vertex_ComputeNearest;
-  VM.ComputeLinear := {$IFDEF FPC}@{$ENDIF FPC}Vertex_ComputeLinear;
+  VM.ComputeBlend := Vertex_ComputeBlend;
+  VM.ComputeNearest := Vertex_ComputeNearest;
+  VM.ComputeLinear := Vertex_ComputeLinear;
   VM.UserData := bak_userData;
 
   // free Sampler
@@ -1281,7 +1281,7 @@ var
   s, d: TRectV2;
   vSiz: TVec2;
   wp: TDeflectionPolygon;
-  vl: TVec2List;
+  vl: TV2L;
   WI: Integer;
 begin
   // init raster
@@ -1293,13 +1293,13 @@ begin
   // reset blend parameter
   VM := Dst.Vertex;
   bak_userData := VM.UserData;
-  VM.ComputeNearest := {$IFDEF FPC}@{$ENDIF FPC}font_raster_ComputeNearest_;
-  VM.ComputeLinear := {$IFDEF FPC}@{$ENDIF FPC}font_raster_ComputeLinear_;
-  VM.ComputeBlend := {$IFDEF FPC}@{$ENDIF FPC}font_raster_ComputeBlend_;
+  VM.ComputeNearest := font_raster_ComputeNearest_;
+  VM.ComputeLinear := font_raster_ComputeLinear_;
+  VM.ComputeBlend := font_raster_ComputeBlend_;
   VM.UserData := @DD;
 
   // compute rotate: also matrix transform
-  vl := TVec2List.Create;
+  vl := TV2L.Create;
   vSiz := TextSize(Text, vl);
   wp := TDeflectionPolygon.Create;
   wp.Position := Vec2Mul(vSiz, Axis);
@@ -1347,9 +1347,9 @@ begin
     DisposeObject(tmp);
 
     // restore blend parameter
-    VM.ComputeBlend := {$IFDEF FPC}@{$ENDIF FPC}Vertex_ComputeBlend;
-    VM.ComputeNearest := {$IFDEF FPC}@{$ENDIF FPC}Vertex_ComputeNearest;
-    VM.ComputeLinear := {$IFDEF FPC}@{$ENDIF FPC}Vertex_ComputeLinear;
+    VM.ComputeBlend := Vertex_ComputeBlend;
+    VM.ComputeNearest := Vertex_ComputeNearest;
+    VM.ComputeLinear := Vertex_ComputeLinear;
     VM.UserData := bak_userData;
   end;
   Result := vSiz;
@@ -1641,11 +1641,11 @@ end;
 function TFontZR.ComputeTextConvexHull(Text: TFontZRString; X, Y: TGeoFloat; RotateVec: TVec2; Angle, siz: TGeoFloat): TArrayVec2;
 var
   DrawCoordinate, BoundBoxCoordinate: TArrayV2R4;
-  L: TVec2List;
+  L: TV2L;
   I: Integer;
 begin
   ComputeDrawCoordinate(Text, X, Y, RotateVec, Angle, siz, DrawCoordinate, BoundBoxCoordinate);
-  L := TVec2List.Create;
+  L := TV2L.Create;
   for I := 0 to Length(BoundBoxCoordinate) - 1 do
     if BoundBoxCoordinate[I].Area > 0 then
         L.Add(BoundBoxCoordinate[I]);
@@ -1686,4 +1686,28 @@ end;
 procedure TFontZR.DrawText(Text: TFontZRString; Dst: TMZR; X, Y: TGeoFloat; siz: TGeoFloat; TextColor: TRColor; var DrawCoordinate: TArrayV2R4);
 begin
   DrawText(Text, Dst, X, Y, vec2(0.5, 0.5), 0, 1, siz, TextColor, DrawCoordinate);
+end;
+
+constructor TFontRasterPool.Create(AutoFree_: Boolean);
+begin
+  inherited Create($FF);
+  AutoFree := AutoFree_;
+end;
+
+procedure TFontRasterPool.DoFree(var Key: SystemString; var Value: TFontZR);
+begin
+  if AutoFree then
+      DisposeObjectAndNil(Value);
+  inherited DoFree(Key, Value);
+end;
+
+function TFontRasterPool.Get_Font_List(Key_Filter: SystemString): TFontZRList;
+begin
+  Result := TFontZRList.Create;
+  if num > 0 then
+    with repeat_ do
+      repeat
+        if umlMultipleMatch(Key_Filter, queue^.Data^.Data.Primary) then
+            Result.Add(queue^.Data^.Data.Second);
+      until not Next;
 end;

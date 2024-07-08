@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Motion_est;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -17,7 +18,7 @@ type
     refidx: int32_t;
   end;
 
-  TMotionEstimator = class
+  TMotionEstimator = class(TCore_Object_Intermediate)
   private
     width, height: int32_t;
     mb_width, mb_height: int32_t;

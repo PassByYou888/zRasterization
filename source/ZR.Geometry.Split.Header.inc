@@ -65,7 +65,7 @@ type
   TTriMesh2D_ = class;
 
   // Basic 2D vertex class, containing an FPoint (TPoing2D_) field with X and Y coordinate.
-  TVertex2D_ = class(TCore_Persistent)
+  TVertex2D_ = class(TCore_Persistent_Intermediate)
   private
     FPoint: TPoing2D_;
     function GetX: double;
@@ -112,7 +112,7 @@ type
 
   // A segment is a boundary that connects two vertices. When a segment is present
   // the triangles bordering it cannot be swapped, thus constraining the triangulation
-  TSegment2D_ = class(TCore_Persistent)
+  TSegment2D_ = class(TCore_Persistent_Intermediate)
   private
     FValidMetrics: boolean;
     FVertex1: TVertex2D_;
@@ -167,21 +167,21 @@ type
 
   // hit-test result for hit-testing triangles
   THitTestTriangle_ = (
-    httNone,   // Not on the triangle
-    httBody,   // On the body of the triangle
-    httVtx0,   // On or close to triangle's vertex 0
-    httVtx1,   // On or close to triangle's vertex 1
-    httVtx2,   // On or close to triangle's vertex 2
-    httEdge0,  // On the body, and on edge 0
-    httEdge1,  // On the body, and on edge 1
-    httEdge2,  // On the body, and on edge 2
+    httNone, // Not on the triangle
+    httBody, // On the body of the triangle
+    httVtx0, // On or close to triangle's vertex 0
+    httVtx1, // On or close to triangle's vertex 1
+    httVtx2, // On or close to triangle's vertex 2
+    httEdge0, // On the body, and on edge 0
+    httEdge1, // On the body, and on edge 1
+    httEdge2, // On the body, and on edge 2
     httClose0, // Not on the body but close to edge 0
     httClose1, // Not on the body but close to edge 1
-    httClose2  // Not on the body but close to edge 2
+    httClose2 // Not on the body but close to edge 2
     );
 
   // Basic class for triangles that are present in a triangular 2D mesh
-  TTriangle2D_ = class(TCore_Persistent)
+  TTriangle2D_ = class(TCore_Persistent_Intermediate)
   private
     FVertices: array [0 .. 2] of TVertex2D_;
     FNormals: array [0 .. 2] of TPoing2D_;
@@ -264,7 +264,7 @@ type
 
   // The object represents general triangle-edge group.
   // Capacity will be increased when needed, but will never be reduced, to avoid memory fragmentation.
-  TTriangleGroup2D_ = class(TCore_Persistent)
+  TTriangleGroup2D_ = class(TCore_Persistent_Intermediate)
   private
     FTriangles: array of TTriangle2D_;
     FEdges: array of integer;
@@ -337,7 +337,7 @@ type
   end;
 
   // A mesh consisting of triangles and vertices, where each triangle contains reference to 3 vertices.
-  TTriMesh2D_ = class(TCore_Persistent)
+  TTriMesh2D_ = class(TCore_Persistent_Intermediate)
   private
     FPrecision: double;
     FVertices: TVertex2DList_;
@@ -412,7 +412,7 @@ type
 
   TTriMesh2DClass_ = class of TTriMesh2D_;
 
-  TConvexHull_ = class(TCore_Persistent)
+  TConvexHull_ = class(TCore_Persistent_Intermediate)
   private
     FMesh: TTriMesh2D_;
     // Add a new segment in the hull, using vertices with Idx1, Idx2
@@ -429,7 +429,7 @@ type
   end;
 
   // Class encapsulating 2D Planar Straightline Graphs (PSLG)
-  TGraph2D_ = class(TCore_Persistent)
+  TGraph2D_ = class(TCore_Persistent_Intermediate)
   private
     FVertices: TVertex2DList_;
     FSegments: TSegment2DList_;
@@ -478,7 +478,7 @@ type
 
   // Which triangles should be removed after triangulation?
   TRemovalStyle_ = (
-    rsNone,    // Remove no triagles
+    rsNone, // Remove no triagles
     rsOutside, // Remove all triangles that are connected to construction vertices
     rsEvenOdd, // Even-Odd fillrule removal
     rsNonZero, // Non-Zero fillrule removal
@@ -737,7 +737,7 @@ type
   TQualityMesh2D_ = class(TDelaunayMesh2D_)
   private
     FBadTriangles: TSortedTriangle2DList_; // List of bad triangles
-    FEncroached: TEncroachItemList_;       // List of encroached segments + info
+    FEncroached: TEncroachItemList_; // List of encroached segments + info
     FUpdates: TTriangle2DList_;
     FSteinerPoints: TVertex2DList_;
     FSquaredBeta: double;

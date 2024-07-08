@@ -12,7 +12,7 @@ uses
   System.IOUtils,
 
   ZR.TextDataEngine, ZR.Core, ZR.ListEngine, ZR.PascalStrings, ZR.UPascalStrings, ZR.Status,
-  ZR.UnicodeMixedLib, ZR.MemoryRaster, ZR.MemoryStream, Vcl.Mask;
+  ZR.UnicodeMixedLib, ZR.MemoryRaster, ZR.MemoryStream;
 
 type
   TImgFmtConverTIFForm = class(TForm)

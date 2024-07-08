@@ -1,6 +1,6 @@
 type
   PCritical_Struct = ^TCritical_Struct;
-  TCritical_Struct_Pool_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<PCritical_Struct>;
+  TCritical_Struct_Pool_Decl__ = TZR_BL<PCritical_Struct>;
 
   TCritical_Struct_Pool__ = class(TCritical_Struct_Pool_Decl__)
   public
@@ -60,7 +60,7 @@ begin
 {$ENDIF DEBUG}
 end;
 
-function Get_Object_Lock_Pool_Num: NativeInt;
+function Get_Atom_Lock_Pool_Num: NativeInt;
 begin
   Lock_Pool_Cirtical__.Acquire;
   Result := Lock_Pool__.Num;
@@ -173,6 +173,58 @@ begin
       Result := (value_ + (Delta_ - 1)) and (not(Delta_ - 1))
   else
       Result := value_;
+end;
+
+procedure Wait_All_Signal(var arry: TBool_Signal_Array; const signal_: Boolean);
+var
+  i: Boolean;
+  r: Boolean;
+begin
+  repeat
+    TCompute.Sleep(1);
+    r := True;
+    for i in arry do
+        r := r and (i = signal_);
+  until r;
+end;
+
+procedure Wait_All_Signal(const arry: PBool_Signal_Array; const signal_: Boolean);
+var
+  p: PBoolean;
+  r: Boolean;
+begin
+  repeat
+    TCompute.Sleep(1);
+    r := True;
+    for p in arry do
+        r := r and (p^ = signal_);
+  until r;
+end;
+
+procedure Wait_All_Signal(var arry: TInteger_Signal_Array; const signal_: Integer);
+var
+  i: Integer;
+  r: Boolean;
+begin
+  repeat
+    TCompute.Sleep(1);
+    r := True;
+    for i in arry do
+        r := r and (i = signal_);
+  until r;
+end;
+
+procedure Wait_All_Signal(const arry: PInteger_Signal_Array; const signal_: Integer);
+var
+  p: PInteger;
+  r: Boolean;
+begin
+  repeat
+    TCompute.Sleep(1);
+    r := True;
+    for p in arry do
+        r := r and (p^ = signal_);
+  until r;
 end;
 
 procedure AtomInc(var x: Int64);

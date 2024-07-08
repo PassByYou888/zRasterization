@@ -9,7 +9,6 @@ object PolygonToolMainForm: TPolygonToolMainForm
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
-  OnActivate = FormActivate
   OnClose = FormClose
   OnShow = FormShow
   DesignerMasterStyle = 0
@@ -276,7 +275,7 @@ object PolygonToolMainForm: TPolygonToolMainForm
     end
   end
   object fpsTimer: TTimer
-    Interval = 15
+    Interval = 30
     OnTimer = fpsTimerTimer
     Left = 464
     Top = 96

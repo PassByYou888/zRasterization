@@ -30,6 +30,7 @@ unit ZR.Agg.VpGenClipPolyline;
 
 {$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
+
 interface
 uses
   ZR.Agg.Basics,

@@ -543,7 +543,7 @@ begin
   LL := L;
   RR := R;
   if LL > RR then
-      Swap(LL, RR);
+      TSwap<Integer>.Do_(LL, RR);
   for i := LL to RR do
     if not IsEdge(i, Y) then
         exit;
@@ -2044,4 +2044,47 @@ begin
     end;
 
   disposeObject(m64);
+end;
+
+function BinaryzationOperation_To_Str(Operation_: TBinaryzationOperation): U_String;
+begin
+  case Operation_ of
+    boNone: Result := 'None';
+    boDilatation: Result := 'Dilatation';
+    boErosion: Result := 'Erosion';
+    boOpening: Result := 'Opening';
+    boClosing: Result := 'Closing';
+    boOpeningAndClosing: Result := 'OpeningAndClosing';
+    boClosingAndOpening: Result := 'ClosingAndOpening';
+    boOR: Result := 'OR';
+    boAND: Result := 'AND';
+    boXOR: Result := 'XOR';
+    else Result := '';
+  end;
+end;
+
+function Str_To_BinaryzationOperation(Value_: U_String): TBinaryzationOperation;
+begin
+  if Value_.Same('', 'None') then
+      Result := boNone
+  else if Value_.Same('Dilatation') then
+      Result := boDilatation
+  else if Value_.Same('Erosion') then
+      Result := boErosion
+  else if Value_.Same('Opening') then
+      Result := boOpening
+  else if Value_.Same('Closing') then
+      Result := boClosing
+  else if Value_.Same('OpeningAndClosing') then
+      Result := boOpeningAndClosing
+  else if Value_.Same('ClosingAndOpening') then
+      Result := boClosingAndOpening
+  else if Value_.Same('OR') then
+      Result := boOR
+  else if Value_.Same('AND') then
+      Result := boAND
+  else if Value_.Same('XOR') then
+      Result := boXOR
+  else
+      Result := boNone;
 end;

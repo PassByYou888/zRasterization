@@ -21,11 +21,13 @@ begin
 {$IFDEF ANTI_DEAD_ATOMIC_LOCK}
   d := GetTimeTick;
   while L do
-    if GetTimeTick - d >= 5000 then
-        RaiseInfo('dead lock');
+    if GetTimeTick - d < 5000 then
+        TCompute.Sleep(1)
+    else
+        RaiseInfo('dead lock')
 {$ELSE ANTI_DEAD_ATOMIC_LOCK}
   while L do
-      NOP;
+    TCompute.Sleep(1);
 {$ENDIF ANTI_DEAD_ATOMIC_LOCK}
   L := True;
 end;
@@ -56,16 +58,18 @@ begin
 end;
 
 type
-  TSystem_Critical_Recycle_Pool__ = {$IFDEF FPC}specialize {$ENDIF FPC} TOrderStruct<TSystem_Critical>;
+  TSystem_Critical_Recycle_Pool__ = TOrderStruct<TSystem_Critical>;
 
 var
   System_Critical__: TSystem_Critical;
   System_Critical_Recycle_Pool__: TSystem_Critical_Recycle_Pool__;
+  System_Critical_Num__: NativeInt;
 
 procedure Init_System_Critical_Recycle_Pool;
 begin
   System_Critical__ := TSystem_Critical.Create;
   System_Critical_Recycle_Pool__ := TSystem_Critical_Recycle_Pool__.Create;
+  System_Critical_Num__ := 0;
 end;
 
 procedure Free_System_Critical_Recycle_Pool;
@@ -81,11 +85,14 @@ begin
   System_Critical__ := nil;
 end;
 
+function Get_System_Critical_Num: NativeInt;
+begin
+  Result := System_Critical_Num__;
+end;
+
 function Get_System_Critical_Recycle_Pool_Num: NativeInt;
 begin
-  System_Critical__.Acquire;
   Result := System_Critical_Recycle_Pool__.Num;
-  System_Critical__.Release;
 end;
 
 constructor TCritical.Create;
@@ -98,14 +105,18 @@ begin
       System_Critical_Recycle_Pool__.Next;
     end
   else
+    begin
       Instance__ := TSystem_Critical.Create;
+      Inc(System_Critical_Num__);
+    end;
   System_Critical__.Release;
-
   LNum := 0;
 end;
 
 destructor TCritical.Destroy;
 begin
+  while LNum > 0 do
+      Release();
   System_Critical__.Acquire;
   System_Critical_Recycle_Pool__.Push(Instance__);
   System_Critical__.Release;
@@ -259,4 +270,21 @@ begin
   Lock;
   Dec(x, v);
   UnLock;
+end;
+
+class procedure TSwap<T_>.Do_(var v1, v2: T_);
+var
+  tmp: T_;
+begin
+  tmp := v1;
+  v1 := v2;
+  v2 := tmp;
+end;
+
+class function TIF<T_>.Do_(Bool_: Boolean; Yes_, No_: T_): T_;
+begin
+  if Bool_ then
+      Result := Yes_
+  else
+      Result := No_;
 end;

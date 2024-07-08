@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.Type_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -25,7 +26,7 @@ type
   // simple update event
   TUpdateEvent = procedure(Sender: TObject) of object;
 
-  TJPEG_Base_Object = class(TCore_Object)
+  TJPEG_Base_Object = class(TCore_Object_Intermediate)
   protected
     FOwner: TJPEG_Base_Object;
 {$IFDEF JPEG_Debug}
@@ -40,7 +41,7 @@ type
     property Owner: TJPEG_Base_Object read FOwner;
   end;
 
-  TJPEG_Persistent = class(TCore_Object)
+  TJPEG_Persistent = class(TCore_Object_Intermediate)
   protected
     FOwner: TJPEG_Base_Object;
 {$IFDEF JPEG_Debug}
@@ -59,23 +60,23 @@ type
     jsFull, // Read the complete image (DC + AC 1..63)
     jsDiv2, // Read only 1/2 of the image (DC + AC 1..15)
     jsDiv4, // Read only 1/4 of the image (DC + AC 1..3)
-    jsDiv8  // Read only 1/8 of the image (DC only)
+    jsDiv8 // Read only 1/8 of the image (DC only)
     );
 
   TJpegColorSpace = (
     jcAutoDetect, // Auto-detect the colorspace from the file
-    jcGray,       // 1-Channel grayscale
-    jcGrayA,      // 1-Channel grayscale with Alpha channel
-    jcRGB,        // (standard) RGB
-    jcRGBA,       // (standard) RGB with Alpha channel
-    jcYCbCr,      // Jpeg Y-Cb-Cr
-    jcYCbCrA,     // Jpeg Y-Cb-Cr with Alpha channel
-    jcCMYK,       // CMYK
-    jcYCbCrK,     // CMYK represented in 4 channels as YCbCrK
-    jcYCCK,       // YCCK
-    jcPhotoYCC,   // Photo YCC
-    jcPhotoYCCA,  // Photo YCCA
-    jcITUCieLAB   // ITU G3FAX CieLAB (for use in colour faxes)
+    jcGray, // 1-Channel grayscale
+    jcGrayA, // 1-Channel grayscale with Alpha channel
+    jcRGB, // (standard) RGB
+    jcRGBA, // (standard) RGB with Alpha channel
+    jcYCbCr, // Jpeg Y-Cb-Cr
+    jcYCbCrA, // Jpeg Y-Cb-Cr with Alpha channel
+    jcCMYK, // CMYK
+    jcYCbCrK, // CMYK represented in 4 channels as YCbCrK
+    jcYCCK, // YCCK
+    jcPhotoYCC, // Photo YCC
+    jcPhotoYCCA, // Photo YCCA
+    jcITUCieLAB // ITU G3FAX CieLAB (for use in colour faxes)
     );
 
   TJpegDCTCodingMethod = (
@@ -121,9 +122,9 @@ type
 
   // Huffman code
   THuffmanCode = record
-    L: Integer;    // Symbol length
+    L: Integer; // Symbol length
     Code: Integer; // Associated huffman code
-    V: Integer;    // Value for huffman code
+    V: Integer; // Value for huffman code
   end;
 
   PHuffmanCode = ^THuffmanCode;
@@ -170,7 +171,7 @@ type
   end;
 
   // Frame component specified in SOF marker
-  TFrameComponent = class(TCore_Persistent)
+  TFrameComponent = class(TCore_Persistent_Intermediate)
   public
     // Horizontal sampling factor H
     FHorzSampling: Integer;
@@ -190,7 +191,7 @@ type
   end;
 
   // Scan component specified in SOS marker
-  TScanComponent = class(TCore_Persistent)
+  TScanComponent = class(TCore_Persistent_Intermediate)
   public
     // Index into frame components list, Cidx
     FComponent: Integer;
@@ -216,11 +217,11 @@ type
     FCoef: array of SmallInt;
     FCoefBackup: array of SmallInt; // used when adjusting brightness/contrast
     FSample: array of Byte;
-    FFrame: TFrameComponent;  // Pointer to frame info
+    FFrame: TFrameComponent; // Pointer to frame info
     FHorzBlockCount: Integer; // Horizontal block count
     FVertBlockCount: Integer; // Vertical block count
-    FBlockStride: Integer;    // number of samples per block
-    FScanStride: Integer;     // width of a scanline
+    FBlockStride: Integer; // number of samples per block
+    FScanStride: Integer; // width of a scanline
   protected
     procedure CreateMap; virtual;
   public
@@ -255,7 +256,7 @@ type
     property Items[Index: Integer]: TJpegBlockMap read GetItems; default;
   end;
 
-  TJpegTile = class
+  TJpegTile = class(TCore_Object_Intermediate)
   public
     FMcuIndex: Integer;
     FStreamPos: int64;
@@ -273,7 +274,7 @@ type
   end;
 
   // Huffman table values + codes specified in DHT marker
-  THuffmanTable = class(TCore_Persistent)
+  THuffmanTable = class(TCore_Persistent_Intermediate)
   private
     FItems: array of THuffmanCode;
     function GetItems(Index: Integer): PHuffmanCode;
@@ -292,7 +293,7 @@ type
   end;
 
   // Collected component data from markers
-  TJpegInfo = class(TCore_Persistent)
+  TJpegInfo = class(TCore_Persistent_Intermediate)
   public
     // Repository of tables, are updated after DQT or DHT markers
     FDCHuffmanTables: THuffmanTableList;
@@ -356,7 +357,7 @@ type
     FStream: TMS64;
     FCodingInfo: TJpegInfo;
     function GetMarkerName: TPascalString; virtual;
-    procedure StoreData(S: TCore_Stream; Size: Integer);
+    procedure StoreData(S: TMS64; Size: Integer);
 {$IFDEF JPEG_Debug}
     procedure DebugSample(S: TCore_Stream; Size: Integer);
 {$ENDIF JPEG_Debug}
@@ -370,8 +371,8 @@ type
     class function GetSignature: TPascalString; virtual;
     class function GetMarker: Byte; virtual;
     class function IsSegment(Marker_: Byte; Stream_: TCore_Stream): Boolean; virtual;
-    procedure LoadFromStream(S: TCore_Stream; Size: Integer);
-    procedure SaveToStream(S: TCore_Stream);
+    procedure LoadFromStream(S: TMS64; Size: Integer);
+    procedure SaveToStream(S: TMS64);
     procedure ReadMarker; virtual;
     procedure WriteMarker; virtual;
     // Any of the mkXXXX constants defined in sdJpegConsts
@@ -437,7 +438,7 @@ type
   end;
 
   // ICC color profile class
-  TJpegICCProfile = class(TCore_Persistent)
+  TJpegICCProfile = class(TCore_Persistent_Intermediate)
   private
     FData: array of Byte;
     function GetData: Pointer;
@@ -468,8 +469,8 @@ const
   mkSOF6 = $C6; // Differential Progressive DCT + Huffman encoding
   mkSOF7 = $C7; // Differential Lossless (sequential) + Huffman encoding
 
-  mkJPG = $C8;   // Reserved for Jpeg extensions
-  mkSOF9 = $C9;  // Extended Sequential DCT + Arithmetic encoding
+  mkJPG = $C8; // Reserved for Jpeg extensions
+  mkSOF9 = $C9; // Extended Sequential DCT + Arithmetic encoding
   mkSOF10 = $CA; // Progressive DCT + Arithmetic encoding
   mkSOF11 = $CB; // Lossless (sequential) + Arithmetic encoding
 
@@ -845,7 +846,7 @@ function NewGuid: TGuid;
 
 type
 
-  TCustomSorter = class
+  TCustomSorter = class(TCore_Object_Intermediate)
   private
     FCompareMethod: TPointerCompareMethod;
     FFirst: Pointer;
@@ -1396,7 +1397,7 @@ begin
   Result := Swap(W);
 end;
 
-procedure TJpegMarker.LoadFromStream(S: TCore_Stream; Size: Integer);
+procedure TJpegMarker.LoadFromStream(S: TMS64; Size: Integer);
 begin
 {$IFDEF JPEG_Debug}
   DoDebugOut(Self, wsInfo, PFormat('<loading marker %s, length:%d>', [MarkerName.Text, Size]));
@@ -1424,7 +1425,7 @@ begin
   // default does nothing
 end;
 
-procedure TJpegMarker.SaveToStream(S: TCore_Stream);
+procedure TJpegMarker.SaveToStream(S: TMS64);
 begin
   // the default SaveToStream method. If the marker was modified, the FStream was already
   // updated with .WriteMarker
@@ -1438,12 +1439,15 @@ begin
     end;
 end;
 
-procedure TJpegMarker.StoreData(S: TCore_Stream; Size: Integer);
+procedure TJpegMarker.StoreData(S: TMS64; Size: Integer);
 begin
   // We store the data for later use
   FStream.Clear;
-  FStream.CopyFrom(S, Size);
-  FStream.Position := 0;
+  if Size > 0 then
+    begin
+      FStream.CopyFrom(S, Size);
+      FStream.Position := 0;
+    end;
 end;
 
 procedure TJpegMarker.WriteMarker;
@@ -2350,7 +2354,7 @@ var
 begin
   Sorter := TCustomSorter.Create;
   try
-    Sorter.CompareMethod := {$IFDEF FPC}@{$ENDIF FPC}ComparePSingle;
+    Sorter.CompareMethod := ComparePSingle;
     Sorter.First := First_;
     Sorter.Stride := SizeOf(single);
     Sorter.Count := Count_;
@@ -2366,7 +2370,7 @@ var
 begin
   Sorter := TCustomSorter.Create;
   try
-    Sorter.CompareMethod := {$IFDEF FPC}@{$ENDIF FPC}ComparePDouble;
+    Sorter.CompareMethod := ComparePDouble;
     Sorter.First := First_;
     Sorter.Stride := SizeOf(double);
     Sorter.Count := Count_;
@@ -2382,7 +2386,7 @@ var
 begin
   Sorter := TCustomSorter.Create;
   try
-    Sorter.CompareMethod := {$IFDEF FPC}@{$ENDIF FPC}ComparePInteger;
+    Sorter.CompareMethod := ComparePInteger;
     Sorter.First := First_;
     Sorter.Stride := SizeOf(Integer);
     Sorter.Count := Count_;
@@ -2636,7 +2640,7 @@ begin
 
   Sorter := TCustomSorter.Create;
   try
-    Sorter.CompareMethod := {$IFDEF FPC}@{$ENDIF FPC}ComparePInteger;
+    Sorter.CompareMethod := ComparePInteger;
     Sorter.First := @Ws[0];
     Sorter.Stride := SizeOf(Integer);
     Sorter.Count := WindowSize_;
@@ -2722,7 +2726,7 @@ begin
 
   Sorter := TCustomSorter.Create;
   try
-    Sorter.CompareMethod := {$IFDEF FPC}@{$ENDIF FPC}ComparePDouble;
+    Sorter.CompareMethod := ComparePDouble;
     Sorter.First := @Ws[0];
     Sorter.Stride := SizeOf(double);
     Sorter.Count := WindowSize_;

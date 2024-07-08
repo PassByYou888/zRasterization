@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.Global;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -94,7 +95,7 @@ const
   MAXCODELEN = 24;
 
   { The stat initialization values }
-  INITNSTAT = 1;      { init value for N[] }
+  INITNSTAT = 1; { init value for N[] }
   MIN_INITABSTAT = 2; { min init value for A[] }
   INITABSLACK = 6; { init value for A is roughly 2^(bpp-INITABSLACK) but not less than above }
   INITBIASTAT = 0; { init value for B[] }
@@ -202,28 +203,28 @@ type
   pjpeg_ls_header = ^tjpeg_ls_header;
 
   tjpeg_ls_header = record
-    columns: Integer;                                      { The number of columns }
-    Rows: Integer;                                         { Number of rows }
-    alp: Integer;                                          { alphabet size (Max+1) , 2 bytes }
-    comp: Integer;                                         { number of components, 1 byte }
-    _near: Integer;                                        { _near-lossless error, 1 byte }
-    color_mode: Integer;                                   { indicates the color mode , 1 byte }
-    need_lse: Integer;                                     { Indicates non-default parameters }
-    need_table: Integer;                                   { Indicates use of mapping table }
-    need_restart: Integer;                                 { Indicates use of restart markers }
-    restart_interval: Integer;                             { The number of MCU's between restart markers }
-    Shift: Integer;                                        { for sparse images, 1 byte }
-    t1, t2, t3: Integer;                                   { Thresholds, 2 bytes each }
-    res: Integer;                                          { reset value for counters, 2 bytes }
+    columns: Integer; { The number of columns }
+    Rows: Integer; { Number of rows }
+    alp: Integer; { alphabet size (Max+1) , 2 bytes }
+    comp: Integer; { number of components, 1 byte }
+    _near: Integer; { _near-lossless error, 1 byte }
+    color_mode: Integer; { indicates the color mode , 1 byte }
+    need_lse: Integer; { Indicates non-default parameters }
+    need_table: Integer; { Indicates use of mapping table }
+    need_restart: Integer; { Indicates use of restart markers }
+    restart_interval: Integer; { The number of MCU's between restart markers }
+    Shift: Integer; { for sparse images, 1 byte }
+    t1, t2, t3: Integer; { Thresholds, 2 bytes each }
+    res: Integer; { reset value for counters, 2 bytes }
     samplingx: array [0 .. MAX_COMPONENTS - 1] of Integer; { col. sampling rates 1 byte each }
     samplingy: array [0 .. MAX_COMPONENTS - 1] of Integer; { row sampling rates }
-    comp_ids: array [0 .. MAX_COMPONENTS - 1] of Integer;  { component id's }
-    acc_size: Integer;                                     { 1 byte }
-    AddS: array [0 .. MAX_COMPONENTS - 1] of Integer;      { size given by acc_size }
-    TID: uint;                                             { Table ID, 1 byte }
-    MAXTAB: uint;                                          { Maximum table index value }
-    WT: uint;                                              { Width of each table entry, 1 byte }
-    Table: PTABLE;                                         { The table(s) for each component }
+    comp_ids: array [0 .. MAX_COMPONENTS - 1] of Integer; { component id's }
+    acc_size: Integer; { 1 byte }
+    AddS: array [0 .. MAX_COMPONENTS - 1] of Integer; { size given by acc_size }
+    TID: uint; { Table ID, 1 byte }
+    MAXTAB: uint; { Maximum table index value }
+    WT: uint; { Width of each table entry, 1 byte }
+    Table: PTABLE; { The table(s) for each component }
   end;
 
   PImageInfo = ^TImageInfo;
@@ -234,25 +235,25 @@ type
     height: Int;
     Components: Integer;
     limit_reduce: Integer; { reduction on above for EOR states }
-    qbpp: Integer;         { bits per sample for quantized prediction errors }
-    alpha: Integer;        { alphabet size }
-    Limit: Integer;        { limit for unary part of Golomb code }
+    qbpp: Integer; { bits per sample for quantized prediction errors }
+    alpha: Integer; { alphabet size }
+    Limit: Integer; { limit for unary part of Golomb code }
     Reset: Integer;
-    highmask: Integer;        { for powers of 2, a mask for high bits }
+    highmask: Integer; { for powers of 2, a mask for high bits }
     ceil_half_alpha: Integer; { ceil(alpha/2) }
-    _near: Integer;           { loss tolerance }
-    negNEAR: Integer;         { LOSSY Mode }
+    _near: Integer; { loss tolerance }
+    negNEAR: Integer; { LOSSY Mode }
 
     qdiv0: PIntegerArray; { quantization table (division via look-up) }
-    qdiv: PInteger;       { quantization table (division via look-up) }
+    qdiv: PInteger; { quantization table (division via look-up) }
     qmul0: PIntegerArray; { dequantization table }
-    qmul: PInteger;       { dequantization table }
+    qmul: PInteger; { dequantization table }
 
-    quant: Int;           { quantization = 2*_near+1 }
-    beta: Int;            { size of extended alphabet }
-    qbeta: Int;           { size of quantized alphabet }
+    quant: Int; { quantization = 2*_near+1 }
+    beta: Int; { size of extended alphabet }
+    qbeta: Int; { size of quantized alphabet }
     ceil_half_qbeta: Int; { ceil(qbeta/2) }
-    alpha1eps: Int;       { alpha-1+_near }
+    alpha1eps: Int; { alpha-1+_near }
 
     n: array [0 .. TOT_CONTEXTS - 1] of Int;
     a: array [0 .. TOT_CONTEXTS - 1] of Int;

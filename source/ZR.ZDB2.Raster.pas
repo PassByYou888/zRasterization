@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB2.Raster;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -17,9 +18,9 @@ uses ZR.Core,
 type
   TZDB2_List_Raster = class;
   TZDB2_Raster = class;
-  TZDB2_Big_List_Raster_Decl__ = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TZDB2_Raster>;
+  TZDB2_Big_List_Raster_Decl__ = TZR_BL<TZDB2_Raster>;
 
-  TZDB2_Raster = class
+  TZDB2_Raster = class(TCore_Object_Intermediate)
   private
     FPool_Ptr: TZDB2_Big_List_Raster_Decl__.PQueueStruct;
     FTimeOut: TTimeTick;
@@ -35,7 +36,7 @@ type
     destructor Destroy; override;
     procedure Progress; virtual;
     procedure Load;
-    procedure Save;
+    procedure Flush;
     procedure RecycleMemory;
     procedure Remove;
     function GetData: TZR;
@@ -51,7 +52,7 @@ type
 
   TOnCreate_ZDB2_Raster = procedure(Sender: TZDB2_List_Raster; Obj: TZDB2_Raster) of object;
 
-  TZDB2_List_Raster = class
+  TZDB2_List_Raster = class(TCore_Object_Intermediate)
   private
     procedure DoNoSpace(Trigger: TZDB2_Core_Space; Siz_: Int64; var retry: Boolean);
     function GetAutoFreeStream: Boolean;
@@ -80,9 +81,9 @@ type
     procedure ExtractTo(Stream_: TCore_Stream);
     procedure Progress;
     procedure Push_To_Recycle_Pool(obj_: TZDB2_Raster; RemoveData_: Boolean); // remove from repeat
-    procedure Free_Recycle_Pool;                                              // remove from repeat
+    procedure Free_Recycle_Pool; // remove from repeat
     function Count: NativeInt;
-    function Repeat_: TZDB2_Big_List_Raster_Decl__.TRepeat___;               // flow simulate
+    function Repeat_: TZDB2_Big_List_Raster_Decl__.TRepeat___; // flow simulate
     function Invert_Repeat_: TZDB2_Big_List_Raster_Decl__.TInvert_Repeat___; // flow simulate
 
     class procedure Test;
@@ -108,7 +109,7 @@ end;
 
 destructor TZDB2_Raster.Destroy;
 begin
-  Save;
+  Flush;
   inherited Destroy;
 end;
 
@@ -118,7 +119,7 @@ begin
       exit;
   if (Keep <= 0) and (GetTimeTick - FAlive > FTimeOut) then
     begin
-      Save;
+      Flush;
 {$IFDEF SHOW_ZDB2_Data_Free_LOG}
       DoStatus('%s -> %s Space Recycle ID %s size:%d', [UnitName, ClassName, CoreSpace.GetSpaceHndAsText(FID).Text, CoreSpace.GetDataSize(FID)]);
 {$ENDIF SHOW_ZDB2_Data_Free_LOG}
@@ -149,7 +150,7 @@ begin
   DisposeObject(m64);
 end;
 
-procedure TZDB2_Raster.Save;
+procedure TZDB2_Raster.Flush;
 var
   m64: TMS64;
   old_ID: Integer;
@@ -203,7 +204,7 @@ end;
 
 procedure TZDB2_List_Raster.DoNoSpace(Trigger: TZDB2_Core_Space; Siz_: Int64; var retry: Boolean);
 begin
-  retry := Trigger.AppendSpace(DeltaSpace, BlockSize);
+  retry := Trigger.Fast_AppendSpace(DeltaSpace, BlockSize);
 end;
 
 function TZDB2_List_Raster.GetAutoFreeStream: Boolean;
@@ -230,7 +231,7 @@ var
 begin
   inherited Create;
   List := TZDB2_Big_List_Raster_Decl__.Create;
-  List.OnFree := {$IFDEF FPC}@{$ENDIF FPC}Do_Free;
+  List.OnFree := Do_Free;
 
   Raster_Class := Raster_Class_;
   TimeOut := TimeOut_;
@@ -242,7 +243,7 @@ begin
   CoreSpace.Cipher := Cipher_;
   CoreSpace.Mode := smNormal;
   CoreSpace.AutoCloseIOHnd := True;
-  CoreSpace.OnNoSpace := {$IFDEF FPC}@{$ENDIF FPC}DoNoSpace;
+  CoreSpace.OnNoSpace := DoNoSpace;
   if umlFileSize(IOHnd) > 0 then
     begin
       if not CoreSpace.Open then
@@ -337,7 +338,7 @@ begin
             DisposeObjectAndNil(__For__.Queue^.Data);
           end
         else
-            __For__.Queue^.Data.Save;
+            __For__.Queue^.Data.Flush;
       until not __For__.Next;
       List.Free_Recycle_Pool;
     end;
@@ -369,7 +370,7 @@ begin
     end;
 
   if flush_core_space then
-      CoreSpace.Save;
+      CoreSpace.Flush;
 end;
 
 procedure TZDB2_List_Raster.Flush;
@@ -391,7 +392,7 @@ begin
   TmpSpace := TZDB2_Core_Space.Create(@TmpIOHnd);
   TmpSpace.Cipher := CoreSpace.Cipher;
   TmpSpace.Mode := smBigData;
-  TmpSpace.OnNoSpace := {$IFDEF FPC}@{$ENDIF FPC}DoNoSpace;
+  TmpSpace.OnNoSpace := DoNoSpace;
 
   if List.num > 0 then
     begin
@@ -416,7 +417,7 @@ begin
   else
       FillPtr(@TmpSpace.UserCustomHeader^[0], SizeOf(TSequence_Table_Head), 0);
 
-  TmpSpace.Save;
+  TmpSpace.Flush;
   DisposeObject(TmpSpace);
 end;
 
@@ -482,7 +483,7 @@ begin
         begin
           tmp_Raster := NewData();
           tmp_Raster.Data.SetSize(64 + i, 64 + i);
-          tmp_Raster.Save;
+          tmp_Raster.Flush;
         end;
       DoStatus('build %d of Raster,time:%dms', [List.num, GetTimeTick - tk]);
       Free;

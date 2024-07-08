@@ -150,8 +150,8 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelForH, 0, H - 1);
-      FPCParallelFor(@Nested_ParallelForW, 0, W - 1);
+      FPCParallelFor(Nested_ParallelForH, 0, H - 1);
+      FPCParallelFor(Nested_ParallelForW, 0, W - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, H - 1, procedure(pass: Integer)
         begin
@@ -302,8 +302,8 @@ begin
     begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelForH, 0, H - 1);
-      FPCParallelFor(@Nested_ParallelForW, 0, W - 1);
+      FPCParallelFor(Nested_ParallelForH, 0, H - 1);
+      FPCParallelFor(Nested_ParallelForW, 0, W - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, H - 1, procedure(pass: Integer)
         begin

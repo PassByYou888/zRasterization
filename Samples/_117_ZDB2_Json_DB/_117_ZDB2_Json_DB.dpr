@@ -1,7 +1,7 @@
 program _117_ZDB2_Json_DB;
 
 uses
-  FastMM5 in '..\..\Tools\Common\FastMM5.pas',
+  FastMM5,
   Vcl.Forms,
   _117_ZDB2_Json_DB_Frm in '_117_ZDB2_Json_DB_Frm.pas' {TZDB2_Json_DB_Frm};
 

@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.Marker;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -217,7 +218,7 @@ type
     property Transform: byte read GetTransform write SetTransform;
   end;
 
-  TJpegMarkerClassList = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TJpegMarkerClass>;
+  TJpegMarkerClassList = TGenericsList<TJpegMarkerClass>;
 
 var
   glJpegMarkerClassList: TJpegMarkerClassList;
@@ -463,7 +464,7 @@ begin
     end;
     for i := 0 to 7 do
         DoDebugOut(Self, wsInfo, PFormat('%3d %3d %3d %3d %3d %3d %3d %3d',
-        [TabVal(0), TabVal(1), TabVal(2), TabVal(3), TabVal(4), TabVal(5), TabVal(6), TabVal(7)]));
+          [TabVal(0), TabVal(1), TabVal(2), TabVal(3), TabVal(4), TabVal(5), TabVal(6), TabVal(7)]));
 {$ENDIF JPEG_Debug}
   until FStream.Position = FStream.Size;
 end;
@@ -594,7 +595,7 @@ begin
   FCodingInfo.FFrameCount := Nf;
 {$IFDEF JPEG_Debug}
   DoDebugOut(Self, wsInfo, PFormat('Image %dx%d, %d frames, %dbit samples',
-    [FCodingInfo.FWidth, FCodingInfo.FHeight, FCodingInfo.FFrameCount, FCodingInfo.FSamplePrecision]));
+      [FCodingInfo.FWidth, FCodingInfo.FHeight, FCodingInfo.FFrameCount, FCodingInfo.FSamplePrecision]));
 {$ENDIF JPEG_Debug}
   for i := 0 to Nf - 1 do
     begin
@@ -610,13 +611,13 @@ begin
         end
       else
         begin
-          Frame.FHorzSampling := B shr 4;   // Horizontal blocksize in MCU
+          Frame.FHorzSampling := B shr 4; // Horizontal blocksize in MCU
           Frame.FVertSampling := B and $0F; // Vertical blocksize in MCU
         end;
       Frame.FQTable := GetByte(FStream); // Index into quantization table array
 {$IFDEF JPEG_Debug}
       DoDebugOut(Self, wsInfo, PFormat('Frame %d: %dx%d sampling ID=%s QTable=%d',
-        [i, Frame.FHorzSampling, Frame.FVertSampling, IntToHex(Frame.FComponentID, 2), Frame.FQTable]));
+          [i, Frame.FHorzSampling, Frame.FVertSampling, IntToHex(Frame.FComponentID, 2), Frame.FQTable]));
 {$ENDIF JPEG_Debug}
     end;
 end;
@@ -699,7 +700,7 @@ begin
       FindScanComponent(Scan, Cs);
 
       B := GetByte(FStream);
-      FMarkerInfo[i].DCTable := B shr 4;   // DC entropy table selector
+      FMarkerInfo[i].DCTable := B shr 4; // DC entropy table selector
       FMarkerInfo[i].ACTable := B and $0F; // AC entropy table selector
       Scan.FDCTable := FMarkerInfo[i].DCTable;
       Scan.FACTable := FMarkerInfo[i].ACTable;

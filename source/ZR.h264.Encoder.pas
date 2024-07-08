@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Encoder;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -12,12 +13,12 @@ uses
   ZR.h264.Intra_pred, ZR.h264.Motion_comp, ZR.h264.Motion_est, ZR.h264.RateControl, ZR.h264.Image_LIB, ZR.h264.MB_encoder, ZR.Core;
 
 type
-  TFevh264Encoder = class
+  TFevh264Encoder = class(TCore_Object_Intermediate)
   private
     h264s: TH264Stream;
     mb_enc: TMacroblockEncoder;
     fenc: TFrame; // currently encoded frame
-    stats: TStreamStats;
+    Stats: TStreamStats;
     frame_num: int32_t;
 
     width, height: int32_t;
@@ -117,10 +118,10 @@ begin
   mb_enc.h264s := h264s;
   mb_enc.ChromaQPOffset := Param_.ChromaQParamOffset;
   mb_enc.chroma_coding := not Param_.IgnoreChroma;
-  mb_enc.loopfilter := Param_.LoopFilterEnabled;
+  mb_enc.Loopfilter := Param_.LoopFilterEnabled;
 
   // stats
-  stats := TStreamStats.Create;
+  Stats := TStreamStats.Create;
   h264s.SEIString := Param_.ToPascalString;
 end;
 
@@ -132,7 +133,7 @@ begin
   mc.Free;
   h264s.Free;
   mb_enc.Free;
-  stats.Free;
+  Stats.Free;
   inherited Destroy;
 end;
 
@@ -165,7 +166,7 @@ begin
 
   // stats
   RC.Update(frame_num, stream_size * 8, fenc);
-  fenc.stats.size_bytes := stream_size;
+  fenc.Stats.size_bytes := stream_size;
   UpdateStats;
 
   // advance
@@ -191,7 +192,7 @@ function TFevh264Encoder.TryEncodeFrame(const img: TPlanarImage): Boolean;
 var
   x, y: int32_t;
   deblocker: IDeblocker;
-  loopfilter: Boolean;
+  Loopfilter: Boolean;
 begin
   Result := True;
 
@@ -203,10 +204,10 @@ begin
   h264s.InitSlice(fenc.ftype, fenc.qp, fenc.num_ref_frames, fenc.bs_buf);
 
   // frame encoding setup
-  fenc.stats.Clear;
+  fenc.Stats.Clear;
   mb_enc.SetFrame(fenc);
-  loopfilter := FParam.LoopFilterEnabled;
-  if loopfilter then
+  Loopfilter := FParam.LoopFilterEnabled;
+  if Loopfilter then
       deblocker := GetNewDeblocker(fenc, not(FParam.AdaptiveQuant), FParam.FilterThreadEnabled);
 
   // encode rows
@@ -222,12 +223,12 @@ begin
           Break;
         end;
 
-      if loopfilter then
+      if Loopfilter then
           deblocker.MBRowFinished;
     end;
 
   // finish frame processing. If we don't do any deblocking, SSD is already calculated at the last stage of macroblock encoding
-  if loopfilter then
+  if Loopfilter then
     begin
       deblocker.FrameFinished;
       deblocker.Free;
@@ -241,9 +242,9 @@ begin
   Result := False;
   if (fenc.ftype = SLICE_P) and (mbrow > mb_height div 2) then
     begin
-      if (2 * fenc.stats.mb_i4_count > mb_count)
-        or (4 * int32_t(fenc.stats.mb_i16_count) > 3 * mb_count)
-        or (8 * int32_t(fenc.stats.mb_i4_count + fenc.stats.mb_i16_count) > 7 * mb_count)
+      if (2 * fenc.Stats.mb_i4_count > mb_count)
+        or (4 * int32_t(fenc.Stats.mb_i16_count) > 3 * mb_count)
+        or (8 * int32_t(fenc.Stats.mb_i4_count + fenc.Stats.mb_i16_count) > 7 * mb_count)
       then
           Result := True;
     end;
@@ -254,12 +255,12 @@ begin
   case length(ssd) of
     0:;
     1 .. 2:
-      ssd[0] := fenc.stats.ssd[0];
+      ssd[0] := fenc.Stats.ssd[0];
     else
       begin
-        ssd[0] := fenc.stats.ssd[0];
-        ssd[1] := fenc.stats.ssd[1];
-        ssd[2] := fenc.stats.ssd[2];
+        ssd[0] := fenc.Stats.ssd[0];
+        ssd[1] := fenc.Stats.ssd[1];
+        ssd[2] := fenc.Stats.ssd[2];
       end;
   end;
 end;
@@ -273,10 +274,10 @@ end;
 procedure TFevh264Encoder.UpdateStats;
 begin
   if fenc.ftype = SLICE_I then
-      inc(stats.i_count)
+      inc(Stats.i_count)
   else
-      inc(stats.p_count);
-  stats.Add(fenc.stats);
+      inc(Stats.p_count);
+  Stats.Add(fenc.Stats);
 end;
 
 procedure TFevh264Encoder.GetFrameSSD;
@@ -293,9 +294,9 @@ begin
           DSP.pixel_load_8x8(mb^.pixels_c[0], mb^.pfdec_c[0], fenc.stride_c);
           DSP.pixel_load_8x8(mb^.pixels_c[1], mb^.pfdec_c[1], fenc.stride_c);
 
-          inc(fenc.stats.ssd[0], DSP.ssd_16x16(mb^.pixels, mb^.pfenc, fenc.stride));
-          inc(fenc.stats.ssd[1], DSP.ssd_8x8(mb^.pixels_c[0], mb^.pfenc_c[0], fenc.stride_c));
-          inc(fenc.stats.ssd[2], DSP.ssd_8x8(mb^.pixels_c[1], mb^.pfenc_c[1], fenc.stride_c));
+          inc(fenc.Stats.ssd[0], DSP.ssd_16x16(mb^.pixels, mb^.pfenc, fenc.stride));
+          inc(fenc.Stats.ssd[1], DSP.ssd_8x8(mb^.pixels_c[0], mb^.pfenc_c[0], fenc.stride_c));
+          inc(fenc.Stats.ssd[2], DSP.ssd_8x8(mb^.pixels_c[1], mb^.pfenc_c[1], fenc.stride_c));
         end;
     end;
 end;

@@ -1,0 +1,57 @@
+object ParallelGranularityRenderingForm: TParallelGranularityRenderingForm
+  Left = 0
+  Top = 0
+  Caption = #24182#34892#31890#24230#21576#29616'. create by.qq600585'
+  ClientHeight = 911
+  ClientWidth = 960
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object pb: TPaintBox
+    Align = Client
+    Size.Width = 960.000000000000000000
+    Size.Height = 911.000000000000000000
+    Size.PlatformDefault = False
+    OnPaint = pbPaint
+    object FoldButton: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 627.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 152.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 2
+      Text = #25240#21472#24182#34892#21576#29616
+      OnClick = FoldButtonClick
+    end
+    object BlockButton: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 459.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 152.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      Text = #22343#21248#24182#34892#21576#29616
+      OnClick = BlockButtonClick
+    end
+    object AntButton: TButton
+      Anchors = [akTop, akRight]
+      Position.X = 795.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 152.000000000000000000
+      Size.Height = 22.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      Text = #34434#34433#21576#29616
+      OnClick = AntButtonClick
+    end
+  end
+  object Timer1: TTimer
+    Interval = 10
+    OnTimer = Timer1Timer
+    Left = 472
+    Top = 112
+  end
+end

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.MovementEngine;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -34,7 +35,7 @@ type
 
   TMovementOperationMode = (momMovementPath, momStopRollAngle);
 
-  TMovementEngine = class(TCore_Object)
+  TMovementEngine = class(TCore_Object_Intermediate)
   private
     FOnInterface: IMovementEngineInterface;
     FSteps: array of TMovementStepData;
@@ -64,7 +65,7 @@ type
     destructor Destroy; override;
 
     procedure Start(To_: TVec2); overload;
-    procedure Start(Paths_: TVec2List); overload;
+    procedure Start(Paths_: TV2L); overload;
     procedure Start; overload;
     procedure stop;
     procedure Pause;
@@ -165,7 +166,7 @@ begin
     end;
 end;
 
-procedure TMovementEngine.Start(Paths_: TVec2List);
+procedure TMovementEngine.Start(Paths_: TV2L);
 var
   i: Integer;
 begin

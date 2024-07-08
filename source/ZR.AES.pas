@@ -9,6 +9,7 @@
 
 unit ZR.AES;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$O+} // compiler optimization
 

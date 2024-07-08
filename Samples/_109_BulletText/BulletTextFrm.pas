@@ -50,10 +50,10 @@ type
     Bullet_Pool: TBullet_Pool;
     fl: TFontZRList;
     dict: TPascalStringList;
-    function BuildTextPath(box_: TRectV2): TVec2List; overload;
-    function BuildTextPath(Text_: U_String; size: TGeoFloat): TVec2List; overload;
-    function BuildTextCurvePath(box_: TRectV2; Frequency: Integer): TVec2List; overload;
-    function BuildTextCurvePath(Text_: U_String; size: TGeoFloat; Frequency: Integer): TVec2List; overload;
+    function BuildTextPath(box_: TRectV2): TV2L; overload;
+    function BuildTextPath(Text_: U_String; size: TGeoFloat): TV2L; overload;
+    function BuildTextCurvePath(box_: TRectV2; Frequency: Integer): TV2L; overload;
+    function BuildTextCurvePath(Text_: U_String; size: TGeoFloat; Frequency: Integer): TV2L; overload;
     constructor Create(AOwner: TComponent); override;
   end;
 
@@ -71,7 +71,7 @@ procedure TBulletTextForm.fireTextButtonClick(Sender: TObject);
 const
   C_Speed = 100;
 var
-  path: TVec2List;
+  path: TV2L;
   siz: Integer;
   c, ec: TDEColor;
   fr: TFontZR;
@@ -196,7 +196,7 @@ begin
   Memo.GoToTextEnd;
 end;
 
-function TBulletTextForm.BuildTextPath(box_: TRectV2): TVec2List;
+function TBulletTextForm.BuildTextPath(box_: TRectV2): TV2L;
 var
   siz: TVec2;
   box: TRectV2;
@@ -217,17 +217,17 @@ begin
     y := umlRandomRangeS(0, DrawPool(Self).height - siz[1]);
   until not Bullet_Pool.RenderBoxIsOverlap(RectV2(x, y, x + siz[0], y + siz[1]), RectV2(-100, 0, width, height));
   box := RectV2(x, y, x + siz[0], y + siz[1]);
-  Result := TVec2List.Create;
+  Result := TV2L.Create;
   Result.Add(RectCentre(box));
   Result.Add(-siz[0] * 0.5, y);
 end;
 
-function TBulletTextForm.BuildTextPath(Text_: U_String; size: TGeoFloat): TVec2List;
+function TBulletTextForm.BuildTextPath(Text_: U_String; size: TGeoFloat): TV2L;
 begin
   Result := BuildTextPath(RectV2(Vec2(0, 0), DrawPool(Self).GetTextSize(Text_, size)));
 end;
 
-function TBulletTextForm.BuildTextCurvePath(box_: TRectV2; Frequency: Integer): TVec2List;
+function TBulletTextForm.BuildTextCurvePath(box_: TRectV2; Frequency: Integer): TV2L;
 var
   L: TVec2;
   i: Integer;
@@ -246,7 +246,7 @@ begin
   Result.SplineSmoothOpened;
 end;
 
-function TBulletTextForm.BuildTextCurvePath(Text_: U_String; size: TGeoFloat; Frequency: Integer): TVec2List;
+function TBulletTextForm.BuildTextCurvePath(Text_: U_String; size: TGeoFloat; Frequency: Integer): TV2L;
 var
   L: TVec2;
   i: Integer;

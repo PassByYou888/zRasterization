@@ -73,7 +73,7 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       ExplicitHeight = 33
     end
     object Bevel7: TBevel
-      Left = 1021
+      Left = 762
       Top = 6
       Width = 10
       Height = 29
@@ -82,16 +82,6 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       ExplicitLeft = 637
       ExplicitTop = 0
       ExplicitHeight = 33
-    end
-    object Bevel8: TBevel
-      Left = 762
-      Top = 6
-      Width = 10
-      Height = 29
-      Align = alLeft
-      Shape = bsSpacer
-      ExplicitLeft = 521
-      ExplicitHeight = 21
     end
     object NewButton: TButton
       Left = 6
@@ -133,22 +123,15 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       TabOrder = 4
       OnClick = SaveAsButtonClick
     end
-    object MD5Edit: TMemo
+    object CacheStateMemo: TMemo
       Left = 772
       Top = 6
-      Width = 249
-      Height = 29
-      Align = alLeft
-      ParentColor = True
-      TabOrder = 5
-    end
-    object CacheStateMemo: TMemo
-      Left = 1031
-      Top = 6
-      Width = 147
+      Width = 406
       Height = 29
       Align = alClient
-      TabOrder = 7
+      TabOrder = 6
+      ExplicitLeft = 1031
+      ExplicitWidth = 147
     end
     object CompressAsButton: TButton
       Left = 343
@@ -157,7 +140,7 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       Height = 29
       Align = alLeft
       Caption = 'Build .OXC'
-      TabOrder = 8
+      TabOrder = 7
       OnClick = CompressAsButtonClick
     end
     object BuildIndexPackageButton: TButton
@@ -167,7 +150,7 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       Height = 29
       Align = alLeft
       Caption = 'Build Index Package'
-      TabOrder = 6
+      TabOrder = 5
       OnClick = BuildIndexPackageButtonClick
     end
     object NewCustomButton: TButton
@@ -187,7 +170,7 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       Height = 29
       Align = alLeft
       Caption = 'Build .OXP'
-      TabOrder = 9
+      TabOrder = 8
       OnClick = ParallelCompressAsButtonClick
     end
     object SaveAsZDB2Button: TButton
@@ -197,7 +180,7 @@ object FilePackageWithZDBMainForm: TFilePackageWithZDBMainForm
       Height = 29
       Align = alLeft
       Caption = 'Build .ZDB2'
-      TabOrder = 10
+      TabOrder = 9
       OnClick = SaveAsZDB2ButtonClick
     end
   end

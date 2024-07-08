@@ -16,7 +16,6 @@ type
     OpenDialog: TOpenDialog;
     ExecuteConvertButton: TButton;
     SaveDialog: TSaveDialog;
-    UsedZCompressCheckBox: TCheckBox;
     LineLenEdit: TLabeledEdit;
     procedure AddFIlesButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -38,7 +37,7 @@ implementation
 
 uses ZR.MemoryStream;
 
-function ConvertBinaryToPascalSource(SourFileList, OutputCodes: TCore_Strings; PascalFileName: string; MaxLineLength: Word; UseCompress: Boolean): Boolean;
+function ConvertBinaryToPascalSource(SourFileList, OutputCodes: TCore_Strings; PascalFileName: string; MaxLineLength: Word): Boolean;
 var
   DESSour: TCore_StringList;
 
@@ -125,10 +124,7 @@ type
       fs.Position := 0;
 
       p^.stream := TMS64.Create;
-      if UseCompress then
-          MaxCompressStream(fs, p^.stream)
-      else
-          p^.stream.CopyFrom(fs, fs.Size);
+      p^.stream.CopyFrom(fs, fs.Size);
       DisposeObject(fs);
 
       p^.stream.Position := 0;
@@ -150,7 +146,7 @@ type
     OutputCodes.Add(Format('', []));
     OutputCodes.Add(Format('interface', []));
     OutputCodes.Add(Format('', []));
-    OutputCodes.Add('uses SysUtils, Classes;');
+    OutputCodes.Add('uses Z.Core;');
     OutputCodes.Add(Format('', []));
 
     for i := 0 to SourFileList.Count - 1 do
@@ -162,14 +158,12 @@ type
 
         BuildStream(p);
         OutputCodes.Add(Format('// %s Origin MD5:%s', [TPath.GetFileName(p^.FullName), umlMD5ToStr(p^.md5).Text]));
-        OutputCodes.Add(Format('procedure Get_%s_Stream(Output: TStream);', [p^.DefName]));
+        OutputCodes.Add(Format('procedure Get_%s_Stream(Output: TCore_Stream);', [p^.DefName]));
         FileList.Add(p);
       end;
     OutputCodes.Add(Format('', []));
     OutputCodes.Add(Format('implementation', []));
     OutputCodes.Add(Format('', []));
-    if UseCompress then
-        OutputCodes.Add('uses {$IFDEF FPC}zstream{$ELSE FPC}ZLib{$ENDIF FPC};');
     OutputCodes.Add(Format('', []));
     OutputCodes.Add(Format('type', []));
 
@@ -216,66 +210,17 @@ type
 
     OutputCodes.Add(Format('', []));
 
-    if UseCompress then
-      begin
-        OutputCodes.Add(Format('', []));
-        OutputCodes.Add(Format('type', []));
-        OutputCodes.Add(Format('{$IFDEF FPC}', []));
-        OutputCodes.Add(Format('  TDecompressionStream = zstream.TDecompressionStream;', []));
-        OutputCodes.Add(Format('{$ELSE}', []));
-        OutputCodes.Add(Format('  TDecompressionStream = ZLib.TZDecompressionStream;', []));
-        OutputCodes.Add(Format('{$ENDIF}', []));
-        OutputCodes.Add(Format('', []));
-
-        OutputCodes.Add(Format('function DecompressStream(Sour, DeTo: TStream): Boolean;', []));
-        OutputCodes.Add(Format('var', []));
-        OutputCodes.Add(Format('  DC: TDecompressionStream;', []));
-        OutputCodes.Add(Format('  DeSize: Int64;', []));
-        OutputCodes.Add(Format('begin', []));
-        OutputCodes.Add(Format('  Result := False;', []));
-        OutputCodes.Add(Format('  Sour.ReadBuffer(DeSize, 8);', []));
-        OutputCodes.Add(Format('  if DeSize > 0 then', []));
-        OutputCodes.Add(Format('    begin', []));
-        OutputCodes.Add(Format('      DC := TDecompressionStream.Create(Sour);', []));
-        OutputCodes.Add(Format('      Result := DeTo.CopyFrom(DC, DeSize) = DeSize;', []));
-        OutputCodes.Add(Format('      DC.Free;', []));
-        OutputCodes.Add(Format('    end;', []));
-        OutputCodes.Add(Format('end;', []));
-        OutputCodes.Add(Format('', []));
-      end;
-
     for i := 0 to FileList.Count - 1 do
       begin
         p := FileList[i];
-        OutputCodes.Add(Format('procedure Get_%s_Stream(Output: TStream);', [p^.DefName]));
+        OutputCodes.Add(Format('procedure Get_%s_Stream(Output: TCore_Stream);', [p^.DefName]));
         OutputCodes.Add(Format('var', []));
-        if UseCompress then
-          begin
-            OutputCodes.Add(Format('  Source: TMemoryStream;', []));
-            OutputCodes.Add(Format('  PrepareSource: TMemoryStream;', []));
-          end;
         OutputCodes.Add(Format('  Buff: T_%s_PackageBuffer;', [p^.DefName]));
         OutputCodes.Add(Format('begin', []));
         OutputCodes.Add(Format('  Buff := C_%sPackageBuffer;', [p^.DefName]));
 
-        if not UseCompress then
-          begin
-            OutputCodes.Add(Format('  Output.WriteBuffer(Buff[0], %d);', [p^.stream.Size]));
-            OutputCodes.Add(Format('  Output.Position := 0;', []));
-          end
-        else
-          begin
-            OutputCodes.Add(Format('  Source := TMemoryStream.Create;', []));
-            OutputCodes.Add(Format('  Source.WriteBuffer(Buff[0], %d);', [p^.stream.Size]));
-            OutputCodes.Add(Format('  Source.Position := 0;', []));
-
-            if UseCompress then
-              begin
-                OutputCodes.Add(Format('  DecompressStream(Source, Output);', []));
-                OutputCodes.Add(Format('  Source.Free;', []));
-                OutputCodes.Add(Format('  Output.Position := 0;', []));
-              end;
-          end;
+        OutputCodes.Add(Format('  Output.WriteBuffer(Buff[0], %d);', [p^.stream.Size]));
+        OutputCodes.Add(Format('  Output.Position := 0;', []));
 
         OutputCodes.Add(Format('end;', []));
         OutputCodes.Add(Format('', []));
@@ -297,7 +242,7 @@ type
       begin
         p := FileList[i];
         OutputCodes.Add(Format('  RegisterFileStream('#39'%s'#39', Get_%s_Stream, '#39'%s'#39');',
-          [umlMD5ToStr(p^.md5).Text, p^.DefName, TPath.GetFileName(p^.FullName)]));
+            [umlMD5ToStr(p^.md5).Text, p^.DefName, TPath.GetFileName(p^.FullName)]));
       end;
     OutputCodes.Add(Format('*)', []));
     OutputCodes.Add(Format('end.', []));
@@ -338,8 +283,7 @@ begin
   if not SaveDialog.Execute then
       Exit;
 
-  if ConvertBinaryToPascalSource(FilesMemo.Lines, FCodes, SaveDialog.FileName,
-    umlStrToInt(LineLenEdit.Text, 200), UsedZCompressCheckBox.Checked) then
+  if ConvertBinaryToPascalSource(FilesMemo.Lines, FCodes, SaveDialog.FileName, umlStrToInt(LineLenEdit.Text, 200)) then
     begin
       FCodes.SaveToFile(SaveDialog.FileName);
       ShowMessage('Pascal source Finished!');

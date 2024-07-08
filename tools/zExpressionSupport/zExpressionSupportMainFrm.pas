@@ -26,16 +26,14 @@ type
     functionMemo: TMemo;
     Label1: TLabel;
     Debug_CheckBox: TCheckBox;
-    procedure evaluateButtonClick(Sender: TObject);
-    procedure EvaluateAllButtonClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure InputEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
     procedure ParsingAllButtonClick(Sender: TObject);
+    procedure evaluateButtonClick(Sender: TObject);
+    procedure InputEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+    procedure EvaluateAllButtonClick(Sender: TObject);
   private
-    { Private declarations }
     procedure DoStatusMethod(AText: SystemString; const ID: Integer);
   public
-    { Public declarations }
   end;
 
 var
@@ -57,32 +55,6 @@ begin
       Result := Result + Param[i];
 end;
 
-procedure TzExpressionSupportMainForm.evaluateButtonClick(Sender: TObject);
-var
-  v: Variant;
-begin
-  // 评估器，支持向量表达式：1+1,2+2,3+3
-  v := EvaluateExpressionValue(False, nil, Debug_CheckBox.IsChecked, tsPascal, InputEdit.Text, nil);
-  if not VarIsNull(v) then
-      DoStatus(InputEdit.Text + ' = ' + VarToStr(v));
-end;
-
-procedure TzExpressionSupportMainForm.EvaluateAllButtonClick(Sender: TObject);
-var
-  i: Integer;
-  v: Variant;
-begin
-  for i := 0 to expEvaluateMemo.Lines.Count - 1 do
-    begin
-      // 评估器，支持向量表达式：1+1,2+2,3+3
-      v := EvaluateExpressionValue(False, nil, Debug_CheckBox.IsChecked, tsPascal, expEvaluateMemo.Lines[i], nil);
-      if not VarIsNull(v) then
-          DoStatus('%s = %s', [expEvaluateMemo.Lines[i], VarToStr(v)])
-      else
-          DoStatus('error: ' + expEvaluateMemo.Lines[i]);
-    end;
-end;
-
 procedure TzExpressionSupportMainForm.FormCreate(Sender: TObject);
 var
   psList: TPascalStringList;
@@ -92,13 +64,7 @@ begin
   psList.AssignTo(functionMemo.Lines);
   disposeObject(psList);
 
-  SystemOpRunTime.RegOpC('a', a);
-end;
-
-procedure TzExpressionSupportMainForm.InputEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
-begin
-  if Key = VKRETURN then
-      evaluateButtonClick(evaluateButton);
+  SystemOpRunTime.Reg_Param_OpC('a', a);
 end;
 
 procedure TzExpressionSupportMainForm.ParsingAllButtonClick(Sender: TObject);
@@ -124,6 +90,38 @@ begin
         end
       else
           DoStatus('error: ' + ExpParsingMemo.Lines[i]);
+    end;
+end;
+
+procedure TzExpressionSupportMainForm.evaluateButtonClick(Sender: TObject);
+var
+  v: Variant;
+begin
+  // 评估器，支持向量表达式：1+1,2+2,3+3
+  v := EvaluateExpressionValue(False, nil, Debug_CheckBox.IsChecked, tsPascal, InputEdit.Text, nil);
+  if not VarIsNull(v) then
+      DoStatus(InputEdit.Text + ' = ' + VarToStr(v));
+end;
+
+procedure TzExpressionSupportMainForm.InputEditKeyUp(Sender: TObject; var Key: Word; var KeyChar: Char; Shift: TShiftState);
+begin
+  if Key = VKRETURN then
+      evaluateButtonClick(evaluateButton);
+end;
+
+procedure TzExpressionSupportMainForm.EvaluateAllButtonClick(Sender: TObject);
+var
+  i: Integer;
+  v: Variant;
+begin
+  for i := 0 to expEvaluateMemo.Lines.Count - 1 do
+    begin
+      // 评估器，支持向量表达式：1+1,2+2,3+3
+      v := EvaluateExpressionValue(False, nil, Debug_CheckBox.IsChecked, tsPascal, expEvaluateMemo.Lines[i], nil);
+      if not VarIsNull(v) then
+          DoStatus('%s = %s', [expEvaluateMemo.Lines[i], VarToStr(v)])
+      else
+          DoStatus('error: ' + expEvaluateMemo.Lines[i]);
     end;
 end;
 

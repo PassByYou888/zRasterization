@@ -3,15 +3,16 @@
 { ****************************************************************************** }
 unit ZR.h264.BitStream;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 
 interface
 
-uses ZR.h264.Types;
+uses ZR.Core, ZR.h264.Types;
 
 type
-  TBitStreamWriter = class
+  TBitStreamWriter = class(TCore_Object_Intermediate)
   private
     buffer: uint32_p;
     Cur: uint32_p;

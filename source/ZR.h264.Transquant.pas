@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Transquant;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 
@@ -140,9 +141,9 @@ begin
 
   for i := 0 to 3 do
     begin
-      M[0][i] := E[i] + g[i];     // a + b +  c +  d
+      M[0][i] := E[i] + g[i]; // a + b +  c +  d
       M[1][i] := 2 * f[i] + h[i]; // 2a + b -  c - 2d
-      M[2][i] := E[i] - g[i];     // a - b -  c +  d
+      M[2][i] := E[i] - g[i]; // a - b -  c +  d
       M[3][i] := f[i] - h[i] * 2; // a -2b + 2c -  d
     end;
 

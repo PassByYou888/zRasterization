@@ -12,15 +12,15 @@
 }
 unit ZR.JLS.Melcode;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
 
-uses
-  ZR.JLS.Global, ZR.JLS.BitIO;
+uses ZR.Core, ZR.JLS.Global, ZR.JLS.BitIO;
 
 const
-  MELCSTATES                                    = 32; { number of melcode states }
+  MELCSTATES = 32; { number of melcode states }
 
   j: array [0 .. MELCSTATES - 1] of Byte = (
     0, 0, 0, 0,
@@ -42,7 +42,7 @@ const
     );
 
 type
-  TJLSMelcode = class
+  TJLSMelcode = class(TCore_Object_Intermediate)
   private
     FBitIO: TJLSBitIO;
     FImageInfo: PImageInfo;

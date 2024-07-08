@@ -1,9 +1,10 @@
 { ****************************************************************************** }
-{ * Transform TextTable                                                        * }
+{ * Transform TextTable for zTranslate                                         * }
 { ****************************************************************************** }
 
 unit ZR.TextTable;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -39,7 +40,7 @@ type
 
   PTextTableItem = ^TTextTableItem;
 
-  TTextTable = class(TCore_Object)
+  TTextTable = class(TCore_Object_Intermediate)
   protected
     FList: TCore_List;
     function GetItems(index: Integer): PTextTableItem;

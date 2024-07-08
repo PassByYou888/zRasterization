@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.TextDataEngine;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -18,7 +19,7 @@ uses SysUtils, Variants,
   ZR.MemoryStream;
 
 type
-  THashTextEngine = class(TCore_Object)
+  THashTextEngine = class(TCore_Object_Intermediate)
   private
     FComment: TCore_Strings;
     FSectionList, FSectionHashVariantList, FSectionHashStringList: THashObjectList;
@@ -128,9 +129,9 @@ type
   TTextDataEngine = THashTextEngine;
   TSectionTextData = THashTextEngine;
 
-  THashTextEngineList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<THashTextEngine>;
+  THashTextEngineList_ = TGenericsList<THashTextEngine>;
 
-  THashTextEngineList = class(THashTextEngineList_Decl)
+  THashTextEngineList = class(THashTextEngineList_)
   end;
 
 implementation

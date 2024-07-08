@@ -1,7 +1,7 @@
 program ZSamplerBuilder;
 
 uses
-  FastMM5 in '..\Common\FastMM5.pas',
+  FastMM5,
   System.StartUpCopy,
   FMX.Forms,
   System.Classes,
@@ -16,8 +16,7 @@ uses
   SampleEditorFrm in 'SampleEditorFrm.pas' {SampleEditorForm} ,
   FMXLogFrm in '..\Common\FMXLogFrm.pas' {LogForm};
 
-{$R *.res}
-
+{$R ZSamplerBuilder.res}
 {$R ..\Common\art.res}
 
 

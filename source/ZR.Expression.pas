@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.Expression;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -57,9 +58,9 @@ type
     nttSingle, nttDouble, nttCurrency,
     nttUnknow);
 
-  TExpressionData_Pool = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<PExpressionListData>;
+  TExpressionData_Pool = TGenericsList<PExpressionListData>;
 
-  TSymbolExpression = class sealed(TCore_Object)
+  TSymbolExpression = class sealed(TCore_Object_Intermediate)
   protected
     FList: TExpressionData_Pool;
     FTextStyle: TTextStyle;
@@ -228,6 +229,7 @@ function OpCache: TOpCode_Pool;
 procedure CleanOpCache();
 
 { prototype: EvaluateExpressionValue }
+function IsNullExpression(ExpressionText: SystemString; TextStyle: TTextStyle): Boolean;
 function IsSymbolVectorExpression(ExpressionText: SystemString; TextStyle: TTextStyle; Special_ASCII_: TListPascalString): Boolean; overload;
 function IsSymbolVectorExpression(ExpressionText: SystemString; TextStyle: TTextStyle): Boolean; overload;
 function EvaluateExpressionValue(UsedCache: Boolean;
@@ -2307,16 +2309,16 @@ var
   function NewOpValue(uName: SystemString): TOpCode;
   begin
     Result := op_Value.Create(False);
-    Result.ParsedInfo := uName;
-    Result.ParsedLineNo := LineNo;
+    Result.Parsed_Info := uName;
+    Result.Parsed_Line_Num := LineNo;
     OpContainer.Add(Result);
   end;
 
   function NewOpProc(uName: SystemString): TOpCode;
   begin
     Result := op_Proc.Create(False);
-    Result.ParsedInfo := uName;
-    Result.ParsedLineNo := LineNo;
+    Result.Parsed_Info := uName;
+    Result.Parsed_Line_Num := LineNo;
     OpContainer.Add(Result);
   end;
 
@@ -2329,8 +2331,8 @@ var
     end;
     if Result <> nil then
       begin
-        Result.ParsedInfo := uName;
-        Result.ParsedLineNo := LineNo;
+        Result.Parsed_Info := uName;
+        Result.Parsed_Line_Num := LineNo;
         OpContainer.Add(Result);
       end;
   end;
@@ -2360,8 +2362,8 @@ var
     end;
     if Result <> nil then
       begin
-        Result.ParsedInfo := uName;
-        Result.ParsedLineNo := LineNo;
+        Result.Parsed_Info := uName;
+        Result.Parsed_Line_Num := LineNo;
         OpContainer.Add(Result);
       end;
   end;
@@ -2645,12 +2647,12 @@ end;
 
 function BuildAsOpCode(SymbExps: TSymbolExpression): TOpCode;
 begin
-  Result := BuildAsOpCode(False, SymbExps, '', 0);
+  Result := BuildAsOpCode(False, SymbExps, 'Main', -1);
 end;
 
 function BuildAsOpCode(DebugMode: Boolean; SymbExps: TSymbolExpression): TOpCode;
 begin
-  Result := BuildAsOpCode(DebugMode, SymbExps, '', 0);
+  Result := BuildAsOpCode(DebugMode, SymbExps, 'Main', -1);
 end;
 
 function BuildAsOpCode(DebugMode: Boolean; TextStyle: TTextStyle; ExpressionText: SystemString): TOpCode;
@@ -2660,7 +2662,7 @@ var
 begin
   tmp := nil;
   sym := ParseTextExpressionAsSymbol(TextStyle, '', ExpressionText, tmp, SystemOpRunTime);
-  Result := BuildAsOpCode(DebugMode, sym, '', 0);
+  Result := BuildAsOpCode(DebugMode, sym, 'Main', -1);
   DisposeObject(sym);
 end;
 
@@ -2671,7 +2673,7 @@ var
 begin
   tmp := nil;
   sym := ParseTextExpressionAsSymbol(TextStyle, '', ExpressionText, tmp, SystemOpRunTime);
-  Result := BuildAsOpCode(False, sym, '', 0);
+  Result := BuildAsOpCode(False, sym, 'Main', -1);
   DisposeObject(sym);
 end;
 
@@ -2680,7 +2682,7 @@ var
   sym: TSymbolExpression;
 begin
   sym := ParseTextExpressionAsSymbol(ExpressionText);
-  Result := BuildAsOpCode(False, sym, '', 0);
+  Result := BuildAsOpCode(False, sym, 'Main', -1);
   DisposeObject(sym);
 end;
 
@@ -2691,7 +2693,7 @@ var
 begin
   tmp := nil;
   sym := ParseTextExpressionAsSymbol(TextStyle, '', ExpressionText, tmp, RefrenceOpRT);
-  Result := BuildAsOpCode(DebugMode, sym, '', 0);
+  Result := BuildAsOpCode(DebugMode, sym, 'Main', -1);
   DisposeObject(sym);
 end;
 
@@ -2702,7 +2704,7 @@ var
 begin
   tmp := nil;
   sym := ParseTextExpressionAsSymbol(TextStyle, '', ExpressionText, tmp, RefrenceOpRT);
-  Result := BuildAsOpCode(False, sym, '', 0);
+  Result := BuildAsOpCode(False, sym, 'Main', -1);
   DisposeObject(sym);
 end;
 
@@ -2711,7 +2713,7 @@ var
   sym: TSymbolExpression;
 begin
   sym := ParseTextExpressionAsSymbol(ExpressionText, RefrenceOpRT);
-  Result := BuildAsOpCode(False, sym, '', 0);
+  Result := BuildAsOpCode(False, sym, 'Main', -1);
   DisposeObject(sym);
 end;
 
@@ -2731,7 +2733,11 @@ begin
   if (Op <> nil) and (UsedCache) then
     begin
       try
-          Result := Op.Execute(SystemOpRunTime);
+        with Op.Clone do
+          begin
+            Result := OpCode_Execute(SystemOpRunTime);
+            Free;
+          end;
       except
           Result := NULL;
       end;
@@ -2747,7 +2753,7 @@ begin
           if Op <> nil then
             begin
               try
-                Result := Op.Execute(SystemOpRunTime);
+                Result := Op.OpCode_Execute(SystemOpRunTime);
                 if UsedCache then
                   begin
                     OpCache.Add(ExpressionText, Op, True);
@@ -2779,7 +2785,11 @@ begin
   if (Op <> nil) and (UsedCache) then
     begin
       try
-          Result := Op.Execute(SystemOpRunTime);
+        with Op.Clone do
+          begin
+            Result := Op.OpCode_Execute(SystemOpRunTime);
+            Free;
+          end;
       except
           Result := NULL;
       end;
@@ -2795,7 +2805,7 @@ begin
           if Op <> nil then
             begin
               try
-                Result := Op.Execute(SystemOpRunTime);
+                Result := Op.OpCode_Execute(SystemOpRunTime);
                 if UsedCache then
                   begin
                     OpCache.Add(ExpressionText, Op, True);
@@ -2827,7 +2837,11 @@ begin
   if (Op <> nil) and (UsedCache) then
     begin
       try
-          Result := Op.Execute(SystemOpRunTime);
+        with Op.Clone do
+          begin
+            Result := Op.OpCode_Execute(SystemOpRunTime);
+            Free;
+          end;
       except
           Result := NULL;
       end;
@@ -2843,7 +2857,7 @@ begin
           if Op <> nil then
             begin
               try
-                Result := Op.Execute(SystemOpRunTime);
+                Result := Op.OpCode_Execute(SystemOpRunTime);
                 if UsedCache then
                   begin
                     OpCache.Add(ExpressionText, Op, True);
@@ -2873,7 +2887,7 @@ begin
 end;
 
 type
-  TExpression_ConstVL = class
+  TExpression_ConstVL = class(TCore_Object_Intermediate)
   public
     VL: THashVariantList;
     procedure GetValue(const Decl: SystemString; var ValType: TExpressionDeclType; var Value: Variant);
@@ -2888,6 +2902,19 @@ begin
     end
 end;
 
+function IsNullExpression(ExpressionText: SystemString; TextStyle: TTextStyle): Boolean;
+var
+  t: TTextParsing;
+  n: U_String;
+begin
+  t := TTextParsing.Create(ExpressionText, TextStyle, nil, SpacerSymbol.v);
+  t.DeletedComment;
+  n := t.FastRebuildTokenTo;
+  DisposeObject(t);
+  Result := n.TrimChar(#13#10#9#32) = '';
+  n := '';
+end;
+
 function IsSymbolVectorExpression(ExpressionText: SystemString; TextStyle: TTextStyle; Special_ASCII_: TListPascalString): Boolean;
 var
   t: TTextParsing;
@@ -2896,7 +2923,7 @@ begin
   Result := False;
   t := TTextParsing.Create(umlDeleteChar(ExpressionText, #13#10#32#9), TextStyle, Special_ASCII_, SpacerSymbol.v);
   L := TPascalStringList.Create;
-  if t.FillSymbolVector(L) then
+  if t.Extract_Symbol_Vector(L) then
     begin
       if (L.Count = 2) and (L[1].L = 0) then
           Result := False
@@ -2939,7 +2966,11 @@ begin
   if (Op <> nil) and (UsedCache) and (const_vl = nil) then
     begin
       try
-          Result := Op.Execute(opRT);
+        with Op.Clone do
+          begin
+            Result := Op.OpCode_Execute(opRT);
+            Free;
+          end;
       except
           Result := NULL;
       end;
@@ -2950,7 +2981,7 @@ begin
       exp_const_vl.VL := const_vl;
 
       Result := NULL;
-      sym := ParseTextExpressionAsSymbol(Special_ASCII_, TextStyle, '', ExpressionText, {$IFDEF FPC}@{$ENDIF FPC}exp_const_vl.GetValue, opRT);
+      sym := ParseTextExpressionAsSymbol(Special_ASCII_, TextStyle, '', ExpressionText, exp_const_vl.GetValue, opRT);
 
       if sym <> nil then
         begin
@@ -2958,7 +2989,7 @@ begin
           if Op <> nil then
             begin
               try
-                Result := Op.Execute(opRT);
+                Result := Op.OpCode_Execute(opRT);
 
                 if (UsedCache) and (const_vl = nil) then
                   begin
@@ -3087,7 +3118,7 @@ begin
       Exit;
   t := TTextParsing.Create(ExpressionText, TextStyle, Special_ASCII_, SpacerSymbol.v);
   L := TPascalStringList.Create;
-  if t.FillSymbolVector(L) then
+  if t.Extract_Symbol_Vector(L) then
     begin
       SetLength(Result, L.Count);
       for i := 0 to L.Count - 1 do

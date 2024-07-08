@@ -4,6 +4,7 @@
 
 unit ZR.Raster.PNG;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 {$IFDEF DEBUG}
@@ -19,8 +20,8 @@ interface
 uses ZR.Core, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib, ZR.MemoryStream, ZR.MemoryRaster, ZR.Geometry2D;
 
 function IsPNG(const Stream: TCore_Stream): Boolean;
-procedure LoadZRFromPNG(raster: TMZR; Stream: TCore_Stream);
-procedure SaveZRToPNG(raster: TMZR; Stream: TCore_Stream);
+procedure LoadZRFromPNG(Raster: TMZR; Stream: TCore_Stream);
+procedure SaveZRToPNG(Raster: TMZR; Stream: TCore_Stream);
 
 implementation
 
@@ -80,7 +81,7 @@ type
   TZStreamRec = z_stream;
 {$ENDIF}
 
-  TCustomChunk = class(TCore_Persistent)
+  TCustomChunk = class(TCore_Persistent_Intermediate)
   protected
     function GetChunkName: TChunkName; virtual; abstract;
     function GetChunkSize: Cardinal; virtual; abstract;
@@ -330,7 +331,7 @@ type
     property CompressionMethod: Byte read FCompressionMethod write FCompressionMethod;
   end;
 
-  TCustomPngSignificantBits = class(TCore_Persistent)
+  TCustomPngSignificantBits = class(TCore_Persistent_Intermediate)
   protected
     class function GetChunkSize: Cardinal; virtual; abstract;
   public
@@ -434,7 +435,7 @@ type
     property SignificantBits: TCustomPngSignificantBits read FSignificantBits;
   end;
 
-  TCustomPngBackgroundColor = class(TCore_Persistent)
+  TCustomPngBackgroundColor = class(TCore_Persistent_Intermediate)
   protected
     class function GetChunkSize: Cardinal; virtual; abstract;
   public
@@ -566,7 +567,7 @@ type
     property Count: TGeoInt read GetCount;
   end;
 
-  TCustomPngTransparency = class(TCore_Persistent)
+  TCustomPngTransparency = class(TCore_Persistent_Intermediate)
   protected
     function GetChunkSize: Cardinal; virtual; abstract;
   public
@@ -801,7 +802,7 @@ type
     property DataStream: TMS64 read FDataStream;
   end;
 
-  TChunkList = class(TCore_Persistent)
+  TChunkList = class(TCore_Persistent_Intermediate)
   private
     FChunks: array of TCustomChunk;
     function GetCount: TGeoInt;
@@ -822,7 +823,7 @@ type
     property Chunks[Index: TGeoInt]: TCustomChunk read GetChunk; default;
   end;
 
-  TCustomPngCoder = class
+  TCustomPngCoder = class(TCore_Object_Intermediate)
   protected
     FStream: TCore_Stream;
     FHeader: TChunkPngImageHeader;
@@ -854,14 +855,14 @@ type
     destructor Destroy; override;
   end;
 
-  TScanLineCallback = function(raster: TObject; Y: TGeoInt): Pointer of object;
+  TScanLineCallback = function(Raster: TObject; Y: TGeoInt): Pointer of object;
 
   TCustomPngDecoder = class(TCustomPngCoder)
   protected
     procedure EncodeFilterRow(CurrentRow, PreviousRow, OutputRow, TempBuffer: PPNGByteArray; BytesPerRow, PixelByteSize: TGeoInt); override;
     procedure DecodeFilterRow(FilterMethod: TAdaptiveFilterMethod; CurrentRow, PreviousRow: PPNGByteArray; BytesPerRow, PixelByteSize: TGeoInt); override;
   public
-    procedure DecodeToScanline(raster: TObject; ScanLineCallback: TScanLineCallback); virtual; abstract;
+    procedure DecodeToScanline(Raster: TObject; ScanLineCallback: TScanLineCallback); virtual; abstract;
   end;
 
   TCustomPngDecoderClass = class of TCustomPngDecoder;
@@ -871,7 +872,7 @@ type
     procedure EncodeFilterRow(CurrentRow, PreviousRow, OutputRow, TempBuffer: PPNGByteArray; BytesPerRow, PixelByteSize: TGeoInt); override;
     procedure DecodeFilterRow(FilterMethod: TAdaptiveFilterMethod; CurrentRow, PreviousRow: PPNGByteArray; BytesPerRow, PixelByteSize: TGeoInt); override;
   public
-    procedure EncodeFromScanline(raster: TObject; ScanLineCallback: TScanLineCallback); virtual; abstract;
+    procedure EncodeFromScanline(Raster: TObject; ScanLineCallback: TScanLineCallback); virtual; abstract;
   end;
 
   TCustomPngEncoderClass = class of TCustomPngEncoder;
@@ -891,7 +892,7 @@ type
 
   TCustomPngTranscoderClass = class of TCustomPngTranscoder;
 
-  TPortableNetworkGraphic = class(TCore_Persistent)
+  TPortableNetworkGraphic = class(TCore_Persistent_Intermediate)
   private
     FCompressionLevel: Byte;
     function GetBitDepth: Byte;
@@ -3846,7 +3847,7 @@ begin
 
   for Index := PixelByteSize + 1 to BytesPerRow do
       CurrentRow^[Index] := (CurrentRow^[Index] +
-      (CurrentRow^[Index - PixelByteSize] + PreviousRow^[Index]) shr 1) and $FF;
+        (CurrentRow^[Index - PixelByteSize] + PreviousRow^[Index]) shr 1) and $FF;
 end;
 
 function PaethPredictor(A, B, c: Byte): TGeoInt;
@@ -3875,8 +3876,8 @@ begin
 
   for Index := PixelByteSize + 1 to BytesPerRow do
       CurrentRow^[Index] := (CurrentRow^[Index] +
-      PaethPredictor(CurrentRow^[Index - PixelByteSize], PreviousRow^[Index],
-      PreviousRow^[Index - PixelByteSize])) and $FF;
+        PaethPredictor(CurrentRow^[Index - PixelByteSize], PreviousRow^[Index],
+        PreviousRow^[Index - PixelByteSize])) and $FF;
 end;
 
 procedure TCustomPngCoder.EncodeFilterSub(CurrentRow, PreviousRow, OutputRow: PPNGByteArray;
@@ -3921,8 +3922,8 @@ begin
 
   for Index := PixelByteSize + 1 to BytesPerRow do
       OutputRow^[Index] := (CurrentRow^[Index] -
-      PaethPredictor(CurrentRow^[Index - PixelByteSize], PreviousRow^[Index],
-      PreviousRow^[Index - PixelByteSize])) and $FF;
+        PaethPredictor(CurrentRow^[Index - PixelByteSize], PreviousRow^[Index],
+        PreviousRow^[Index - PixelByteSize])) and $FF;
 end;
 
 procedure TCustomPngDecoder.DecodeFilterRow(FilterMethod: TAdaptiveFilterMethod;
@@ -5358,7 +5359,7 @@ begin
       begin
         // calculate some intermediate variables
         PixelPerRow := (FHeader.Width - CColumnStart[CurrentPass] +
-          CColumnIncrement[CurrentPass] - 1) div CColumnIncrement[CurrentPass];
+            CColumnIncrement[CurrentPass] - 1) div CColumnIncrement[CurrentPass];
 
         with FHeader do
           case ColorType of
@@ -5478,7 +5479,7 @@ begin
       begin
         // calculate some intermediate variables
         PixelPerRow := (FHeader.Width - CColumnStart[CurrentPass] +
-          CColumnIncrement[CurrentPass] - 1) div CColumnIncrement[CurrentPass];
+            CColumnIncrement[CurrentPass] - 1) div CColumnIncrement[CurrentPass];
 
         with FHeader do
           case ColorType of
@@ -5587,17 +5588,17 @@ end;
 type
   TPortableNetworkMemoryRaster = class(TPortableNetworkGraphic)
   private
-    procedure AssignPropertiesFromRaster(raster: TMZR);
+    procedure AssignPropertiesFromRaster(Raster: TMZR);
     function GetBackgroundColor: TRColor;
   protected
-    function RasterScanline(raster: TObject; Y: TGeoInt): Pointer; virtual;
+    function RasterScanline(Raster: TObject; Y: TGeoInt): Pointer; virtual;
   public
     constructor Create; override;
     procedure AssignTo(Dest: TCore_Object);
     procedure Assign(Source: TCore_Object);
 
     function IsPremultiplied: Boolean;
-    procedure DrawToRaster(raster: TMZR); virtual;
+    procedure DrawToRaster(Raster: TMZR); virtual;
 
     property Background: TRColor read GetBackgroundColor;
   end;
@@ -5613,7 +5614,7 @@ type
       Transparency: TCustomPngTransparency = nil); override;
     destructor Destroy; override;
 
-    procedure DecodeToScanline(raster: TObject; ScanLineCallback: TScanLineCallback); override;
+    procedure DecodeToScanline(Raster: TObject; ScanLineCallback: TScanLineCallback); override;
   end;
 
   TPngNonInterlacedGrayscale1bitDecoder = class(TCustomPngNonInterlacedDecoder)
@@ -5689,7 +5690,7 @@ type
       Gamma: TChunkPngGamma = nil; Palette: TChunkPngPalette = nil;
       Transparency: TCustomPngTransparency = nil); override;
     destructor Destroy; override;
-    procedure DecodeToScanline(raster: TObject; ScanLineCallback: TScanLineCallback); override;
+    procedure DecodeToScanline(Raster: TObject; ScanLineCallback: TScanLineCallback); override;
   end;
 
   TPngAdam7Grayscale1bitDecoder = class(TCustomPngAdam7Decoder)
@@ -5778,7 +5779,7 @@ type
       Gamma: TChunkPngGamma = nil; Palette: TChunkPngPalette = nil;
       Transparency: TCustomPngTransparency = nil); override;
     destructor Destroy; override;
-    procedure EncodeFromScanline(raster: TObject; ScanLineCallback: TScanLineCallback); override;
+    procedure EncodeFromScanline(Raster: TObject; ScanLineCallback: TScanLineCallback); override;
   end;
 
   TPngNonInterlacedGrayscale1bitEncoder = class(TCustomPngNonInterlacedEncoder)
@@ -5838,7 +5839,7 @@ type
 
   TPalette24 = array of TRGB24;
 
-  TPngHistogramEntry = class
+  TPngHistogramEntry = class(TCore_Object_Intermediate)
   private
     FColor: TRColor;
     FCount: TGeoInt;
@@ -5850,7 +5851,7 @@ type
     property Color: TRColor read FColor;
   end;
 
-  TPngPalette = class
+  TPngPalette = class(TCore_Object_Intermediate)
   private
     FItems: array of TRColor;
     FCount: TGeoInt;
@@ -5895,26 +5896,26 @@ begin
     end;
 end;
 
-procedure LoadZRFromPNG(raster: TMZR; Stream: TCore_Stream);
+procedure LoadZRFromPNG(Raster: TMZR; Stream: TCore_Stream);
 begin
   with TPortableNetworkMemoryRaster.Create do
     begin
       try
         LoadFromStream(Stream);
-        AssignTo(raster);
+        AssignTo(Raster);
       except
-          raster.Reset;
+          Raster.Reset;
       end;
       Free;
     end;
 end;
 
-procedure SaveZRToPNG(raster: TMZR; Stream: TCore_Stream);
+procedure SaveZRToPNG(Raster: TMZR; Stream: TCore_Stream);
 begin
   with TPortableNetworkMemoryRaster.Create do
     begin
       try
-        Assign(raster);
+        Assign(Raster);
         SaveToStream(Stream);
       except
       end;
@@ -5922,7 +5923,7 @@ begin
     end;
 end;
 
-procedure TPortableNetworkMemoryRaster.AssignPropertiesFromRaster(raster: TMZR);
+procedure TPortableNetworkMemoryRaster.AssignPropertiesFromRaster(Raster: TMZR);
 var
   Index, PalIndex: TGeoInt;
   IsAlpha: Boolean;
@@ -5932,7 +5933,7 @@ var
   TempPalette: TPalette24;
   TempAlpha: Byte;
 begin
-  with raster do
+  with Raster do
     begin
       ReadyBits();
 
@@ -6114,10 +6115,10 @@ begin
       Result := $0;
 end;
 
-function TPortableNetworkMemoryRaster.RasterScanline(raster: TObject; Y: TGeoInt): Pointer;
+function TPortableNetworkMemoryRaster.RasterScanline(Raster: TObject; Y: TGeoInt): Pointer;
 begin
-  if raster is TMZR then
-      Result := TMZR(raster).ScanLine[Y]
+  if Raster is TMZR then
+      Result := TMZR(Raster).ScanLine[Y]
   else
       Result := nil;
 end;
@@ -6176,7 +6177,7 @@ begin
             with EncoderClass.Create(DataStream, FImageHeader, FGammaChunk, FPaletteChunk) do
               begin
                 try
-                    EncodeFromScanline(TMZR(Source), {$IFDEF FPC}@{$ENDIF FPC}RasterScanline);
+                    EncodeFromScanline(TMZR(Source), RasterScanline);
                 finally
                     Free;
                 end;
@@ -6222,7 +6223,7 @@ begin
   end;
 end;
 
-procedure TPortableNetworkMemoryRaster.DrawToRaster(raster: TMZR);
+procedure TPortableNetworkMemoryRaster.DrawToRaster(Raster: TMZR);
 var
   DecoderClass: TCustomPngDecoderClass;
   DataStream: TMS64;
@@ -6327,12 +6328,12 @@ begin
     with DecoderClass.Create(DataStream, FImageHeader, FGammaChunk, FPaletteChunk, Transparency) do
       begin
         try
-            DecodeToScanline(raster, {$IFDEF FPC}@{$ENDIF FPC}RasterScanline);
+            DecodeToScanline(Raster, RasterScanline);
         finally
             Free;
         end;
       end;
-    raster.BlendBlack;
+    Raster.BlendBlack;
   finally
       DisposeObjectAndNil(DataStream);
   end;
@@ -6361,7 +6362,7 @@ begin
   inherited;
 end;
 
-procedure TCustomPngNonInterlacedDecoder.DecodeToScanline(raster: TObject; ScanLineCallback: TScanLineCallback);
+procedure TCustomPngNonInterlacedDecoder.DecodeToScanline(Raster: TObject; ScanLineCallback: TScanLineCallback);
 var
   Index: TGeoInt;
   CurrentRow: TGeoInt;
@@ -6398,7 +6399,7 @@ begin
       end;
 
       // transfer data from row to image
-      TransferData(@FRowBuffer[CurrentRow]^[1], ScanLineCallback(raster, Index));
+      TransferData(@FRowBuffer[CurrentRow]^[1], ScanLineCallback(Raster, Index));
 
       // flip current row
       CurrentRow := 1 - CurrentRow;
@@ -6695,7 +6696,7 @@ begin
 end;
 
 procedure TCustomPngAdam7Decoder.DecodeToScanline(
-  raster: TObject; ScanLineCallback: TScanLineCallback);
+  Raster: TObject; ScanLineCallback: TScanLineCallback);
 var
   CurrentRow: TGeoInt;
   RowByteSize: TGeoInt;
@@ -6751,7 +6752,7 @@ begin
           end;
 
           // transfer and deinterlace image data
-          TransferData(CurrentPass, @FRowBuffer[CurrentRow]^[1], ScanLineCallback(raster, PassRow));
+          TransferData(CurrentPass, @FRowBuffer[CurrentRow]^[1], ScanLineCallback(Raster, PassRow));
 
           // prepare for the next pass
           Inc(PassRow, CRowIncrement[CurrentPass]);
@@ -7155,7 +7156,7 @@ begin
   Result := -1;
 end;
 
-procedure TCustomPngNonInterlacedEncoder.EncodeFromScanline(raster: TObject; ScanLineCallback: TScanLineCallback);
+procedure TCustomPngNonInterlacedEncoder.EncodeFromScanline(Raster: TObject; ScanLineCallback: TScanLineCallback);
 var
   Index: TGeoInt;
   CurrentRow: TGeoInt;
@@ -7176,7 +7177,7 @@ begin
         for Index := 0 to FHeader.Height - 1 do
           begin
             // transfer data from image to current row
-            TransferData(ScanLineCallback(raster, Index), @FRowBuffer[CurrentRow]^[1]);
+            TransferData(ScanLineCallback(Raster, Index), @FRowBuffer[CurrentRow]^[1]);
 
             // filter current row
             EncodeFilterRow(FRowBuffer[CurrentRow], FRowBuffer[1 - CurrentRow],
@@ -7198,7 +7199,7 @@ begin
     for Index := 0 to FHeader.Height - 1 do
       begin
         // transfer data from image to current row
-        TransferData(ScanLineCallback(raster, Index), @FRowBuffer[CurrentRow]^[1]);
+        TransferData(ScanLineCallback(Raster, Index), @FRowBuffer[CurrentRow]^[1]);
 
         // set filter method to none
         FRowBuffer[CurrentRow]^[0] := 0;
@@ -7578,12 +7579,12 @@ initialization
 
 BuildCRCTable($EDB88320);
 RegisterPngChunks([TChunkPngImageData, TChunkPngPalette, TChunkPngGamma,
-  TChunkPngStandardColorSpaceRGB, TChunkPngPrimaryChromaticities,
-  TChunkPngTime, TChunkPngTransparency, TChunkPngEmbeddedIccProfile,
-  TChunkPngPhysicalPixelDimensions, TChunkPngText, TChunkPngSuggestedPalette,
-  TChunkPngCompressedText, TChunkPngInternationalText,
-  TChunkPngImageHistogram, TChunkPngBackgroundColor,
-  TChunkPngSignificantBits, TChunkPngImageOffset, TChunkPngPixelCalibrator]);
+    TChunkPngStandardColorSpaceRGB, TChunkPngPrimaryChromaticities,
+    TChunkPngTime, TChunkPngTransparency, TChunkPngEmbeddedIccProfile,
+    TChunkPngPhysicalPixelDimensions, TChunkPngText, TChunkPngSuggestedPalette,
+    TChunkPngCompressedText, TChunkPngInternationalText,
+    TChunkPngImageHistogram, TChunkPngBackgroundColor,
+    TChunkPngSignificantBits, TChunkPngImageOffset, TChunkPngPixelCalibrator]);
 
 finalization
 

@@ -3,11 +3,11 @@ program _109_BulletText;
 {$R *.dres}
 
 uses
-  FastMM5 in '..\..\Tools\Common\FastMM5.pas',
+  FastMM5,
   System.StartUpCopy,
   FMX.Forms,
   BulletTextFrm in 'BulletTextFrm.pas' {BulletTextForm},
-  StyleModuleUnit in '..\..\Tools\Common\StyleModuleUnit.pas' {StyleDataModule: TDataModule};
+  StyleModuleUnit in '..\_88_DNN_Dog\StyleModuleUnit.pas' {StyleDataModule: TDataModule};
 
 {$R *.res}
 

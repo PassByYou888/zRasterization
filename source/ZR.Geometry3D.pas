@@ -249,25 +249,25 @@ type
     function Normalize: TVector2;
   end;
 
-function Vector4(x, y, z, w: TGeoFloat): TVector4; overload;
-function Vector4(x, y, z: TGeoFloat): TVector4; overload;
+function Vector4(x, y, Z, w: TGeoFloat): TVector4; overload;
+function Vector4(x, y, Z: TGeoFloat): TVector4; overload;
 function Vector4(v: TVec3): TVector4; overload;
 function Vector4(v: TVec4): TVector4; overload;
 
-function Vector3(x, y, z: TGeoFloat): TVector3; overload;
+function Vector3(x, y, Z: TGeoFloat): TVector3; overload;
 function Vector3(v: TVec3): TVector3; overload;
 function Vector3(v: TVec4): TVector3; overload;
 
-function Vec3(const x, y, z: TGeoFloat): TVec3; overload;
+function Vec3(const x, y, Z: TGeoFloat): TVec3; overload;
 function Vec3(const v: TVec4): TVec3; overload;
 function Vec3(const v: TVector3): TVec3; overload;
 function Vec3(const v: TVector2): TVec3; overload;
-function Vec3(const v: TVector2; z: TGeoFloat): TVec3; overload;
+function Vec3(const v: TVector2; Z: TGeoFloat): TVec3; overload;
 
-function Vec4(const x, y, z: TGeoFloat): TVec4; overload;
-function Vec4(const x, y, z, w: TGeoFloat): TVec4; overload;
+function Vec4(const x, y, Z: TGeoFloat): TVec4; overload;
+function Vec4(const x, y, Z, w: TGeoFloat): TVec4; overload;
 function Vec4(const v: TVec3): TVec4; overload;
-function Vec4(const v: TVec3; const z: TGeoFloat): TVec4; overload;
+function Vec4(const v: TVec3; const Z: TGeoFloat): TVec4; overload;
 function Vec4(const v: TVector3): TVec4; overload;
 
 function Vec2(const v: TVec3): TVector2; overload;
@@ -282,6 +282,7 @@ function VecToStr(const v: TVec3): SystemString; overload;
 function VecToStr(const v: TVec4): SystemString; overload;
 function VecToStr(const v: TVector3): SystemString; overload;
 function VecToStr(const v: TVector4): SystemString; overload;
+function VecToStr(const v: TV2R4): SystemString; overload;
 function RectToStr(const v: TRectV2): SystemString; overload;
 function RectToStr(const v: TRect): SystemString; overload;
 
@@ -292,6 +293,7 @@ function StrToVec3(const s: SystemString): TVec3;
 function StrToVec4(const s: SystemString): TVec4;
 function StrToVector3(const s: SystemString): TVector3;
 function StrToVector4(const s: SystemString): TVector4;
+function StrToV2R4(const s: SystemString): TV2R4;
 function StrToRect(const s: SystemString): TRect;
 function StrToRectV2(const s: SystemString): TRectV2;
 
@@ -322,26 +324,28 @@ function MovementDistanceDeltaTime(const s, d: TVec2; Speed_: TGeoFloat): Double
 function MovementDistanceDeltaTime(const s, d: TRectV2; Speed_: TGeoFloat): Double; overload;
 function AngleRollDistanceDeltaTime(const s, d: TGeoFloat; RollSpeed_: TGeoFloat): Double; overload;
 
-function BounceVector(const Current: TVector4; Dist: TGeoFloat; const bVec, eVec: TVector4; var eFlag: Boolean): TVector4; overload;
-function BounceVector(const Current: TVector3; Dist: TGeoFloat; const bVec, eVec: TVector3; var eFlag: Boolean): TVector3; overload;
-function BounceVector(const Current: TVector2; Dist: TGeoFloat; const bVec, eVec: TVector2; var eFlag: Boolean): TVector2; overload;
-function BounceFloat(const CurrentVal, dist, bFloat, eFloat: TGeoFloat; var eFlag: Boolean): TGeoFloat; overload;
+function BounceVector(const Current: TVector4; Step_Dist: TGeoFloat; const bVec, eVec: TVector4; var eFlag: Boolean): TVector4; overload;
+function BounceVector(const Current: TVector3; Step_Dist: TGeoFloat; const bVec, eVec: TVector3; var eFlag: Boolean): TVector3; overload;
+function BounceVector(const Current: TVector2; Step_Dist: TGeoFloat; const bVec, eVec: TVector2; var eFlag: Boolean): TVector2; overload;
+function BounceFloat(const CurrentVal, Step_Dist, bFloat, eFloat: TGeoFloat; var eFlag: Boolean): TGeoFloat; overload;
 
 implementation
 
-function Vector4(x, y, z, w: TGeoFloat): TVector4;
+uses ZR.Expression;
+
+function Vector4(x, y, Z, w: TGeoFloat): TVector4;
 begin
   Result.Buff[0] := x;
   Result.Buff[1] := y;
-  Result.Buff[2] := z;
+  Result.Buff[2] := Z;
   Result.Buff[3] := w;
 end;
 
-function Vector4(x, y, z: TGeoFloat): TVector4;
+function Vector4(x, y, Z: TGeoFloat): TVector4;
 begin
   Result.Buff[0] := x;
   Result.Buff[1] := y;
-  Result.Buff[2] := z;
+  Result.Buff[2] := Z;
   Result.Buff[3] := 0;
 end;
 
@@ -358,11 +362,11 @@ begin
   Result.Buff := v;
 end;
 
-function Vector3(x, y, z: TGeoFloat): TVector3;
+function Vector3(x, y, Z: TGeoFloat): TVector3;
 begin
   Result.Buff[0] := x;
   Result.Buff[1] := y;
-  Result.Buff[2] := z;
+  Result.Buff[2] := Z;
 end;
 
 function Vector3(v: TVec3): TVector3;
@@ -377,9 +381,9 @@ begin
   Result.Buff[2] := v[2];
 end;
 
-function Vec3(const x, y, z: TGeoFloat): TVec3;
+function Vec3(const x, y, Z: TGeoFloat): TVec3;
 begin
-  Result := AffineVectorMake(x, y, z);
+  Result := AffineVectorMake(x, y, Z);
 end;
 
 function Vec3(const v: TVec4): TVec3;
@@ -401,21 +405,21 @@ begin
   Result[2] := 0;
 end;
 
-function Vec3(const v: TVector2; z: TGeoFloat): TVec3;
+function Vec3(const v: TVector2; Z: TGeoFloat): TVec3;
 begin
   Result[0] := v[0];
   Result[1] := v[1];
-  Result[2] := z;
+  Result[2] := Z;
 end;
 
-function Vec4(const x, y, z: TGeoFloat): TVec4;
+function Vec4(const x, y, Z: TGeoFloat): TVec4;
 begin
-  Result := VectorMake(x, y, z, 0);
+  Result := VectorMake(x, y, Z, 0);
 end;
 
-function Vec4(const x, y, z, w: TGeoFloat): TVec4;
+function Vec4(const x, y, Z, w: TGeoFloat): TVec4;
 begin
-  Result := VectorMake(x, y, z, w);
+  Result := VectorMake(x, y, Z, w);
 end;
 
 function Vec4(const v: TVec3): TVec4;
@@ -423,9 +427,9 @@ begin
   Result := VectorMake(v);
 end;
 
-function Vec4(const v: TVec3; const z: TGeoFloat): TVec4;
+function Vec4(const v: TVec3; const Z: TGeoFloat): TVec4;
 begin
-  Result := VectorMake(v, z);
+  Result := VectorMake(v, Z);
 end;
 
 function Vec4(const v: TVector3): TVec4;
@@ -494,6 +498,11 @@ begin
   Result := VecToStr(v.Buff);
 end;
 
+function VecToStr(const v: TV2R4): SystemString;
+begin
+  Result := PFormat('%s,%s,%s,%s', [VecToStr(v.LeftTop), VecToStr(v.RightTop), VecToStr(v.RightBottom), VecToStr(v.LeftBottom)]);
+end;
+
 function RectToStr(const v: TRectV2): SystemString;
 begin
   Result := PFormat('%g,%g,%g,%g', [v[0][0], v[0][1], v[1][0], v[1][1]]);
@@ -513,8 +522,8 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v2 := umlGetFirstStr(v, ',: ');
 
-  Result[0] := umlStrToFloat(v1, 0);
-  Result[1] := umlStrToFloat(v2, 0);
+  Result[0] := EStrToFloat(v1, 0);
+  Result[1] := EStrToFloat(v2, 0);
 end;
 
 function StrToVector2(const s: SystemString): TVector2;
@@ -526,16 +535,16 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v2 := umlGetFirstStr(v, ',: ');
 
-  Result[0] := umlStrToFloat(v1, 0);
-  Result[1] := umlStrToFloat(v2, 0);
+  Result[0] := EStrToFloat(v1, 0);
+  Result[1] := EStrToFloat(v2, 0);
 end;
 
 function StrToArrayVec2(const s: SystemString): TArrayVec2;
 var
   n, v1, v2: U_String;
-  L: TVec2List;
+  L: TV2L;
 begin
-  L := TVec2List.Create;
+  L := TV2L.Create;
   n := umlTrimSpace(s);
   while n.L > 0 do
     begin
@@ -543,7 +552,7 @@ begin
       n := umlDeleteFirstStr(n, ',: ');
       v2 := umlGetFirstStr(n, ',: ');
       n := umlDeleteFirstStr(n, ',: ');
-      L.Add(umlStrToFloat(v1, 0), umlStrToFloat(v2, 0));
+      L.Add(EStrToFloat(v1, 0), EStrToFloat(v2, 0));
     end;
   Result := L.BuildArray();
   DisposeObject(L);
@@ -560,9 +569,9 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v3 := umlGetFirstStr(v, ',: ');
 
-  Result[0] := umlStrToFloat(v1, 0);
-  Result[1] := umlStrToFloat(v2, 0);
-  Result[2] := umlStrToFloat(v3, 0);
+  Result[0] := EStrToFloat(v1, 0);
+  Result[1] := EStrToFloat(v2, 0);
+  Result[2] := EStrToFloat(v3, 0);
 end;
 
 function StrToVec4(const s: SystemString): TVec4;
@@ -578,10 +587,10 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v4 := umlGetFirstStr(v, ',: ');
 
-  Result[0] := umlStrToFloat(v1, 0);
-  Result[1] := umlStrToFloat(v2, 0);
-  Result[2] := umlStrToFloat(v3, 0);
-  Result[3] := umlStrToFloat(v4, 0);
+  Result[0] := EStrToFloat(v1, 0);
+  Result[1] := EStrToFloat(v2, 0);
+  Result[2] := EStrToFloat(v3, 0);
+  Result[3] := EStrToFloat(v4, 0);
 end;
 
 function StrToVector3(const s: SystemString): TVector3;
@@ -595,9 +604,9 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v3 := umlGetFirstStr(v, ',: ');
 
-  Result.Buff[0] := umlStrToFloat(v1, 0);
-  Result.Buff[1] := umlStrToFloat(v2, 0);
-  Result.Buff[2] := umlStrToFloat(v3, 0);
+  Result.Buff[0] := EStrToFloat(v1, 0);
+  Result.Buff[1] := EStrToFloat(v2, 0);
+  Result.Buff[2] := EStrToFloat(v3, 0);
 end;
 
 function StrToVector4(const s: SystemString): TVector4;
@@ -613,10 +622,29 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v4 := umlGetFirstStr(v, ',: ');
 
-  Result.Buff[0] := umlStrToFloat(v1, 0);
-  Result.Buff[1] := umlStrToFloat(v2, 0);
-  Result.Buff[2] := umlStrToFloat(v3, 0);
-  Result.Buff[3] := umlStrToFloat(v4, 0);
+  Result.Buff[0] := EStrToFloat(v1, 0);
+  Result.Buff[1] := EStrToFloat(v2, 0);
+  Result.Buff[2] := EStrToFloat(v3, 0);
+  Result.Buff[3] := EStrToFloat(v4, 0);
+end;
+
+function StrToV2R4(const s: SystemString): TV2R4;
+var
+  v: TExpressionValueVector;
+begin
+  v := EvaluateExpressionVector(umlTrimSpace(s));
+
+  if length(v) <> 8 then
+      raiseInfo('V2R4 expression error: %s', [s]);
+
+  Result.LeftTop[0] := v[0];
+  Result.LeftTop[1] := v[1];
+  Result.RightTop[0] := v[2];
+  Result.RightTop[1] := v[3];
+  Result.RightBottom[0] := v[4];
+  Result.RightBottom[1] := v[5];
+  Result.LeftBottom[0] := v[6];
+  Result.LeftBottom[1] := v[7];
 end;
 
 function StrToRect(const s: SystemString): TRect;
@@ -637,10 +665,10 @@ begin
   v := umlDeleteFirstStr(v, ',: ');
   v4 := umlGetFirstStr(v, ',: ');
 
-  Result[0][0] := umlStrToFloat(v1, 0);
-  Result[0][1] := umlStrToFloat(v2, 0);
-  Result[1][0] := umlStrToFloat(v3, 0);
-  Result[1][1] := umlStrToFloat(v4, 0);
+  Result[0][0] := EStrToFloat(v1, 0);
+  Result[0][1] := EStrToFloat(v2, 0);
+  Result[1][0] := EStrToFloat(v3, 0);
+  Result[1][1] := EStrToFloat(v4, 0);
 end;
 
 function GetMin(const arry: array of TGeoFloat): TGeoFloat;
@@ -816,7 +844,7 @@ var
 begin
   // calc distance
   k := Distance / Sqrt((dest[0] - sour[0]) * (dest[0] - sour[0]) + (dest[1] - sour[1]) * (dest[1] - sour[1]) + (dest[2] - sour[2]) * (dest[2] - sour[2]) + (dest[3] - sour[3]) *
-    (dest[3] - sour[3]));
+      (dest[3] - sour[3]));
   // done
   Result[0] := sour[0] + k * (dest[0] - sour[0]);
   Result[1] := sour[1] + k * (dest[1] - sour[1]);
@@ -858,7 +886,7 @@ begin
   Result := AngleDistance(s, d) / RollSpeed_;
 end;
 
-function BounceVector(const Current: TVector4; Dist: TGeoFloat; const bVec, eVec: TVector4; var eFlag: Boolean): TVector4;
+function BounceVector(const Current: TVector4; Step_Dist: TGeoFloat; const bVec, eVec: TVector4; var eFlag: Boolean): TVector4;
   function ToVector: TVector4;
   begin
     if eFlag then
@@ -871,17 +899,17 @@ var
   k: TGeoFloat;
 begin
   k := Current.Distance4D(ToVector);
-  if k >= Dist then
-      Result := MovementDistance(Current, ToVector, Dist)
+  if k >= Step_Dist then
+      Result := MovementDistance(Current, ToVector, Step_Dist)
   else
     begin
       Result := ToVector;
       eFlag := not eFlag;
-      Result := MovementDistance(Result, ToVector, Dist - k);
+      Result := MovementDistance(Result, ToVector, Step_Dist - k);
     end;
 end;
 
-function BounceVector(const Current: TVector3; Dist: TGeoFloat; const bVec, eVec: TVector3; var eFlag: Boolean): TVector3;
+function BounceVector(const Current: TVector3; Step_Dist: TGeoFloat; const bVec, eVec: TVector3; var eFlag: Boolean): TVector3;
   function ToVector: TVector3;
   begin
     if eFlag then
@@ -894,17 +922,17 @@ var
   k: TGeoFloat;
 begin
   k := Current.Distance3D(ToVector);
-  if k >= Dist then
-      Result := MovementDistance(Current, ToVector, Dist)
+  if k >= Step_Dist then
+      Result := MovementDistance(Current, ToVector, Step_Dist)
   else
     begin
       Result := ToVector;
       eFlag := not eFlag;
-      Result := MovementDistance(Result, ToVector, Dist - k);
+      Result := MovementDistance(Result, ToVector, Step_Dist - k);
     end;
 end;
 
-function BounceVector(const Current: TVector2; Dist: TGeoFloat; const bVec, eVec: TVector2; var eFlag: Boolean): TVector2;
+function BounceVector(const Current: TVector2; Step_Dist: TGeoFloat; const bVec, eVec: TVector2; var eFlag: Boolean): TVector2;
   function ToVector: TVector2;
   begin
     if eFlag then
@@ -917,17 +945,17 @@ var
   k: TGeoFloat;
 begin
   k := Vec2Distance(Current.Buff, ToVector.Buff);
-  if k >= Dist then
-      Result := Vec2LerpTo(Current.Buff, ToVector.Buff, Dist)
+  if k >= Step_Dist then
+      Result := Vec2LerpTo(Current.Buff, ToVector.Buff, Step_Dist)
   else
     begin
       Result := ToVector;
       eFlag := not eFlag;
-      Result := Vec2LerpTo(Result.Buff, ToVector.Buff, Dist - k);
+      Result := Vec2LerpTo(Result.Buff, ToVector.Buff, Step_Dist - k);
     end;
 end;
 
-function BounceFloat(const CurrentVal, dist, bFloat, eFloat: TGeoFloat; var eFlag: Boolean): TGeoFloat;
+function BounceFloat(const CurrentVal, Step_Dist, bFloat, eFloat: TGeoFloat; var eFlag: Boolean): TGeoFloat;
   function IfOut(Cur, Delta, dest: TGeoFloat): Boolean;
   begin
     if Cur > dest then
@@ -958,27 +986,27 @@ function BounceFloat(const CurrentVal, dist, bFloat, eFloat: TGeoFloat; var eFla
   end;
 
 begin
-  if (dist > 0) and (bFloat <> eFloat) then
+  if (Step_Dist > 0) and (bFloat <> eFloat) then
     begin
       if eFlag then
         begin
-          if IfOut(CurrentVal, dist, eFloat) then
+          if IfOut(CurrentVal, Step_Dist, eFloat) then
             begin
               eFlag := False;
-              Result := umlProcessCycleValue(eFloat, GetOutValue(CurrentVal, dist, eFloat), bFloat, eFloat, eFlag);
+              Result := umlProcessCycleValue(eFloat, GetOutValue(CurrentVal, Step_Dist, eFloat), bFloat, eFloat, eFlag);
             end
           else
-              Result := GetDeltaValue(CurrentVal, dist, eFloat);
+              Result := GetDeltaValue(CurrentVal, Step_Dist, eFloat);
         end
       else
         begin
-          if IfOut(CurrentVal, dist, bFloat) then
+          if IfOut(CurrentVal, Step_Dist, bFloat) then
             begin
               eFlag := True;
-              Result := umlProcessCycleValue(bFloat, GetOutValue(CurrentVal, dist, bFloat), bFloat, eFloat, eFlag);
+              Result := umlProcessCycleValue(bFloat, GetOutValue(CurrentVal, Step_Dist, bFloat), bFloat, eFloat, eFlag);
             end
           else
-              Result := GetDeltaValue(CurrentVal, dist, bFloat);
+              Result := GetDeltaValue(CurrentVal, Step_Dist, bFloat);
         end
     end
   else
@@ -1387,7 +1415,7 @@ var
   k: Double;
 begin
   k := d / Sqrt((v2.Buff[0] - Buff[0]) * (v2.Buff[0] - Buff[0]) + (v2.Buff[1] - Buff[1]) * (v2.Buff[1] - Buff[1]) + (v2.Buff[2] - Buff[2]) * (v2.Buff[2] - Buff[2]) +
-    (v2.Buff[3] - Buff[3]) * (v2.Buff[3] - Buff[3]));
+      (v2.Buff[3] - Buff[3]) * (v2.Buff[3] - Buff[3]));
   Result.Buff[0] := Buff[0] + k * (v2.Buff[0] - Buff[0]);
   Result.Buff[1] := Buff[1] + k * (v2.Buff[1] - Buff[1]);
   Result.Buff[2] := Buff[2] + k * (v2.Buff[2] - Buff[2]);

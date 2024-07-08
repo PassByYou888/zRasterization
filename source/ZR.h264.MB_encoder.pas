@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.MB_encoder;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -12,11 +13,11 @@ uses
   ZR.h264.Intra_pred, ZR.h264.inter_pred, ZR.h264.Motion_comp, ZR.h264.Motion_est, ZR.h264.Loopfilter, ZR.h264.stream, ZR.Core;
 
 type
-  TMacroblockEncoder = class
+  TMacroblockEncoder = class(TCore_Object_Intermediate)
   private
     mb: TMacroblock;
-    frame: TFrame;
-    stats: TFrameStats;
+    Frame: TFrame;
+    Stats: TFrameStats;
     intrapred: TIntraPredictor;
 
     procedure InitMB(mbx, mby: int32_t);
@@ -36,7 +37,7 @@ type
     h264s: TH264Stream;
     chroma_coding: Boolean;
     num_ref_frames: int32_t;
-    loopfilter: Boolean;
+    Loopfilter: Boolean;
     property ChromaQPOffset: int8_t write SetChromaQPOffset;
 
     constructor Create; virtual;
@@ -89,16 +90,16 @@ begin
   mb.x := mbx;
   mb.y := mby;
   if mbx = 0 then
-      mb_init_row_ptrs(mb, frame, mby);
+      mb_init_row_ptrs(mb, Frame, mby);
 
   // load pixels
-  DSP.pixel_load_16x16(mb.pixels, mb.pfenc, frame.stride);
-  DSP.pixel_load_8x8(mb.pixels_c[0], mb.pfenc_c[0], frame.stride_c);
-  DSP.pixel_load_8x8(mb.pixels_c[1], mb.pfenc_c[1], frame.stride_c);
+  DSP.pixel_load_16x16(mb.pixels, mb.pfenc, Frame.stride);
+  DSP.pixel_load_8x8(mb.pixels_c[0], mb.pfenc_c[0], Frame.stride_c);
+  DSP.pixel_load_8x8(mb.pixels_c[1], mb.pfenc_c[1], Frame.stride_c);
 
-  mb_init(mb, frame, False);
+  mb_init(mb, Frame, False);
   mb.residual_bits := 0;
-  mb.fref := frame.refs[0];
+  mb.fref := Frame.refs[0];
   mb.ref := 0;
 end;
 
@@ -107,16 +108,16 @@ procedure TMacroblockEncoder.FinalizeMB;
 begin
   h264s.WriteMB(mb);
   Decode;
-  if loopfilter then
+  if Loopfilter then
     begin
       CalculateBStrength(@mb);
     end;
   Store;
-  if not loopfilter then
+  if not Loopfilter then
     begin
-      inc(stats.ssd[0], DSP.ssd_16x16(mb.pixels_dec, mb.pfenc, frame.stride));
-      inc(stats.ssd[1], DSP.ssd_8x8(mb.pixels_dec_c[0], mb.pfenc_c[0], frame.stride_c));
-      inc(stats.ssd[2], DSP.ssd_8x8(mb.pixels_dec_c[1], mb.pfenc_c[1], frame.stride_c));
+      inc(Stats.ssd[0], DSP.ssd_16x16(mb.pixels_dec, mb.pfenc, Frame.stride));
+      inc(Stats.ssd[1], DSP.ssd_8x8(mb.pixels_dec_c[0], mb.pfenc_c[0], Frame.stride_c));
+      inc(Stats.ssd[2], DSP.ssd_8x8(mb.pixels_dec_c[1], mb.pfenc_c[1], Frame.stride_c));
     end;
 
   inc(mb.pfenc, 16);
@@ -135,7 +136,7 @@ begin
     MB_I_4x4:
       begin
         mb.mv := ZERO_MV;
-        encode_mb_intra_i4(mb, frame, intrapred);
+        encode_mb_intra_i4(mb, Frame, intrapred);
         if chroma_coding then
             encode_mb_chroma(mb, intrapred, True);
       end;
@@ -184,42 +185,42 @@ procedure TMacroblockEncoder.Store;
 var
   i: int32_t;
 begin
-  i := mb.y * frame.mbw + mb.x;
-  CopyPtr(@mb, @frame.mbs[i], SizeOf(TMacroblock));
+  i := mb.y * Frame.mbw + mb.x;
+  CopyPtr(@mb, @Frame.mbs[i], SizeOf(TMacroblock));
 
   if mb.mbtype <> MB_I_4x4 then
-      DSP.pixel_save_16x16(mb.pixels_dec, mb.pfdec, frame.stride);
+      DSP.pixel_save_16x16(mb.pixels_dec, mb.pfdec, Frame.stride);
 
-  DSP.pixel_save_8x8(mb.pixels_dec_c[0], mb.pfdec_c[0], frame.stride_c);
-  DSP.pixel_save_8x8(mb.pixels_dec_c[1], mb.pfdec_c[1], frame.stride_c);
+  DSP.pixel_save_8x8(mb.pixels_dec_c[0], mb.pfdec_c[0], Frame.stride_c);
+  DSP.pixel_save_8x8(mb.pixels_dec_c[1], mb.pfdec_c[1], Frame.stride_c);
 
   // stats
   case mb.mbtype of
     MB_I_4x4:
       begin
-        inc(stats.mb_i4_count);
+        inc(Stats.mb_i4_count);
         for i := 0 to 15 do
-            inc(stats.pred[mb.i4_pred_mode[i]]);
-        inc(stats.pred_8x8_chroma[mb.chroma_pred_mode]);
-        inc(stats.itex_bits, mb.residual_bits);
+            inc(Stats.pred[mb.i4_pred_mode[i]]);
+        inc(Stats.pred_8x8_chroma[mb.chroma_pred_mode]);
+        inc(Stats.itex_bits, mb.residual_bits);
       end;
     MB_I_16x16:
       begin
-        inc(stats.mb_i16_count);
-        inc(stats.pred16[mb.i16_pred_mode]);
-        inc(stats.pred_8x8_chroma[mb.chroma_pred_mode]);
-        inc(stats.itex_bits, mb.residual_bits);
+        inc(Stats.mb_i16_count);
+        inc(Stats.pred16[mb.i16_pred_mode]);
+        inc(Stats.pred_8x8_chroma[mb.chroma_pred_mode]);
+        inc(Stats.itex_bits, mb.residual_bits);
       end;
     MB_P_16x16:
       begin
-        inc(stats.mb_p_count);
-        inc(stats.ref[mb.ref]);
-        inc(stats.ptex_bits, mb.residual_bits);
+        inc(Stats.mb_p_count);
+        inc(Stats.ref[mb.ref]);
+        inc(Stats.ptex_bits, mb.residual_bits);
       end;
     MB_P_SKIP:
       begin
-        inc(stats.mb_skip_count);
-        inc(stats.ref[mb.ref]);
+        inc(Stats.mb_skip_count);
+        inc(Stats.ref[mb.ref]);
       end;
   end;
 end;
@@ -244,14 +245,14 @@ begin
   if h264s.NoPSkipAllowed then
       Exit;
 
-  if (mb.y < frame.mbh - 1) or (mb.x < frame.mbw - 1) then
+  if (mb.y < Frame.mbh - 1) or (mb.x < Frame.mbw - 1) then
     begin
       mv := mb.mv_skip;
 
       // can't handle out-of-frame mvp, don't skip
-      if mv.x + mb.x * 64 >= frame.w * 4 - 34 then
+      if mv.x + mb.x * 64 >= Frame.w * 4 - 34 then
           Exit;
-      if mv.y + mb.y * 64 >= frame.h * 4 - 34 then
+      if mv.y + mb.y * 64 >= Frame.h * 4 - 34 then
           Exit;
       if mv.x + mb.x * 64 < MIN_XY then
           Exit;
@@ -309,23 +310,23 @@ begin
   mv := mb.mv_skip;
 
   // can't handle out-of-frame mvp, don't skip
-  if mv.x + mb.x * 64 >= frame.w * 4 - 34 then
+  if mv.x + mb.x * 64 >= Frame.w * 4 - 34 then
       Exit;
-  if mv.y + mb.y * 64 >= frame.h * 4 - 34 then
+  if mv.y + mb.y * 64 >= Frame.h * 4 - 34 then
       Exit;
   if mv.x + mb.x * 64 < MIN_XY then
       Exit;
   if mv.y + mb.y * 64 < MIN_XY then
       Exit;
 
-  if (mb.cbp = 0) and ((mb.y < frame.mbh - 1) or (mb.x < frame.mbw - 1)) then
+  if (mb.cbp = 0) and ((mb.y < Frame.mbh - 1) or (mb.x < Frame.mbw - 1)) then
     begin
       // restore skip ref/mv
       if (mb.ref <> 0) or (mb.mbtype <> MB_P_16x16) then
         begin
-          mb.fref := frame.refs[0];
+          mb.fref := Frame.refs[0];
           mb.ref := 0;
-          mb_load_mvs(mb, frame, num_ref_frames);
+          mb_load_mvs(mb, Frame, num_ref_frames);
         end;
       mb.mbtype := MB_P_SKIP;
       mb.mv := mb.mv_skip;
@@ -368,11 +369,11 @@ end;
 
 procedure TMacroblockEncoder.SetFrame(const f: TFrame);
 begin
-  frame := f;
-  intrapred.frame_stride := frame.stride;
-  intrapred.stride_c := frame.stride_c;
-  intrapred.mb_width := frame.mbw;
-  stats := f.stats;
+  Frame := f;
+  intrapred.frame_stride := Frame.stride;
+  intrapred.stride_c := Frame.stride_c;
+  intrapred.mb_width := Frame.mbw;
+  Stats := f.Stats;
 end;
 
 procedure TMBEncoderRateAnalyse.CacheStore;
@@ -440,7 +441,7 @@ var
   bits_i16, bits_intra, bits_inter: int32_t;
 begin
   mb.mbtype := MB_P_16x16;
-  mb_load_mvs(mb, frame, num_ref_frames);
+  mb_load_mvs(mb, Frame, num_ref_frames);
 
   // early PSkip
   if TrySkip(True) then
@@ -451,7 +452,7 @@ begin
     end;
 
   // encode as inter
-  me.Estimate(mb, frame);
+  me.Estimate(mb, Frame);
   score_p := DSP.satd_16x16(mb.pixels, mb.mcomp, 16);
   EncodeCurrentType;
 
@@ -534,7 +535,7 @@ procedure TMBEncoderRateAnalyse.Encode(mbx, mby: int32_t);
 begin
   InitMB(mbx, mby);
 
-  if frame.ftype = SLICE_P then
+  if Frame.ftype = SLICE_P then
       EncodeInter
   else
       EncodeIntra;
@@ -552,10 +553,10 @@ begin
   InitMB(mbx, mby);
 
   // encode
-  if frame.ftype = SLICE_P then
+  if Frame.ftype = SLICE_P then
     begin
       mb.mbtype := MB_P_16x16;
-      mb_load_mvs(mb, frame, num_ref_frames);
+      mb_load_mvs(mb, Frame, num_ref_frames);
 
       // skip
       if TrySkip(True) then
@@ -566,7 +567,7 @@ begin
         end;
 
       // inter score
-      me.Estimate(mb, frame);
+      me.Estimate(mb, Frame);
       score_p := DSP.sad_16x16(mb.pixels, mb.mcomp, 16);
 
       // intra score
@@ -623,10 +624,10 @@ begin
   InitMB(mbx, mby);
 
   // encode
-  if frame.ftype = SLICE_P then
+  if Frame.ftype = SLICE_P then
     begin
       mb.mbtype := MB_P_16x16;
-      mb_load_mvs(mb, frame, num_ref_frames);
+      mb_load_mvs(mb, Frame, num_ref_frames);
 
       // skip
       if TrySkip(True) then
@@ -637,7 +638,7 @@ begin
         end;
 
       // inter score
-      me.Estimate(mb, frame);
+      me.Estimate(mb, Frame);
       score_p := DSP.satd_16x16(mb.pixels, mb.mcomp, 16);
       inc(score_p, InterCost.bitcost(mb.mv - mb.mvp));
 
@@ -684,10 +685,10 @@ procedure TMBEncoderNoAnalyse.Encode(mbx, mby: int32_t);
 begin
   InitMB(mbx, mby);
 
-  if frame.ftype = SLICE_P then
+  if Frame.ftype = SLICE_P then
     begin
       mb.mbtype := MB_P_16x16;
-      mb_load_mvs(mb, frame, num_ref_frames);
+      mb_load_mvs(mb, Frame, num_ref_frames);
       // skip
       if TrySkip(False) then
         begin
@@ -695,7 +696,7 @@ begin
         end
       else
         begin
-          me.Estimate(mb, frame);
+          me.Estimate(mb, Frame);
           EncodeCurrentType;
         end;
     end

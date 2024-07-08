@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.MemoryRaster.MorphologyExpression;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -21,7 +22,7 @@ type
   TMorphExp = class;
   TMorphExpRunTime = class;
 
-  TExp_API = class
+  TExp_API = class(TCore_Object_Intermediate)
   private
     SegGradientLevel: Byte;
   protected
@@ -32,101 +33,101 @@ type
     function FindStep(meRT: TMorphExpRunTime; token: U_String): TMorphExpStep;
 
     // input
-    function MorphExp_Main(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Inherited(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Token(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_Main(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Inherited(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Token(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // copy
-    function MorphExp_AssignInput(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_AssignInput(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // rasterization
-    function MorphExp_Sigma(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Gradient(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Scale(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_FitSize(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_BlendBlack(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_BlendWhite(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_DrawToZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_LFBlendZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_RFBlendZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_FlipHorz(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_FlipVert(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Rotate(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_HoughRotate(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_ZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_CombineMorphToZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_Sigma(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Gradient(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Scale(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_FitSize(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_BlendBlack(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_BlendWhite(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_DrawToZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_LFBlendZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_RFBlendZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_FlipHorz(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_FlipVert(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Rotate(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_HoughRotate(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_ZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_CombineMorphToZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // Segmentation
     procedure DoGetPixelSegClassify(X, Y: Integer; Color: TRColor; var Classify: TMorphologyClassify);
     procedure DoGetMorphomaticsSegClassify(X, Y: Integer; Morph: TMorphomaticsValue; var Classify: TMorphologyClassify);
-    function MorphExp_BuildSegmentation(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_BinarizationMaxSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_ProjectionMaxSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_ProjectionMaxSegAsClip(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_RemoveSegNoise(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_BinarizationSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_ProjectionSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_BuildSegmentation(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_BinarizationMaxSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_ProjectionMaxSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_ProjectionMaxSegAsClip(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_RemoveSegNoise(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_BinarizationSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_ProjectionSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // Morphomatics
-    function MorphExp_BuildMorphomatics(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_BuildApproximateMorphomatics(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_BuildMorphomatics(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_BuildApproximateMorphomatics(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // Morphomatics: classic morphomatics filter
-    function Filter_AVG(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_WeightedAVG(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_GeometricMean(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Median(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Max(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Min(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_MiddlePoint(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_TruncatedAVG(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Previtt(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Sobel(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Sharr(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Filter_Laplace(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function Filter_AVG(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_WeightedAVG(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_GeometricMean(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Median(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Max(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Min(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_MiddlePoint(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_TruncatedAVG(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Previtt(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Sobel(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Sharr(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Filter_Laplace(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // Morphomatics: classic morphomatics transform
-    function Transform_Linear(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Log(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Gamma(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_HistogramEqualization(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Contrast(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Gradient(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Clamp(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Add(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Sub(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Mul(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_Div(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_LFCombineAdd(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_LFCombineSub(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_LFCombineMul(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_LFCombineDiv(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_RFCombineAdd(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_RFCombineSub(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_RFCombineMul(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_RFCombineDiv(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Transform_MorphFromPolygon(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function Transform_Linear(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Log(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Gamma(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_HistogramEqualization(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Contrast(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Gradient(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Clamp(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Add(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Sub(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Mul(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_Div(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_LFCombineAdd(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_LFCombineSub(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_LFCombineMul(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_LFCombineDiv(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_RFCombineAdd(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_RFCombineSub(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_RFCombineMul(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_RFCombineDiv(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Transform_MorphFromPolygon(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // Morphology Binaryzation
-    function Binarization(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Binarization_InRange(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Binarization_Bernsen(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Binarization_FloydSteinbergDithering(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function Binarization_OTSU(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function Binarization(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Binarization_InRange(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Binarization_Bernsen(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Binarization_FloydSteinbergDithering(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function Binarization_OTSU(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // Morphomatics and Binaryzation
-    function MorphExp_Invert(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Dilatation(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Erosion(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Opening(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Closing(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_OpeningAndClosing(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_ClosingAndOpening(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_Skeleton(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_Invert(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Dilatation(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Erosion(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Opening(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Closing(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_OpeningAndClosing(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_ClosingAndOpening(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_Skeleton(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 
     // output
-    function MorphExp_SetOutput(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
-    function MorphExp_ViewHistogram(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+    function MorphExp_SetOutput(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
+    function MorphExp_ViewHistogram(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
   end;
 
   TMorphExpRunTime = class(TOpCustomRunTime)
@@ -138,7 +139,7 @@ type
     function MorphExp: TMorphExp;
   end;
 
-  TMorphData = class
+  TMorphData = class(TCore_Object_Intermediate)
   public
     Raster: TMZR;
     Segmentation: TMorphologySegmentation;
@@ -155,20 +156,20 @@ type
     procedure BuildDebugViewer;
   end;
 
-  TMorphExpStep = class
+  TMorphExpStep = class(TCore_Object_Intermediate)
   public
     ExpStyle: TTextStyle;
     ExpStr, ExpResult: SystemString; // expression body and result
-    MorphExp: TMorphExp;             // owner expression engine
-    InData: TMorphData;              // link for prev step OutData,seealso result data
-    OutData: TMorphData;             // result data
-    token: U_String;                 // step label
+    MorphExp: TMorphExp; // owner expression engine
+    InData: TMorphData; // link for prev step OutData,seealso result data
+    OutData: TMorphData; // result data
+    token: U_String; // step label
     constructor Create(exp_: TMorphExp); virtual;
     destructor Destroy; override;
     procedure ResetData;
   end;
 
-  TMorphExpStepList_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TMorphExpStep>;
+  TMorphExpStepList_Decl = TGenericsList<TMorphExpStep>;
 
   TMorphExpSteps = class(TMorphExpStepList_Decl)
   public
@@ -182,7 +183,7 @@ type
     function FindTokenStep(token: U_String): TMorphExpStep;
   end;
 
-  TMorphExp = class(TCore_Object)
+  TMorphExp = class(TCore_Object_Intermediate)
   private
     FSteps: TMorphExpSteps;
     FInData, FOutData: TMorphData;
@@ -243,7 +244,7 @@ type
     OnRegExternalAPI_P: TOnRegExternalAPI_P;
   end;
 
-  TOnRegExternalAPIDataList = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<POnRegExternalAPIData>;
+  TOnRegExternalAPIDataList = TGenericsList<POnRegExternalAPIData>;
 
 var
   ExternalAPIDataList_: TOnRegExternalAPIDataList;
@@ -285,181 +286,181 @@ end;
 
 procedure TExp_API.RegInternalAPI(Exp: TMorphExpRunTime);
 begin
-  Exp.RegObjectOpM('Main', 'Main(): Morphology expression main', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Main)^.Category := 'Morphology';
-  Exp.RegObjectOpM('GetMain', 'GetMain(): Morphology expression main', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Main)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Main', 'Main(): Morphology expression main', MorphExp_Main)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('GetMain', 'GetMain(): Morphology expression main', MorphExp_Main)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Inherited', 'Inherited(step name): data Inherited ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Inherited)^.Category := 'Morphology';
-  Exp.RegObjectOpM('In', 'In(step name): input data  ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Inherited)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Input', 'Input(step name): input data  ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Inherited)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Inherited', 'Inherited(step name): data Inherited ', MorphExp_Inherited)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('In', 'In(step name): input data  ', MorphExp_Inherited)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Input', 'Input(step name): input data  ', MorphExp_Inherited)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Label', 'Label(step name): set step name ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Token)^.Category := 'Morphology';
-  Exp.RegObjectOpM('L', 'L(step name): set step name ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Token)^.Category := 'Morphology';
-  Exp.RegObjectOpM('N', 'N(step name): set step name ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Token)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Label', 'Label(step name): set step name ', MorphExp_Token)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('L', 'L(step name): set step name ', MorphExp_Token)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('N', 'N(step name): set step name ', MorphExp_Token)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('NOP', 'NOP(): copy input data ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_AssignInput)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Copy', 'Copy(): copy input data ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_AssignInput)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Clone', 'Clone(): copy input data ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_AssignInput)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Assign', 'Assign(): copy input data ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_AssignInput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('NOP', 'NOP(): copy input data ', MorphExp_AssignInput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Copy', 'Copy(): copy input data ', MorphExp_AssignInput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Clone', 'Clone(): copy input data ', MorphExp_AssignInput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Assign', 'Assign(): copy input data ', MorphExp_AssignInput)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Sigma', 'Sigma(sigma Thresold, Gaussian Kernel size): Sigma Gaussian ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Sigma)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Gradient', 'Gradient(Gradient level): build Gradient ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Gradient)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Scale', 'Scale(k): scale raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Scale)^.Category := 'Morphology';
-  Exp.RegObjectOpM('FitSize', 'FitSize(Width, Height): scale raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_FitSize)^.Category := 'Morphology';
-  Exp.RegObjectOpM('FitScale', 'FitScale(Width, Height): scale raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_FitSize)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Fit', 'Fit(Width, Height): scale raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_FitSize)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Black', 'Black(): background is black ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BlendBlack)^.Category := 'Morphology';
-  Exp.RegObjectOpM('White', 'White(): background is white ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BlendWhite)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Draw', 'Draw(token,TMorphologyPixel): draw raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_DrawToZR)^.Category := 'Morphology';
-  Exp.RegObjectOpM('LFBlend', 'LFBlend(token..n): left to right blend raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_LFBlendZR)^.Category := 'Morphology';
-  Exp.RegObjectOpM('RFBlend', 'RFBlend(token..n): right to left blend raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_RFBlendZR)^.Category := 'Morphology';
-  Exp.RegObjectOpM('FlipHorz', 'FlipHorz(): flip horz ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_FlipHorz)^.Category := 'Morphology';
-  Exp.RegObjectOpM('FlipVert', 'FlipVert(): flip vert ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_FlipVert)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Rotate', 'MorphExp_Rotate(angle): rotate ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Rotate)^.Category := 'Morphology';
-  Exp.RegObjectOpM('HoughRotate', 'HoughRotate(style): Calibrate Rotate, style = 0,1,2', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_HoughRotate)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Raster', 'Raster(): build raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ZR)^.Category := 'Morphology';
-  Exp.RegObjectOpM('CombineMorphToRaster', 'CombineMorphToRaster(TMorphologyPixel,Morphomatics data): Combine Morph as new raster ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_CombineMorphToZR)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Sigma', 'Sigma(sigma Thresold, Gaussian Kernel size): Sigma Gaussian ', MorphExp_Sigma)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Gradient', 'Gradient(Gradient level): build Gradient ', MorphExp_Gradient)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Scale', 'Scale(k): scale raster ', MorphExp_Scale)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('FitSize', 'FitSize(Width, Height): scale raster ', MorphExp_FitSize)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('FitScale', 'FitScale(Width, Height): scale raster ', MorphExp_FitSize)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Fit', 'Fit(Width, Height): scale raster ', MorphExp_FitSize)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Black', 'Black(): background is black ', MorphExp_BlendBlack)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('White', 'White(): background is white ', MorphExp_BlendWhite)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Draw', 'Draw(token,TMorphologyPixel): draw raster ', MorphExp_DrawToZR)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('LFBlend', 'LFBlend(token..n): left to right blend raster ', MorphExp_LFBlendZR)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RFBlend', 'RFBlend(token..n): right to left blend raster ', MorphExp_RFBlendZR)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('FlipHorz', 'FlipHorz(): flip horz ', MorphExp_FlipHorz)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('FlipVert', 'FlipVert(): flip vert ', MorphExp_FlipVert)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Rotate', 'MorphExp_Rotate(angle): rotate ', MorphExp_Rotate)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('HoughRotate', 'HoughRotate(style): Calibrate Rotate, style = 0,1,2', MorphExp_HoughRotate)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Raster', 'Raster(): build raster ', MorphExp_ZR)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('CombineMorphToRaster', 'CombineMorphToRaster(TMorphologyPixel,Morphomatics data): Combine Morph as new raster ', MorphExp_CombineMorphToZR)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('BuildSegmentation', 'BuildSegmentation(): build Segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildSegmentation)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Seg', 'Seg(): build Segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildSegmentation)^.Category := 'Morphology';
-  Exp.RegObjectOpM('BinMaxSeg', 'BinMaxSeg(): build Binarization from max segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BinarizationMaxSeg)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ProjectionMaxSeg', 'ProjectionMaxSeg(source): build projection raster from max segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ProjectionMaxSeg)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ProjMaxSeg', 'ProjMaxSeg(source): build projection raster from max segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ProjectionMaxSeg)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BuildSegmentation', 'BuildSegmentation(): build Segmentation ', MorphExp_BuildSegmentation)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Seg', 'Seg(): build Segmentation ', MorphExp_BuildSegmentation)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BinMaxSeg', 'BinMaxSeg(): build Binarization from max segmentation ', MorphExp_BinarizationMaxSeg)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ProjectionMaxSeg', 'ProjectionMaxSeg(source): build projection raster from max segmentation ', MorphExp_ProjectionMaxSeg)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ProjMaxSeg', 'ProjMaxSeg(source): build projection raster from max segmentation ', MorphExp_ProjectionMaxSeg)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('ProjectionMaxSegCut', 'ProjectionMaxSegCut(source): build projection cut raster from max segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ProjectionMaxSegAsClip)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ProjMaxSegCut', 'ProjMaxSegCut(source): build projection cut raster from max segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ProjectionMaxSegAsClip)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ProjectionMaxSegCut', 'ProjectionMaxSegCut(source): build projection cut raster from max segmentation ', MorphExp_ProjectionMaxSegAsClip)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ProjMaxSegCut', 'ProjMaxSegCut(source): build projection cut raster from max segmentation ', MorphExp_ProjectionMaxSegAsClip)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('RemoveSegNoise', 'RemoveSegNoise(PixelNoiseThreshold): remove noise from segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_RemoveSegNoise)^.Category := 'Morphology';
-  Exp.RegObjectOpM('RemoveSeg', 'RemoveSeg(PixelNoiseThreshold): remove noise from segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_RemoveSegNoise)^.Category := 'Morphology';
-  Exp.RegObjectOpM('BinSeg', 'BinSeg(): build Binarization from all segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BinarizationSeg)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ProjectionSeg', 'ProjectionSeg(source): build projection raster from all segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ProjectionSeg)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ProjSeg', 'ProjSeg(source): build projection raster from all segmentation ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ProjectionSeg)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RemoveSegNoise', 'RemoveSegNoise(PixelNoiseThreshold): remove noise from segmentation ', MorphExp_RemoveSegNoise)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RemoveSeg', 'RemoveSeg(PixelNoiseThreshold): remove noise from segmentation ', MorphExp_RemoveSegNoise)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BinSeg', 'BinSeg(): build Binarization from all segmentation ', MorphExp_BinarizationSeg)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ProjectionSeg', 'ProjectionSeg(source): build projection raster from all segmentation ', MorphExp_ProjectionSeg)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ProjSeg', 'ProjSeg(source): build projection raster from all segmentation ', MorphExp_ProjectionSeg)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('BuildMorphomatics', 'BuildMorphomatics(TMorphologyPixel): build output of Morphomatics ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildMorphomatics)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Morph', 'Morph(TMorphologyPixel): build output of Morphomatics ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildMorphomatics)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BuildMorphomatics', 'BuildMorphomatics(TMorphologyPixel): build output of Morphomatics ', MorphExp_BuildMorphomatics)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Morph', 'Morph(TMorphologyPixel): build output of Morphomatics ', MorphExp_BuildMorphomatics)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('BuildApproximateMorphomatics', 'BuildApproximateMorphomatics(r,g,b): build output of Morphomatics ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ApproximateMorphomatics', 'ApproximateMorphomatics(r,g,b): build output of Morphomatics ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ApproximateMorph', 'ApproximateMorph(r,g,b): build output of Morphomatics ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
-  Exp.RegObjectOpM('CustomMorph', 'CustomMorph(r,g,b): build output of Morphomatics ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BuildApproximateMorphomatics', 'BuildApproximateMorphomatics(r,g,b): build output of Morphomatics ', MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ApproximateMorphomatics', 'ApproximateMorphomatics(r,g,b): build output of Morphomatics ', MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ApproximateMorph', 'ApproximateMorph(r,g,b): build output of Morphomatics ', MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('CustomMorph', 'CustomMorph(r,g,b): build output of Morphomatics ', MorphExp_BuildApproximateMorphomatics)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_AVG', 'Filter_AVG(boxW, boxH): Morphomatics avg filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_AVG)^.Category := 'Morphology';
-  Exp.RegObjectOpM('AVG', 'AVG(boxW, boxH): Morphomatics avg filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_AVG)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_AVG', 'Filter_AVG(boxW, boxH): Morphomatics avg filter ', Filter_AVG)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('AVG', 'AVG(boxW, boxH): Morphomatics avg filter ', Filter_AVG)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_WeightedAVG', 'Filter_WeightedAVG(boxW, boxH): Morphomatics WeightedAVG filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_WeightedAVG)^.Category := 'Morphology';
-  Exp.RegObjectOpM('WeightedAVG', 'WeightedAVG(boxW, boxH): Morphomatics WeightedAVG filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_WeightedAVG)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_WeightedAVG', 'Filter_WeightedAVG(boxW, boxH): Morphomatics WeightedAVG filter ', Filter_WeightedAVG)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('WeightedAVG', 'WeightedAVG(boxW, boxH): Morphomatics WeightedAVG filter ', Filter_WeightedAVG)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_GeometricMean', 'Filter_GeometricMean(boxW, boxH): Morphomatics GeometricMean filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_GeometricMean)^.Category := 'Morphology';
-  Exp.RegObjectOpM('GeometricMean', 'GeometricMean(boxW, boxH): Morphomatics GeometricMean filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_GeometricMean)^.Category := 'Morphology';
-  Exp.RegObjectOpM('GeoMean', 'GeoMean(boxW, boxH): Morphomatics GeometricMean filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_GeometricMean)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_GeometricMean', 'Filter_GeometricMean(boxW, boxH): Morphomatics GeometricMean filter ', Filter_GeometricMean)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('GeometricMean', 'GeometricMean(boxW, boxH): Morphomatics GeometricMean filter ', Filter_GeometricMean)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('GeoMean', 'GeoMean(boxW, boxH): Morphomatics GeometricMean filter ', Filter_GeometricMean)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Median', 'Filter_Median(boxW, boxH): Morphomatics Median filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Median)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Median', 'Median(boxW, boxH): Morphomatics Median filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Median)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Median', 'Filter_Median(boxW, boxH): Morphomatics Median filter ', Filter_Median)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Median', 'Median(boxW, boxH): Morphomatics Median filter ', Filter_Median)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Max', 'Filter_Max(boxW, boxH): Morphomatics max filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Max)^.Category := 'Morphology';
-  Exp.RegObjectOpM('&Max', '&Max(boxW, boxH): Morphomatics max filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Max)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Maximum', 'Maximum(boxW, boxH): Morphomatics max filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Max)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Max', 'Filter_Max(boxW, boxH): Morphomatics max filter ', Filter_Max)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Max', '&Max(boxW, boxH): Morphomatics max filter ', Filter_Max)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Maximum', 'Maximum(boxW, boxH): Morphomatics max filter ', Filter_Max)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Min', 'Filter_Min(boxW, boxH): Morphomatics min filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Min)^.Category := 'Morphology';
-  Exp.RegObjectOpM('&Min', '&Min(boxW, boxH): Morphomatics min filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Min)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Minimum', 'Minimum(boxW, boxH): Morphomatics min filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Min)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Min', 'Filter_Min(boxW, boxH): Morphomatics min filter ', Filter_Min)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Min', '&Min(boxW, boxH): Morphomatics min filter ', Filter_Min)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Minimum', 'Minimum(boxW, boxH): Morphomatics min filter ', Filter_Min)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_MiddlePoint', 'Filter_MiddlePoint(boxW, boxH): Morphomatics MiddlePoint filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_MiddlePoint)^.Category := 'Morphology';
-  Exp.RegObjectOpM('MiddlePoint', 'MiddlePoint(boxW, boxH): Morphomatics MiddlePoint filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_MiddlePoint)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Middle', 'Middle(boxW, boxH): Morphomatics MiddlePoint filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_MiddlePoint)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_MiddlePoint', 'Filter_MiddlePoint(boxW, boxH): Morphomatics MiddlePoint filter ', Filter_MiddlePoint)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('MiddlePoint', 'MiddlePoint(boxW, boxH): Morphomatics MiddlePoint filter ', Filter_MiddlePoint)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Middle', 'Middle(boxW, boxH): Morphomatics MiddlePoint filter ', Filter_MiddlePoint)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_TruncatedAVG', 'Filter_TruncatedAVG(boxW, boxH, distance): Morphomatics TruncatedAVG filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_TruncatedAVG)^.Category := 'Morphology';
-  Exp.RegObjectOpM('TruncatedAVG', 'TruncatedAVG(boxW, boxH, distance): Morphomatics TruncatedAVG filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_TruncatedAVG)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_TruncatedAVG', 'Filter_TruncatedAVG(boxW, boxH, distance): Morphomatics TruncatedAVG filter ', Filter_TruncatedAVG)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('TruncatedAVG', 'TruncatedAVG(boxW, boxH, distance): Morphomatics TruncatedAVG filter ', Filter_TruncatedAVG)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Previtt', 'Filter_Previtt(AdditiveToOriginal): Morphomatics Previtt filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Previtt)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Previtt', 'Previtt(AdditiveToOriginal): Morphomatics Previtt filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Previtt)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Previtt', 'Filter_Previtt(AdditiveToOriginal): Morphomatics Previtt filter ', Filter_Previtt)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Previtt', 'Previtt(AdditiveToOriginal): Morphomatics Previtt filter ', Filter_Previtt)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Sobel', 'Filter_Sobel(AdditiveToOriginal): Morphomatics Sobel filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Sobel)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Sobel', 'Sobel(AdditiveToOriginal): Morphomatics Sobel filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Sobel)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Sobel', 'Filter_Sobel(AdditiveToOriginal): Morphomatics Sobel filter ', Filter_Sobel)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Sobel', 'Sobel(AdditiveToOriginal): Morphomatics Sobel filter ', Filter_Sobel)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Sharr', 'Filter_Sharr(AdditiveToOriginal): Morphomatics Sharr filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Sharr)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Sharr', 'Sharr(AdditiveToOriginal): Morphomatics Sharr filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Sharr)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Sharr', 'Filter_Sharr(AdditiveToOriginal): Morphomatics Sharr filter ', Filter_Sharr)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Sharr', 'Sharr(AdditiveToOriginal): Morphomatics Sharr filter ', Filter_Sharr)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Filter_Laplace', 'Filter_Laplace(AdditiveToOriginal): Morphomatics Laplace filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Laplace)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Laplace', 'Laplace(AdditiveToOriginal): Morphomatics Laplace filter ', {$IFDEF FPC}@{$ENDIF FPC}Filter_Laplace)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Filter_Laplace', 'Filter_Laplace(AdditiveToOriginal): Morphomatics Laplace filter ', Filter_Laplace)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Laplace', 'Laplace(AdditiveToOriginal): Morphomatics Laplace filter ', Filter_Laplace)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_Linear', 'Transform_Linear(K, B): Morphomatics Linear Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Linear)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Linear', 'Linear(K, B): Morphomatics Linear Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Linear)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Linear', 'Transform_Linear(K, B): Morphomatics Linear Transform ', Transform_Linear)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Linear', 'Linear(K, B): Morphomatics Linear Transform ', Transform_Linear)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_Log', 'Transform_Log(C): Morphomatics log Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Log)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Log', 'Log(C): Morphomatics log Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Log)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Logarithms', 'Logarithms(C): Morphomatics log Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Log)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Log', 'Transform_Log(C): Morphomatics log Transform ', Transform_Log)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Log', 'Log(C): Morphomatics log Transform ', Transform_Log)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Logarithms', 'Logarithms(C): Morphomatics log Transform ', Transform_Log)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_Gamma', 'Transform_Gamma(C, GAMMA): Morphomatics GAMMA Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Gamma)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Gamma', 'Gamma(C, GAMMA): Morphomatics GAMMA Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Gamma)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Gamma', 'Transform_Gamma(C, GAMMA): Morphomatics GAMMA Transform ', Transform_Gamma)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Gamma', 'Gamma(C, GAMMA): Morphomatics GAMMA Transform ', Transform_Gamma)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_HistogramEqualization', 'Transform_HistogramEqualization(): Morphomatics HistogramEqualization Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_HistogramEqualization)^.Category := 'Morphology';
-  Exp.RegObjectOpM('HistogramEqualization', 'HistogramEqualization(): Morphomatics HistogramEqualization Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_HistogramEqualization)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Hist', 'Hist(): Morphomatics HistogramEqualization Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_HistogramEqualization)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_HistogramEqualization', 'Transform_HistogramEqualization(): Morphomatics HistogramEqualization Transform ', Transform_HistogramEqualization)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('HistogramEqualization', 'HistogramEqualization(): Morphomatics HistogramEqualization Transform ', Transform_HistogramEqualization)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Hist', 'Hist(): Morphomatics HistogramEqualization Transform ', Transform_HistogramEqualization)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_Contrast', 'Transform_Contrast(K): Morphomatics Contrast Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Contrast)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Contrast', 'Contrast(K): Morphomatics Contrast Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Contrast)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Contrast', 'Transform_Contrast(K): Morphomatics Contrast Transform ', Transform_Contrast)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Contrast', 'Contrast(K): Morphomatics Contrast Transform ', Transform_Contrast)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_Gradient', 'Transform_Gradient(level): Morphomatics Gradient Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Gradient)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Transform_Clamp', 'Transform_Clamp(min, max): Morphomatics Clamp Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Clamp)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Gradient', 'Transform_Gradient(level): Morphomatics Gradient Transform ', Transform_Gradient)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Clamp', 'Transform_Clamp(min, max): Morphomatics Clamp Transform ', Transform_Clamp)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Transform_Add', 'Transform_Add(Value): Morphomatics Add operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Add)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Transform_Sub', 'Transform_Sub(Value): Morphomatics Sub operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Sub)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Transform_Mul', 'Transform_Mul(Value): Morphomatics Mul operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Mul)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Transform_Div', 'Transform_Div(Value): Morphomatics Div operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Div)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Add', 'Transform_Add(Value): Morphomatics Add operation ', Transform_Add)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Sub', 'Transform_Sub(Value): Morphomatics Sub operation ', Transform_Sub)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Mul', 'Transform_Mul(Value): Morphomatics Mul operation ', Transform_Mul)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Transform_Div', 'Transform_Div(Value): Morphomatics Div operation ', Transform_Div)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('&Add', '&Add(Value): Morphomatics Add operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Add)^.Category := 'Morphology';
-  Exp.RegObjectOpM('&Sub', '&Sub(Value): Morphomatics Sub operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Sub)^.Category := 'Morphology';
-  Exp.RegObjectOpM('&Mul', '&Mul(Value): Morphomatics Mul operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Mul)^.Category := 'Morphology';
-  Exp.RegObjectOpM('&Div', '&Div(Value): Morphomatics Div operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Div)^.Category := 'Morphology';
-  Exp.RegObjectOpM('&Clamp', '&Clamp(min, max): Morphomatics Clamp Transform ', {$IFDEF FPC}@{$ENDIF FPC}Transform_Clamp)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Add', '&Add(Value): Morphomatics Add operation ', Transform_Add)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Sub', '&Sub(Value): Morphomatics Sub operation ', Transform_Sub)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Mul', '&Mul(Value): Morphomatics Mul operation ', Transform_Mul)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Div', '&Div(Value): Morphomatics Div operation ', Transform_Div)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('&Clamp', '&Clamp(min, max): Morphomatics Clamp Transform ', Transform_Clamp)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('LFCombineAdd', 'LFCombineAdd(Value): Morphomatics Left to right combine add operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_LFCombineAdd)^.Category := 'Morphology';
-  Exp.RegObjectOpM('LFCombineSub', 'LFCombineSub(Value): Morphomatics Left to right combine sub operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_LFCombineSub)^.Category := 'Morphology';
-  Exp.RegObjectOpM('LFCombineMul', 'LFCombineMul(Value): Morphomatics Left to right combine mul operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_LFCombineMul)^.Category := 'Morphology';
-  Exp.RegObjectOpM('LFCombineDiv', 'LFCombineDiv(Value): Morphomatics Left to right combine div operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_LFCombineDiv)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('LFCombineAdd', 'LFCombineAdd(Value): Morphomatics Left to right combine add operation ', Transform_LFCombineAdd)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('LFCombineSub', 'LFCombineSub(Value): Morphomatics Left to right combine sub operation ', Transform_LFCombineSub)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('LFCombineMul', 'LFCombineMul(Value): Morphomatics Left to right combine mul operation ', Transform_LFCombineMul)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('LFCombineDiv', 'LFCombineDiv(Value): Morphomatics Left to right combine div operation ', Transform_LFCombineDiv)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('RFCombineAdd', 'RLFCombineAdd(Value): Morphomatics right to left combine add operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_RFCombineAdd)^.Category := 'Morphology';
-  Exp.RegObjectOpM('RFCombineSub', 'RLFCombineSub(Value): Morphomatics right to left combine sub operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_RFCombineSub)^.Category := 'Morphology';
-  Exp.RegObjectOpM('RFCombineMul', 'RLFCombineMul(Value): Morphomatics right to left combine mul operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_RFCombineMul)^.Category := 'Morphology';
-  Exp.RegObjectOpM('RFCombineDiv', 'RLFCombineDev(Value): Morphomatics right to left combine div operation ', {$IFDEF FPC}@{$ENDIF FPC}Transform_RFCombineDiv)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RFCombineAdd', 'RLFCombineAdd(Value): Morphomatics right to left combine add operation ', Transform_RFCombineAdd)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RFCombineSub', 'RLFCombineSub(Value): Morphomatics right to left combine sub operation ', Transform_RFCombineSub)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RFCombineMul', 'RLFCombineMul(Value): Morphomatics right to left combine mul operation ', Transform_RFCombineMul)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('RFCombineDiv', 'RLFCombineDev(Value): Morphomatics right to left combine div operation ', Transform_RFCombineDiv)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('MorphFromPolygon', 'MorphFromPolygon(InsideValue, OutsideValue, Polygon): Morphomatics mul polygon ', {$IFDEF FPC}@{$ENDIF FPC}Transform_MorphFromPolygon)^.Category := 'Morphology';
-  Exp.RegObjectOpM('MorphPolygon', 'MorphPolygon(InsideValue, OutsideValue, Polygon): Morphomatics mul polygon ', {$IFDEF FPC}@{$ENDIF FPC}Transform_MorphFromPolygon)^.Category := 'Morphology';
-  Exp.RegObjectOpM('MorphPoly', 'MorphPoly(InsideValue, OutsideValue, Polygon): Morphomatics mul polygon ', {$IFDEF FPC}@{$ENDIF FPC}Transform_MorphFromPolygon)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('MorphFromPolygon', 'MorphFromPolygon(InsideValue, OutsideValue, Polygon): Morphomatics mul polygon ', Transform_MorphFromPolygon)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('MorphPolygon', 'MorphPolygon(InsideValue, OutsideValue, Polygon): Morphomatics mul polygon ', Transform_MorphFromPolygon)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('MorphPoly', 'MorphPoly(InsideValue, OutsideValue, Polygon): Morphomatics mul polygon ', Transform_MorphFromPolygon)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Binarization', 'Binarization(Thresold): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Bin', 'Bin(Thresold): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Binarization', 'Binarization(Thresold): build output of Binarization ', Binarization)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Bin', 'Bin(Thresold): build output of Binarization ', Binarization)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Binarization_InRange', 'Binarization_InRange(Min, Max): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_InRange)^.Category := 'Morphology';
-  Exp.RegObjectOpM('BinRange', 'BinRange(Min, Max): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_InRange)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Binarization_InRange', 'Binarization_InRange(Min, Max): build output of Binarization ', Binarization_InRange)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BinRange', 'BinRange(Min, Max): build output of Binarization ', Binarization_InRange)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Binarization_Bernsen', 'Binarization_Bernsen(Range, Thresold): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_Bernsen)^.Category := 'Morphology';
-  Exp.RegObjectOpM('BinBernsen', 'BinBernsen(Range, Thresold): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_Bernsen)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Bernsen', 'Bernsen(Range, Thresold): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_Bernsen)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Binarization_Bernsen', 'Binarization_Bernsen(Range, Thresold): build output of Binarization ', Binarization_Bernsen)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BinBernsen', 'BinBernsen(Range, Thresold): build output of Binarization ', Binarization_Bernsen)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Bernsen', 'Bernsen(Range, Thresold): build output of Binarization ', Binarization_Bernsen)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Binarization_FloydSteinbergDithering', 'Binarization_FloydSteinbergDithering(): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_FloydSteinbergDithering)^.Category := 'Morphology';
-  Exp.RegObjectOpM('BinFloydSteinbergDithering', 'BinFloydSteinbergDithering(): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_FloydSteinbergDithering)^.Category := 'Morphology';
-  Exp.RegObjectOpM('FloydSteinbergDithering', 'FloydSteinbergDithering(): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_FloydSteinbergDithering)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Binarization_FloydSteinbergDithering', 'Binarization_FloydSteinbergDithering(): build output of Binarization ', Binarization_FloydSteinbergDithering)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BinFloydSteinbergDithering', 'BinFloydSteinbergDithering(): build output of Binarization ', Binarization_FloydSteinbergDithering)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('FloydSteinbergDithering', 'FloydSteinbergDithering(): build output of Binarization ', Binarization_FloydSteinbergDithering)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Binarization_OTSU', 'Binarization_OTSU(): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_OTSU)^.Category := 'Morphology';
-  Exp.RegObjectOpM('BinOTSU', 'BinOTSU(): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_OTSU)^.Category := 'Morphology';
-  Exp.RegObjectOpM('OTSU', 'OTSU(): build output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}Binarization_OTSU)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Binarization_OTSU', 'Binarization_OTSU(): build output of Binarization ', Binarization_OTSU)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('BinOTSU', 'BinOTSU(): build output of Binarization ', Binarization_OTSU)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('OTSU', 'OTSU(): build output of Binarization ', Binarization_OTSU)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('Invert', 'Invert(): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Invert)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Inv', 'Inv(): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Invert)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Dilatation', 'Dilatation(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Dilatation)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Erosion', 'Erosion(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Erosion)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Opening', 'Opening(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Opening)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Closing', 'Closing(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Closing)^.Category := 'Morphology';
-  Exp.RegObjectOpM('OpeningAndClosing', 'OpeningAndClosing(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_OpeningAndClosing)^.Category := 'Morphology';
-  Exp.RegObjectOpM('ClosingAndOpening', 'ClosingAndOpening(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ClosingAndOpening)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Skeleton', 'Skeleton(): build Skeleton output of Binarization ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_Skeleton)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Invert', 'Invert(): build output of Morphomatics or Binarization ', MorphExp_Invert)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Inv', 'Inv(): build output of Morphomatics or Binarization ', MorphExp_Invert)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Dilatation', 'Dilatation(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', MorphExp_Dilatation)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Erosion', 'Erosion(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', MorphExp_Erosion)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Opening', 'Opening(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', MorphExp_Opening)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Closing', 'Closing(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', MorphExp_Closing)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('OpeningAndClosing', 'OpeningAndClosing(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', MorphExp_OpeningAndClosing)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ClosingAndOpening', 'ClosingAndOpening(Convolution Kernel Size w,h): build output of Morphomatics or Binarization ', MorphExp_ClosingAndOpening)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Skeleton', 'Skeleton(): build Skeleton output of Binarization ', MorphExp_Skeleton)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('ViewHistogram', 'ViewHistogram(): build Histogram for viewer ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_ViewHistogram)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('ViewHistogram', 'ViewHistogram(): build Histogram for viewer ', MorphExp_ViewHistogram)^.Category := 'Morphology';
 
-  Exp.RegObjectOpM('IsOut', 'IsOut(): set output data from this step. ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_SetOutput)^.Category := 'Morphology';
-  Exp.RegObjectOpM('SetOutput', 'SetOutput(): set output data from this step. ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_SetOutput)^.Category := 'Morphology';
-  Exp.RegObjectOpM('Output', 'Output(): set output data from this step. ', {$IFDEF FPC}@{$ENDIF FPC}MorphExp_SetOutput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('IsOut', 'IsOut(): set output data from this step. ', MorphExp_SetOutput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('SetOutput', 'SetOutput(): set output data from this step. ', MorphExp_SetOutput)^.Category := 'Morphology';
+  Exp.Reg_RT_OpM('Output', 'Output(): set output data from this step. ', MorphExp_SetOutput)^.Category := 'Morphology';
 end;
 
 function TExp_API.FindStep(meRT: TMorphExpRunTime; token: U_String): TMorphExpStep;
@@ -482,17 +483,17 @@ begin
     end;
 end;
 
-function TExp_API.MorphExp_Main(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Main(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   meRT.Step.InData := meRT.MorphExp.FInData;
   meRT.Step.OutData.Assign(meRT.MorphExp.FInData);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Inherited(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Inherited(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   prev_Step: TMorphExpStep;
@@ -520,22 +521,22 @@ begin
       if prev_Step.OutData.FoundData > 0 then
         begin
           meRT.Step.InData := prev_Step.OutData;
-          Result := OpRunTime.Trigger^.Name + '[ok]';
+          Result := OP_RT_Data^.Name + '[ok]';
           exit;
         end
       else if prev_Step.InData.FoundData > 0 then
         begin
           meRT.Step.InData := prev_Step.InData;
-          Result := OpRunTime.Trigger^.Name + '[ok]';
+          Result := OP_RT_Data^.Name + '[ok]';
           exit;
         end
       else
           dec(index);
     end;
-  Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+  Result := OP_RT_Data^.Name + '[error: data is nil]';
 end;
 
-function TExp_API.MorphExp_Token(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Token(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
@@ -544,17 +545,17 @@ begin
     1:
       begin
         meRT.Step.token := umlVarToStr(Param[0], False);
-        Result := OpRunTime.Trigger^.Name + PFormat('[label: %s]', [meRT.Step.token.Text]);
+        Result := OP_RT_Data^.Name + PFormat('[label: %s]', [meRT.Step.token.Text]);
       end;
     else
       begin
         meRT.Step.token := '';
-        Result := OpRunTime.Trigger^.Name + PFormat('[Label is NULL]', []);
+        Result := OP_RT_Data^.Name + PFormat('[Label is NULL]', []);
       end;
   end;
 end;
 
-function TExp_API.MorphExp_AssignInput(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_AssignInput(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   sigma_: TGeoFloat;
@@ -563,15 +564,15 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Sigma(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Sigma(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   sigma_: TGeoFloat;
@@ -580,13 +581,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
   meRT.Step.OutData.Assign(meRT.Step.InData);
@@ -607,10 +608,10 @@ begin
   if meRT.Step.OutData.Morphomatics <> nil then
       meRT.Step.OutData.Morphomatics.SigmaGaussian(sigma_, SigmaGaussianKernelFactor_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Gradient(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Gradient(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   level: Byte;
@@ -618,13 +619,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -636,14 +637,14 @@ begin
   end;
 
   if meRT.Step.OutData.Raster <> nil then
-      meRT.Step.OutData.Raster.Gradient(level);
+      meRT.Step.OutData.Raster.Grayscale_Gradient(level);
   if meRT.Step.OutData.Morphomatics <> nil then
       meRT.Step.OutData.Morphomatics.Gradient(level);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Scale(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Scale(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   k: TGeoFloat;
@@ -651,13 +652,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -673,10 +674,10 @@ begin
   else if meRT.Step.InData.Morphomatics <> nil then
       meRT.Step.OutData.Morphomatics.Scale(k);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_FitSize(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_FitSize(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Width, Height: Integer;
@@ -684,13 +685,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -715,56 +716,56 @@ begin
       meRT.Step.OutData.Raster.FitScale(Width, Height)
   else if meRT.Step.InData.Morphomatics <> nil then
       meRT.Step.OutData.Morphomatics.FitScale(Width, Height);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_BlendBlack(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BlendBlack(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
       exit;
     end;
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Raster.BlendColor(RColor(0, 0, 0));
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_BlendWhite(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BlendWhite(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
       exit;
     end;
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Raster.BlendColor(RColor($FF, $FF, $FF));
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_DrawToZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_DrawToZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   MorphPix_: TMorphologyPixel;
@@ -775,7 +776,7 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
@@ -801,7 +802,7 @@ begin
         end;
 
       meRT.Step.OutData.Raster.Draw(meRT.Step.InData.Raster);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else if (meRT.Step.InData.Morphomatics <> nil) then
     begin
@@ -825,7 +826,7 @@ begin
       for i := 2 to length(Param) - 1 do
           meRT.Step.OutData.Raster.DrawMorphomatics(Param[i], meRT.Step.InData.Morphomatics);
 
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else if (meRT.Step.InData.Binaryzation <> nil) then
     begin
@@ -848,11 +849,11 @@ begin
       meRT.Step.OutData.Raster.DrawBinaryzation(MorphPix_, meRT.Step.InData.Binaryzation);
       for i := 2 to length(Param) - 1 do
           meRT.Step.OutData.Raster.DrawBinaryzation(Param[i], meRT.Step.InData.Binaryzation);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end;
 end;
 
-function TExp_API.MorphExp_LFBlendZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_LFBlendZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -876,7 +877,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be raster input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be raster input]', [n.Text]);
           exit;
         end;
     end;
@@ -889,10 +890,10 @@ begin
   for i := Low(Param) to High(Param) do
       FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Raster.DrawTo(meRT.Step.OutData.Raster);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_RFBlendZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_RFBlendZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -916,7 +917,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be raster input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be raster input]', [n.Text]);
           exit;
         end;
     end;
@@ -929,10 +930,10 @@ begin
   for i := High(Param) downto Low(Param) do
       FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Raster.DrawTo(meRT.Step.OutData.Raster);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_FlipHorz(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_FlipHorz(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Ang: TGeoFloat;
@@ -940,22 +941,22 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
       exit;
     end;
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Raster.FlipHorz();
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_FlipVert(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_FlipVert(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Ang: TGeoFloat;
@@ -963,22 +964,22 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
       exit;
     end;
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Raster.FlipVert();
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Rotate(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Rotate(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Ang: TGeoFloat;
@@ -986,13 +987,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
       exit;
     end;
 
@@ -1009,10 +1010,10 @@ begin
     180: meRT.Step.OutData.Raster.Rotate270();
     else meRT.Step.OutData.Raster.Rotate(Ang, 0, RColor(0, 0, 0, 0));
   end;
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_HoughRotate(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_HoughRotate(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   s: Integer;
@@ -1020,13 +1021,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
       exit;
     end;
 
@@ -1042,21 +1043,21 @@ begin
     else meRT.Step.OutData.Raster.CalibrateRotate_AVG(RColor(0, 0, 0, 0));
   end;
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_ZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_ZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
   if (meRT.Step.InData.Raster <> nil) then
       meRT.Step.OutData.Assign(meRT.Step.InData)
   else if (meRT.Step.InData.Morphomatics <> nil) then
@@ -1078,10 +1079,10 @@ begin
       meRT.Step.OutData.Raster := meRT.Step.InData.Segmentation.BuildViewer();
     end
   else
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
 end;
 
-function TExp_API.MorphExp_CombineMorphToZR(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_CombineMorphToZR(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -1111,14 +1112,14 @@ begin
             end
           else
             begin
-              Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+              Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
               exit;
             end;
           inc(i);
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be TMorphPixel,Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be TMorphPixel,Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -1139,7 +1140,7 @@ begin
       meRT.Step.OutData.Raster.DrawMorphomatics(mp, step_.OutData.Morphomatics);
     end;
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
 procedure TExp_API.DoGetPixelSegClassify(X, Y: Integer; Color: TRColor; var Classify: TMorphologyClassify);
@@ -1158,14 +1159,14 @@ begin
       Classify := Trunc(Trunc(Trunc(umlClamp(Morph, 0.0, 1.0) * $FF) / ($FF / 16)) * ($FF / 16));
 end;
 
-function TExp_API.MorphExp_BuildSegmentation(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BuildSegmentation(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
@@ -1177,51 +1178,51 @@ begin
   if meRT.Step.InData.Raster <> nil then
     begin
       meRT.Step.OutData.Segmentation := TMorphologySegmentation.Create;
-      meRT.Step.OutData.Segmentation.OnGetPixelSegClassify := {$IFDEF FPC}@{$ENDIF FPC}DoGetPixelSegClassify;
+      meRT.Step.OutData.Segmentation.OnGetPixelSegClassify := DoGetPixelSegClassify;
       meRT.Step.OutData.Segmentation.BuildSegmentation(meRT.Step.InData.Raster);
       meRT.Step.OutData.Segmentation.RemoveNoise(100);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else if meRT.Step.InData.Morphomatics <> nil then
     begin
       meRT.Step.OutData.Segmentation := TMorphologySegmentation.Create;
-      meRT.Step.OutData.Segmentation.OnGetMorphomaticsSegClassify := {$IFDEF FPC}@{$ENDIF FPC}DoGetMorphomaticsSegClassify;
+      meRT.Step.OutData.Segmentation.OnGetMorphomaticsSegClassify := DoGetMorphomaticsSegClassify;
       meRT.Step.OutData.Segmentation.BuildSegmentation(meRT.Step.InData.Morphomatics);
       meRT.Step.OutData.Segmentation.RemoveNoise(100);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else if meRT.Step.InData.Binaryzation <> nil then
     begin
       meRT.Step.OutData.Segmentation := TMorphologySegmentation.Create;
       meRT.Step.OutData.Segmentation.BuildSegmentation(meRT.Step.InData.Binaryzation);
       meRT.Step.OutData.Segmentation.RemoveNoise(100);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphology or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphology or Binaryzation input]';
 end;
 
-function TExp_API.MorphExp_BinarizationMaxSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BinarizationMaxSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Segmentation <> nil) and (meRT.Step.InData.Segmentation.Count > 0) then
     begin
       meRT.Step.OutData.Binaryzation := meRT.Step.InData.Segmentation[0].BuildBinaryzation;
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else
-      Result := OpRunTime.Trigger^.Name + '[error: must be Segmentation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Segmentation input]';
 end;
 
-function TExp_API.MorphExp_ProjectionMaxSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_ProjectionMaxSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   SourceZRToken: U_String;
@@ -1230,13 +1231,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Segmentation = nil) or (meRT.Step.InData.Segmentation.Count <= 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Segmentation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Segmentation input]';
       exit;
     end;
 
@@ -1248,15 +1249,15 @@ begin
   step_ := FindStep(meRT, SourceZRToken);
   if (step_ = nil) or (step_.OutData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: projection source]';
+      Result := OP_RT_Data^.Name + '[error: projection source]';
       exit;
     end;
 
   meRT.Step.OutData.Raster := meRT.Step.InData.Segmentation[0].Projection(step_.OutData.Raster);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_ProjectionMaxSegAsClip(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_ProjectionMaxSegAsClip(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   SourceZRToken: U_String;
@@ -1267,13 +1268,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Segmentation = nil) or (meRT.Step.InData.Segmentation.Count <= 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Segmentation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Segmentation input]';
       exit;
     end;
 
@@ -1285,7 +1286,7 @@ begin
   step_ := FindStep(meRT, SourceZRToken);
   if (step_ = nil) or (step_.OutData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: projection source]';
+      Result := OP_RT_Data^.Name + '[error: projection source]';
       exit;
     end;
 
@@ -1293,10 +1294,10 @@ begin
   tmp := meRT.Step.InData.Segmentation[0].Projection(step_.OutData.Raster);
   meRT.Step.OutData.Raster := tmp.BuildAreaCopyAs(r);
   DisposeObject(tmp);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_RemoveSegNoise(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_RemoveSegNoise(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   PixelNoiseThreshold: Integer;
@@ -1304,13 +1305,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Segmentation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Segmentation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Segmentation input]';
       exit;
     end;
 
@@ -1321,30 +1322,30 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Segmentation.RemoveNoise(PixelNoiseThreshold);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_BinarizationSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BinarizationSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Segmentation <> nil) then
     begin
       meRT.Step.OutData.Binaryzation := meRT.Step.InData.Segmentation.BuildBinaryzation;
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else
-      Result := OpRunTime.Trigger^.Name + '[error: must be Segmentation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Segmentation input]';
 end;
 
-function TExp_API.MorphExp_ProjectionSeg(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_ProjectionSeg(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   SourceZRToken: U_String;
@@ -1353,13 +1354,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Segmentation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Segmentation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Segmentation input]';
       exit;
     end;
 
@@ -1371,15 +1372,15 @@ begin
   step_ := FindStep(meRT, SourceZRToken);
   if (step_ = nil) or (step_.OutData.Raster = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: projection source]';
+      Result := OP_RT_Data^.Name + '[error: projection source]';
       exit;
     end;
 
   meRT.Step.OutData.Raster := meRT.Step.InData.Segmentation.Projection(step_.OutData.Raster);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_BuildMorphomatics(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BuildMorphomatics(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   MorphPix_: TMorphologyPixel;
@@ -1387,7 +1388,7 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
@@ -1399,18 +1400,18 @@ begin
       end;
 
       meRT.Step.OutData.Morphomatics := meRT.Step.InData.Raster.BuildMorphomatics(MorphPix_);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else if meRT.Step.InData.Binaryzation <> nil then
     begin
       meRT.Step.OutData.Morphomatics := meRT.Step.InData.Binaryzation.BuildMorphomatics();
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
 end;
 
-function TExp_API.MorphExp_BuildApproximateMorphomatics(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_BuildApproximateMorphomatics(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   v: Byte;
@@ -1419,7 +1420,7 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
@@ -1434,18 +1435,18 @@ begin
         end;
 
       meRT.Step.OutData.Morphomatics := meRT.Step.InData.Raster.BuildApproximateMorphomatics(Color.BGRA);
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else if meRT.Step.InData.Binaryzation <> nil then
     begin
       meRT.Step.OutData.Morphomatics := meRT.Step.InData.Binaryzation.BuildMorphomatics();
-      Result := OpRunTime.Trigger^.Name + '[ok]';
+      Result := OP_RT_Data^.Name + '[ok]';
     end
   else
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster input]';
 end;
 
-function TExp_API.Filter_AVG(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_AVG(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1453,13 +1454,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1480,10 +1481,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Average(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_WeightedAVG(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_WeightedAVG(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1491,13 +1492,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1518,10 +1519,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.WeightedAVG(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_GeometricMean(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_GeometricMean(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1529,13 +1530,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1556,10 +1557,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.GeometricMean(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Median(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Median(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1567,13 +1568,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1594,10 +1595,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Median(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Max(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Max(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1605,13 +1606,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1632,10 +1633,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Maximum(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Min(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Min(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1643,13 +1644,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1670,10 +1671,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Minimum(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_MiddlePoint(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_MiddlePoint(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH: Integer;
@@ -1681,13 +1682,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1708,10 +1709,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.MiddlePoint(BoxW, BoxH);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_TruncatedAVG(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_TruncatedAVG(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   BoxW, BoxH, d: Integer;
@@ -1719,13 +1720,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1755,10 +1756,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.TruncatedAVG(BoxW, BoxH, 3);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Previtt(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Previtt(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   AdditiveToOriginal: Boolean;
@@ -1766,13 +1767,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1783,10 +1784,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Previtt(AdditiveToOriginal);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Sobel(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Sobel(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   AdditiveToOriginal: Boolean;
@@ -1794,13 +1795,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1811,10 +1812,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Sobel(AdditiveToOriginal);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Sharr(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Sharr(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   AdditiveToOriginal: Boolean;
@@ -1822,13 +1823,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1839,10 +1840,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Sharr(AdditiveToOriginal);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Filter_Laplace(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Filter_Laplace(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   AdditiveToOriginal: Boolean;
@@ -1850,13 +1851,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1867,10 +1868,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Laplace(AdditiveToOriginal);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Linear(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Linear(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   k, B: TMorphomaticsValue;
@@ -1878,13 +1879,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1904,10 +1905,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Linear(k, B);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Log(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Log(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   c: TMorphomaticsValue;
@@ -1915,13 +1916,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1935,10 +1936,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Logarithms(c);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Gamma(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Gamma(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   c, GAMMA: TMorphomaticsValue;
@@ -1946,13 +1947,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -1972,32 +1973,32 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.GAMMA(c, GAMMA);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_HistogramEqualization(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_HistogramEqualization(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.HistogramEqualization();
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Contrast(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Contrast(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   k: TMorphomaticsValue;
@@ -2005,13 +2006,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2025,10 +2026,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Contrast(k);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Gradient(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Gradient(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   level: Byte;
@@ -2036,13 +2037,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2056,10 +2057,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Gradient(level);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Clamp(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Clamp(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   MinV, MaxV: TMorphomaticsValue;
@@ -2067,13 +2068,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2093,10 +2094,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Clamp(MinV, MaxV);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Add(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Add(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   v: TMorphomaticsValue;
@@ -2104,13 +2105,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2120,10 +2121,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Add_(v);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Sub(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Sub(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   v: TMorphomaticsValue;
@@ -2131,13 +2132,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2147,10 +2148,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Sub_(v);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Mul(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Mul(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   v: TMorphomaticsValue;
@@ -2158,13 +2159,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2174,10 +2175,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Mul_(v);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_Div(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_Div(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   v: TMorphomaticsValue;
@@ -2185,13 +2186,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
@@ -2201,10 +2202,10 @@ begin
 
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Div_(v);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_LFCombineAdd(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_LFCombineAdd(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2228,7 +2229,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2242,10 +2243,10 @@ begin
   for i := Low(Param) + 1 to High(Param) do
       meRT.Step.OutData.Morphomatics.Add_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_LFCombineSub(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_LFCombineSub(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2269,7 +2270,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2283,10 +2284,10 @@ begin
   for i := Low(Param) + 1 to High(Param) do
       meRT.Step.OutData.Morphomatics.Sub_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_LFCombineMul(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_LFCombineMul(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2310,7 +2311,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2324,10 +2325,10 @@ begin
   for i := Low(Param) + 1 to High(Param) do
       meRT.Step.OutData.Morphomatics.Mul_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_LFCombineDiv(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_LFCombineDiv(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2351,7 +2352,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2365,10 +2366,10 @@ begin
   for i := Low(Param) + 1 to High(Param) do
       meRT.Step.OutData.Morphomatics.Div_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_RFCombineAdd(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_RFCombineAdd(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2392,7 +2393,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2406,10 +2407,10 @@ begin
   for i := High(Param) - 1 downto Low(Param) do
       meRT.Step.OutData.Morphomatics.Add_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_RFCombineSub(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_RFCombineSub(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2433,7 +2434,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2447,10 +2448,10 @@ begin
   for i := High(Param) - 1 downto Low(Param) do
       meRT.Step.OutData.Morphomatics.Sub_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_RFCombineMul(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_RFCombineMul(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2474,7 +2475,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2488,10 +2489,10 @@ begin
   for i := High(Param) - 1 downto Low(Param) do
       meRT.Step.OutData.Morphomatics.Mul_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_RFCombineDiv(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_RFCombineDiv(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   i: Integer;
@@ -2515,7 +2516,7 @@ begin
         end
       else
         begin
-          Result := OpRunTime.Trigger^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
+          Result := OP_RT_Data^.Name + PFormat('[error: "%s" must be Morphomatics input]', [n.Text]);
           exit;
         end;
     end;
@@ -2529,10 +2530,10 @@ begin
   for i := High(Param) - 1 downto Low(Param) do
       meRT.Step.OutData.Morphomatics.Div_(FindStep(meRT, umlVarToStr(Param[i], False)).OutData.Morphomatics);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Transform_MorphFromPolygon(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Transform_MorphFromPolygon(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   InsideValue, OutsideValue: TMorphomaticsValue;
@@ -2543,18 +2544,18 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
   if length(Param) <> 3 then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: parameter illegal]';
+      Result := OP_RT_Data^.Name + '[error: parameter illegal]';
       exit;
     end;
 
@@ -2571,10 +2572,10 @@ begin
   meRT.Step.OutData.Assign(meRT.Step.InData);
   meRT.Step.OutData.Morphomatics.Mul_(Morph);
   DisposeObject(Morph);
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Binarization(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Binarization(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Thresold: TMorphomaticsValue;
@@ -2583,13 +2584,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -2609,10 +2610,10 @@ begin
       DisposeObject(Morph);
     end;
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Binarization_InRange(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Binarization_InRange(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Min_, Max_: TMorphomaticsValue;
@@ -2621,13 +2622,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -2656,10 +2657,10 @@ begin
       DisposeObject(Morph);
     end;
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Binarization_Bernsen(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Binarization_Bernsen(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   r: Integer;
@@ -2669,13 +2670,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -2703,10 +2704,10 @@ begin
       meRT.Step.OutData.Binaryzation := Morph.Binarization_Bernsen(r, ContrastThresold);
       DisposeObject(Morph);
     end;
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Binarization_FloydSteinbergDithering(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Binarization_FloydSteinbergDithering(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Morph: TMorphMath;
@@ -2714,13 +2715,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -2734,10 +2735,10 @@ begin
       meRT.Step.OutData.Binaryzation := Morph.Binarization_FloydSteinbergDithering();
       DisposeObject(Morph);
     end;
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.Binarization_OTSU(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.Binarization_OTSU(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Morph: TMorphMath;
@@ -2745,13 +2746,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Raster = nil) and (meRT.Step.InData.Morphomatics = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be raster or Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be raster or Morphomatics input]';
       exit;
     end;
 
@@ -2765,23 +2766,23 @@ begin
       meRT.Step.OutData.Binaryzation := Morph.Binarization_OTSU();
       DisposeObject(Morph);
     end;
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Invert(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Invert(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
 begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -2792,10 +2793,10 @@ begin
   if meRT.Step.InData.Binaryzation <> nil then
       meRT.Step.OutData.Binaryzation.Invert();
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Dilatation(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Dilatation(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -2804,13 +2805,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -2840,10 +2841,10 @@ begin
 
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Erosion(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Erosion(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -2852,13 +2853,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -2888,10 +2889,10 @@ begin
 
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Opening(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Opening(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -2900,13 +2901,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -2936,10 +2937,10 @@ begin
 
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Closing(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Closing(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -2948,13 +2949,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -2984,10 +2985,10 @@ begin
 
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_OpeningAndClosing(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_OpeningAndClosing(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -2996,13 +2997,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -3032,10 +3033,10 @@ begin
 
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_ClosingAndOpening(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_ClosingAndOpening(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -3044,13 +3045,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Morphomatics = nil) and (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics or Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics or Binaryzation input]';
       exit;
     end;
 
@@ -3080,10 +3081,10 @@ begin
 
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_Skeleton(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_Skeleton(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   CKW, CKH: Integer;
@@ -3092,13 +3093,13 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if (meRT.Step.InData.Binaryzation = nil) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Binaryzation input]';
+      Result := OP_RT_Data^.Name + '[error: must be Binaryzation input]';
       exit;
     end;
 
@@ -3124,10 +3125,10 @@ begin
   meRT.Step.OutData.Binaryzation.Skeleton(ConvolutionKernel_);
   DisposeObject(ConvolutionKernel_);
 
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_SetOutput(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_SetOutput(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Thresold: TMorphomaticsValue;
@@ -3135,15 +3136,15 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.OutData = nil) or (meRT.Step.OutData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   meRT.MorphExp.FOutData := meRT.Step.OutData;
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
-function TExp_API.MorphExp_ViewHistogram(OpRunTime: TOpCustomRunTime; var Param: TOpParam): Variant;
+function TExp_API.MorphExp_ViewHistogram(OpRunTime: TOpCustomRunTime; OP_RT_Data: POpRTData; var Param: TOpParam): Variant;
 var
   meRT: TMorphExpRunTime;
   Thresold: TMorphomaticsValue;
@@ -3151,18 +3152,18 @@ begin
   meRT := OpRunTime as TMorphExpRunTime;
   if (meRT.Step.InData = nil) or (meRT.Step.InData.FoundData = 0) then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: data is nil]';
+      Result := OP_RT_Data^.Name + '[error: data is nil]';
       exit;
     end;
 
   if meRT.Step.InData.Morphomatics = nil then
     begin
-      Result := OpRunTime.Trigger^.Name + '[error: must be Morphomatics input]';
+      Result := OP_RT_Data^.Name + '[error: must be Morphomatics input]';
       exit;
     end;
 
   meRT.Step.OutData.Raster := meRT.Step.InData.Morphomatics.BuildHistogram(100, RColorF(1, 1, 1));
-  Result := OpRunTime.Trigger^.Name + '[ok]';
+  Result := OP_RT_Data^.Name + '[ok]';
 end;
 
 constructor TMorphExpRunTime.Create;

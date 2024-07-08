@@ -11,7 +11,7 @@ object BulletTextForm: TBulletTextForm
   OnPaint = FormPaint
   DesignerMasterStyle = 0
   object fpsTimer: TTimer
-    Interval = 10
+    Interval = 1
     OnTimer = fpsTimerTimer
     Left = 328
     Top = 232

@@ -1,0 +1,27 @@
+object _150_MultiThread_DrawEngine_Form: T_150_MultiThread_DrawEngine_Form
+  Left = 0
+  Top = 0
+  Caption = #22810#32447#31243#28210#26579' (Render to Texture'#25216#26415')'
+  ClientHeight = 533
+  ClientWidth = 1158
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnCloseQuery = FormCloseQuery
+  OnDestroy = FormDestroy
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object fpsTimer: TTimer
+    Interval = 1
+    OnTimer = fpsTimerTimer
+    Left = 120
+    Top = 72
+  end
+  object rendererTimer: TTimer
+    Interval = 15
+    OnTimer = rendererTimerTimer
+    Left = 120
+    Top = 136
+  end
+end

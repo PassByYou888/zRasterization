@@ -2,8 +2,8 @@ object RealtimeDataFrameEncoderForm: TRealtimeDataFrameEncoderForm
   Left = 0
   Top = 0
   Caption = 'Realtime DataFrame Encoder.'
-  ClientHeight = 244
-  ClientWidth = 729
+  ClientHeight = 245
+  ClientWidth = 733
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

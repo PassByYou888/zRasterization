@@ -19,7 +19,6 @@ type
     SaveDialog: TSaveDialog;
     SaveAsButton: TButton;
     Memo: TMemo;
-    MD5Edit: TMemo;
     CacheStateMemo: TMemo;
     Timer: TTimer;
     CompressAsButton: TButton;
@@ -30,7 +29,6 @@ type
     Bevel5: TBevel;
     Bevel7: TBevel;
     BuildIndexPackageButton: TButton;
-    Bevel8: TBevel;
     NewCustomButton: TButton;
     ParallelCompressAsButton: TButton;
     SaveAsParallelCompressedDialog: TSaveDialog;
@@ -109,7 +107,6 @@ begin
 
   FDBEng.UpdateIO;
   FDBEng.StreamEngine.Position := 0;
-  MD5Edit.Text := umlStreamMD5String(FDBEng.StreamEngine);
   DoStatus('new DB. [fixed string size: %d]', [FDBEng.Handle^.FixedStringL]);
 end;
 
@@ -131,7 +128,6 @@ begin
 
   FDBEng.UpdateIO;
   FDBEng.StreamEngine.Position := 0;
-  MD5Edit.Text := umlStreamMD5String(FDBEng.StreamEngine);
   DoStatus('new DB. [fixed string size: %d]', [FDBEng.Handle^.FixedStringL]);
 end;
 
@@ -260,7 +256,6 @@ begin
   FDBManFrame.Align := alClient;
   FDBManFrame.ResourceData := nil;
   FOpenFile := '';
-  MD5Edit.Text := '';
 
   NewButtonClick(NewButton);
 end;
@@ -285,7 +280,6 @@ begin
 
   FDBEng.UpdateIO;
   FDBEng.StreamEngine.Position := 0;
-  MD5Edit.Text := umlStreamMD5String(FDBEng.StreamEngine);
   DoStatus('new DB. [fixed string size: %d]', [FDBEng.Handle^.FixedStringL]);
 end;
 
@@ -342,7 +336,6 @@ var
   m64: TMS64;
 begin
   m64 := TMS64(thSender.UserObject);
-  MD5Edit.Text := umlStreamMD5String(m64);
   FTotalRead := 0;
   FTotalWrite := 0;
   m64.Position := 0;
@@ -410,7 +403,6 @@ begin
   try
     FDBEng.SaveToStream(m64);
     m64.Position := 0;
-    MD5Edit.Text := umlStreamMD5String(m64);
 
     m64.Position := 0;
     MaxCompressStream(m64, C64);
@@ -447,7 +439,6 @@ begin
   try
     FDBEng.SaveToStream(m64);
     m64.Position := 0;
-    MD5Edit.Text := umlStreamMD5String(m64);
 
     m64.Position := 0;
     ParallelCompressMemory(TSelectCompressionMethod.scmZLIB_Max, m64, C64);

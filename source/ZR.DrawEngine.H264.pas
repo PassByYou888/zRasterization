@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.DrawEngine.H264;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

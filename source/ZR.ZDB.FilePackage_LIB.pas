@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB.FilePackage_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -181,7 +182,7 @@ procedure BatchImportPathToDB(InitDir, Filter: SystemString; dbEng: TObjectDataM
         dbEng.FastDelete(aFieldPos, srHnd.HeaderPOS);
       end;
 
-    fAry := umlGetFileListWithFullPath(APath);
+    fAry := umlGet_File_Full_Array(APath);
     for n in fAry do
       begin
         suffixn := umlGetFileName(n).Text;
@@ -228,7 +229,7 @@ procedure BatchImportPathToDB(InitDir, Filter: SystemString; dbEng: TObjectDataM
     DisposeObject(hashTextStream);
     DisposeObject(md5List);
 
-    fAry := umlGetDirListWithFullPath(APath);
+    fAry := umlGet_Path_Full_Array(APath);
     for n in fAry do
       begin
         suffixn := umlGetLastStr(n, '/\').Text;
@@ -572,7 +573,7 @@ end;
 initialization
 
 C_MD5_File := '____md5.txt';
-FP_EncryptStream := {$IFDEF FPC}@{$ENDIF FPC}DoEncryptStream_;
-FP_DecryptStream := {$IFDEF FPC}@{$ENDIF FPC}DoDecryptStream_;
+FP_EncryptStream := DoEncryptStream_;
+FP_DecryptStream := DoDecryptStream_;
 
 end.

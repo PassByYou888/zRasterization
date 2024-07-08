@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.DocumentTextDetector;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -25,7 +26,7 @@ type
     R: PWordData; // right word
   end;
 
-  TWordDataList_ = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<PWordData>;
+  TWordDataList_ = TGenericsList<PWordData>;
 
   TWordDataList = class(TWordDataList_)
   public
@@ -48,7 +49,7 @@ type
 
   PLineData = ^TLineData;
 
-  TLineDataList_ = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<PLineData>;
+  TLineDataList_ = TGenericsList<PLineData>;
 
   TLineDataList = class(TLineDataList_)
   public
@@ -528,7 +529,7 @@ begin
       // calibration per line and word pixel segmentation
       DoStatus('full line Segmentation.');
 {$IFDEF FPC}
-      FPCParallelFor(@Nested_ParallelFor_CalibrateLine, 0, LDataList.Count - 1);
+      FPCParallelFor(Nested_ParallelFor_CalibrateLine, 0, LDataList.Count - 1);
 {$ELSE FPC}
       DelphiParallelFor(0, LDataList.Count - 1, procedure(pass: Integer)
         begin

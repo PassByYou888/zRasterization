@@ -1,7 +1,7 @@
 program BitmapConver;
 
 uses
-  FastMM5 in '..\Common\FastMM5.pas',
+  FastMM5,
   System.StartUpCopy,
   FMX.Forms,
   System.Classes,

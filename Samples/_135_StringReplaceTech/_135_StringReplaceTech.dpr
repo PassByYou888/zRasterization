@@ -55,6 +55,8 @@ var
   L: TBatchInfoList; // replace的状态结构
   i: Integer;
 begin
+  DoStatus('源字符串');
+  DoStatus(c);
   SetLength(arry, 2);
   arry[0].sour := 'demo';
   arry[0].dest := '<demo>';
@@ -62,6 +64,7 @@ begin
   arry[1].dest := '<pascal>';
   umlSortBatch(arry);
 
+  DoStatus('替换完成后字符串');
   L := TBatchInfoList.Create; // L是做完替换工作以后的数据报告状态,包括被替换的源文本位置,目标文本的位置
   DoStatus(umlBatchReplace(c, arry, false, true, 0, 0, L, nil)); // umlBatchReplace是批量替换,宏处理程序在底层均使用umlBatchReplace实现批量替换
   // L的报告信息可以方便外部编辑器做数据标注
@@ -74,6 +77,7 @@ end;
 begin
   demo_macro();
   demo_struct();
+  DoStatus('回车键退出');
   readln;
 
 end.

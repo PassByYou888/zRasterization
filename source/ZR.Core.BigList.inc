@@ -1,4 +1,4 @@
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Init_(Instance_: T___);
+procedure TZR_BL<T_>.TRepeat___.Init_(Instance_: T___);
 begin
   // Begin Index
   BI___ := 0;
@@ -16,7 +16,7 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
+procedure TZR_BL<T_>.TRepeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
 begin
   // Begin Index
   BI___ := BI_;
@@ -24,7 +24,7 @@ begin
   EI___ := EI_;
   // check
   if BI___ > EI___ then
-      Swap(BI___, BI___);
+      TSwap<NativeInt>.Do_(BI___, BI___);
   // Current index
   I___ := 0;
   Instance___ := Instance_;
@@ -37,12 +37,12 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Discard;
+procedure TZR_BL<T_>.TRepeat___.Discard;
 begin
   Is_Discard___ := True;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Next: Boolean;
+function TZR_BL<T_>.TRepeat___.Next: Boolean;
 begin
   Result := False;
   if I___ > EI___ then
@@ -62,7 +62,7 @@ begin
       inc(I___);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Init_(Instance_: T___);
+procedure TZR_BL<T_>.TInvert_Repeat___.Init_(Instance_: T___);
 begin
   // Begin Index
   BI___ := Instance_.Num - 1;
@@ -80,7 +80,7 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
+procedure TZR_BL<T_>.TInvert_Repeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
 begin
   // Begin Index
   BI___ := BI_;
@@ -88,7 +88,7 @@ begin
   EI___ := EI_;
   // check
   if BI___ < EI___ then
-      Swap(BI___, EI___);
+      TSwap<NativeInt>.Do_(BI___, EI___);
   // Current index
   I___ := Instance_.Num - 1;
   Instance___ := Instance_;
@@ -101,12 +101,12 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Discard;
+procedure TZR_BL<T_>.TInvert_Repeat___.Discard;
 begin
   Is_Discard___ := True;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Prev: Boolean;
+function TZR_BL<T_>.TInvert_Repeat___.Prev: Boolean;
 begin
   Result := False;
   if I___ < EI___ then
@@ -125,7 +125,7 @@ begin
   Dec(I___);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoInternalFree(p: PQueueStruct);
+procedure TZR_BL<T_>.DoInternalFree(p: PQueueStruct);
 begin
 {$IFDEF DEBUG}
   if p^.Instance___ <> Self then
@@ -138,55 +138,66 @@ begin
   end;
 end;
 
-constructor TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Create;
+function TZR_BL<T_>.Get_Critical__: TCritical;
+begin
+  if FCritical__ = nil then
+      FCritical__ := TCritical.Create;
+  Result := FCritical__;
+end;
+
+constructor TZR_BL<T_>.Create;
 begin
   inherited Create;
-  FCritical__ := TCritical.Create;
+  FCritical__ := nil;
   FRecycle_Pool__ := nil;
   FFirst := nil;
   FLast := nil;
   FNum := 0;
   FOnAdd := nil;
   FOnFree := nil;
+  FOnFree_For_Pair_Tool := nil;
+  FAccept_Sort := True;
   FChanged := False;
   FList := nil;
 end;
 
-destructor TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Destroy;
+destructor TZR_BL<T_>.Destroy;
 begin
   Clear;
-  FCritical__.Free;
+  DisposeObjectAndNil(FCritical__);
   inherited Destroy;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoFree(var Data: T_);
+procedure TZR_BL<T_>.DoFree(var Data: T_);
 begin
+  if Assigned(FOnFree_For_Pair_Tool) then
+      FOnFree_For_Pair_Tool(Data);
   if Assigned(FOnFree) then
       FOnFree(Data);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoAdd(var Data: T_);
+procedure TZR_BL<T_>.DoAdd(var Data: T_);
 begin
   if Assigned(FOnAdd) then
       FOnAdd(Data);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.CompareData(const Data_1, Data_2: T_): Boolean;
+function TZR_BL<T_>.CompareData(const Data_1, Data_2: T_): Boolean;
 begin
   Result := CompareMemory(@Data_1, @Data_2, SizeOf(T_));
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Lock;
+procedure TZR_BL<T_>.Lock;
 begin
-  FCritical__.Lock;
+  Critical__.Lock;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.UnLock;
+procedure TZR_BL<T_>.UnLock;
 begin
-  FCritical__.UnLock;
+  Critical__.UnLock;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Get_Recycle_Pool_Num: NativeInt;
+function TZR_BL<T_>.Get_Recycle_Pool_Num: NativeInt;
 begin
   if FRecycle_Pool__ <> nil then
       Result := FRecycle_Pool__.Num
@@ -194,7 +205,7 @@ begin
       Result := 0;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Push_To_Recycle_Pool(p: PQueueStruct);
+procedure TZR_BL<T_>.Push_To_Recycle_Pool(p: PQueueStruct);
 begin
 {$IFDEF DEBUG}
   if p^.Instance___ <> Self then
@@ -210,7 +221,7 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Free_Recycle_Pool;
+procedure TZR_BL<T_>.Free_Recycle_Pool;
 begin
   if FRecycle_Pool__ <> nil then
     begin
@@ -224,7 +235,7 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Clear;
+procedure TZR_BL<T_>.Clear;
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -257,13 +268,13 @@ begin
   FChanged := True;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Next;
+procedure TZR_BL<T_>.Next;
 begin
   if FFirst <> nil then
       Remove_P(FFirst);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Add(const Data: T_): PQueueStruct;
+function TZR_BL<T_>.Add(const Data: T_): PQueueStruct;
 var
   p: PQueueStruct;
 begin
@@ -300,7 +311,7 @@ begin
   DoAdd(p^.Data);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.AddL(L_: T___);
+procedure TZR_BL<T_>.AddL(L_: T___);
 begin
   if L_.Num > 0 then
     with L_.Repeat_ do
@@ -309,7 +320,7 @@ begin
       until not Next;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Add_Null(): PQueueStruct;
+function TZR_BL<T_>.Add_Null(): PQueueStruct;
 var
   p: PQueueStruct;
 begin
@@ -345,7 +356,7 @@ begin
   DoAdd(p^.Data);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Insert(const Data: T_; To_: PQueueStruct): PQueueStruct;
+function TZR_BL<T_>.Insert(const Data: T_; To_: PQueueStruct): PQueueStruct;
 var
   p: PQueueStruct;
   P_P: PQueueStruct;
@@ -375,7 +386,7 @@ begin
   DoAdd(p^.Data);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.CopyFrom(Source_: T___): NativeInt;
+function TZR_BL<T_>.CopyFrom(Source_: T___): NativeInt;
 begin
   Result := Source_.Num;
   if Result > 0 then
@@ -385,7 +396,7 @@ begin
       until not Next;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_P(p: PQueueStruct);
+procedure TZR_BL<T_>.Remove_P(p: PQueueStruct);
 var
   P_P, N_P: PQueueStruct;
 begin
@@ -415,12 +426,12 @@ begin
   DoInternalFree(p);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_T(const Data: T_);
+procedure TZR_BL<T_>.Remove_T(const Data: T_);
 begin
   Remove_Data(Data);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Move_Before(p, To_: PQueueStruct);
+procedure TZR_BL<T_>.Move_Before(p, To_: PQueueStruct);
 var
   P_P, N_P: PQueueStruct;
   tmp: T_;
@@ -466,12 +477,12 @@ begin
   FChanged := True;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.MoveToFirst(p: PQueueStruct);
+procedure TZR_BL<T_>.MoveToFirst(p: PQueueStruct);
 begin
   Move_Before(p, First);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.MoveToLast(p: PQueueStruct);
+procedure TZR_BL<T_>.MoveToLast(p: PQueueStruct);
 var
   P_P, N_P: PQueueStruct;
   tmp: T_;
@@ -528,7 +539,7 @@ begin
   FChanged := True;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Exchange(p1, p2: PQueueStruct);
+procedure TZR_BL<T_>.Exchange(p1, p2: PQueueStruct);
 var
   tmp: T_;
 begin
@@ -545,7 +556,7 @@ begin
   p2^.Data := tmp;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Found(p1: PQueueStruct): NativeInt;
+function TZR_BL<T_>.Found(p1: PQueueStruct): NativeInt;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -565,7 +576,7 @@ begin
   Result := -1;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Find_Data(const Data: T_): PQueueStruct;
+function TZR_BL<T_>.Find_Data(const Data: T_): PQueueStruct;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -585,7 +596,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Find_Data_Ptr(const Data_Ptr: P_): PQueueStruct;
+function TZR_BL<T_>.Find_Data_Ptr(const Data_Ptr: P_): PQueueStruct;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -605,7 +616,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Search_Data_As_Array(const Data: T_): TArray_T_;
+function TZR_BL<T_>.Search_Data_As_Array(const Data: T_): TArray_T_;
 var
   L: TOrder_Data_Pool;
   i: Integer;
@@ -621,7 +632,7 @@ begin
   DisposeObject(L);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Search_Data_As_Order(const Data: T_): TOrder_Data_Pool;
+function TZR_BL<T_>.Search_Data_As_Order(const Data: T_): TOrder_Data_Pool;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -641,7 +652,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_Data(const Data: T_): Integer;
+function TZR_BL<T_>.Remove_Data(const Data: T_): Integer;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -662,35 +673,35 @@ begin
   Free_Recycle_Pool();
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Repeat_(): TRepeat___;
+function TZR_BL<T_>.Repeat_(): TRepeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Repeat_(BI_, EI_: NativeInt): TRepeat___;
+function TZR_BL<T_>.Repeat_(BI_, EI_: NativeInt): TRepeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self, BI_, EI_);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Invert_Repeat_(): TInvert_Repeat___;
+function TZR_BL<T_>.Invert_Repeat_(): TInvert_Repeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Invert_Repeat_(BI_, EI_: NativeInt): TInvert_Repeat___;
+function TZR_BL<T_>.Invert_Repeat_(BI_, EI_: NativeInt): TInvert_Repeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self, BI_, EI_);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_C(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_C);
+procedure TZR_BL<T_>.For_C(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_C);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -715,7 +726,7 @@ begin
       OnFor(i, p, Aborted);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_M(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_M);
+procedure TZR_BL<T_>.For_M(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_M);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -740,7 +751,7 @@ begin
       OnFor(i, p, Aborted);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_P(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_P);
+procedure TZR_BL<T_>.For_P(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_P);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -765,7 +776,7 @@ begin
       OnFor(i, p, Aborted);
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_C(OnFor: TQueneStructFor_C);
+procedure TZR_BL<T_>.For_C(OnFor: TQueneStructFor_C);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -786,7 +797,7 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_M(OnFor: TQueneStructFor_M);
+procedure TZR_BL<T_>.For_M(OnFor: TQueneStructFor_M);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -807,7 +818,7 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_P(OnFor: TQueneStructFor_P);
+procedure TZR_BL<T_>.For_P(OnFor: TQueneStructFor_P);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -828,7 +839,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.ToArray(): TArray_T_;
+function TZR_BL<T_>.ToArray(): TArray_T_;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -848,7 +859,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.ToOrder(): TOrder_Data_Pool;
+function TZR_BL<T_>.ToOrder(): TOrder_Data_Pool;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -868,10 +879,10 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_C(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_C);
+procedure TZR_BL<T_>.Sort_C(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_C);
 var
   i, j: NativeInt;
-  p, tmp: T_;
+  p: T_;
 begin
   if L < R then
     begin
@@ -879,11 +890,7 @@ begin
         if (R - L) = 1 then
           begin
             if OnSort(Arry_^[L]^.Data, Arry_^[R]^.Data) > 0 then
-              begin
-                tmp := Arry_^[L]^.Data;
-                Arry_^[L]^.Data := Arry_^[R]^.Data;
-                Arry_^[R]^.Data := tmp;
-              end;
+                TSwap<T_>.Do_(Arry_^[L]^.Data, Arry_^[R]^.Data);
             break;
           end;
         i := L;
@@ -897,11 +904,7 @@ begin
           if i <= j then
             begin
               if i <> j then
-                begin
-                  tmp := Arry_^[i]^.Data;
-                  Arry_^[i]^.Data := Arry_^[j]^.Data;
-                  Arry_^[j]^.Data := tmp;
-                end;
+                  TSwap<T_>.Do_(Arry_^[i]^.Data, Arry_^[j]^.Data);
               inc(i);
               Dec(j);
             end;
@@ -922,11 +925,11 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_C(OnSort: TSort_C);
+procedure TZR_BL<T_>.Sort_C(OnSort: TSort_C);
 var
   tmp: PQueueArrayStruct;
 begin
-  if (Num > 1) and (Assigned(OnSort)) then
+  if (FAccept_Sort) and (Num > 1) and (Assigned(OnSort)) then
     begin
       tmp := BuildArrayMemory;
       Sort_C(tmp, 0, Num - 1, OnSort);
@@ -934,10 +937,10 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_M(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_M);
+procedure TZR_BL<T_>.Sort_M(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_M);
 var
   i, j: NativeInt;
-  p, tmp: T_;
+  p: T_;
 begin
   if L < R then
     begin
@@ -945,11 +948,7 @@ begin
         if (R - L) = 1 then
           begin
             if OnSort(Arry_^[L]^.Data, Arry_^[R]^.Data) > 0 then
-              begin
-                tmp := Arry_^[L]^.Data;
-                Arry_^[L]^.Data := Arry_^[R]^.Data;
-                Arry_^[R]^.Data := tmp;
-              end;
+                TSwap<T_>.Do_(Arry_^[L]^.Data, Arry_^[R]^.Data);
             break;
           end;
         i := L;
@@ -963,11 +962,7 @@ begin
           if i <= j then
             begin
               if i <> j then
-                begin
-                  tmp := Arry_^[i]^.Data;
-                  Arry_^[i]^.Data := Arry_^[j]^.Data;
-                  Arry_^[j]^.Data := tmp;
-                end;
+                  TSwap<T_>.Do_(Arry_^[i]^.Data, Arry_^[j]^.Data);
               inc(i);
               Dec(j);
             end;
@@ -988,11 +983,11 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_M(OnSort: TSort_M);
+procedure TZR_BL<T_>.Sort_M(OnSort: TSort_M);
 var
   tmp: PQueueArrayStruct;
 begin
-  if (Num > 1) and (Assigned(OnSort)) then
+  if (FAccept_Sort) and (Num > 1) and (Assigned(OnSort)) then
     begin
       tmp := BuildArrayMemory;
       Sort_M(tmp, 0, Num - 1, OnSort);
@@ -1000,10 +995,10 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_P(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_P);
+procedure TZR_BL<T_>.Sort_P(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_P);
 var
   i, j: NativeInt;
-  p, tmp: T_;
+  p: T_;
 begin
   if L < R then
     begin
@@ -1011,11 +1006,7 @@ begin
         if (R - L) = 1 then
           begin
             if OnSort(Arry_^[L]^.Data, Arry_^[R]^.Data) > 0 then
-              begin
-                tmp := Arry_^[L]^.Data;
-                Arry_^[L]^.Data := Arry_^[R]^.Data;
-                Arry_^[R]^.Data := tmp;
-              end;
+                TSwap<T_>.Do_(Arry_^[L]^.Data, Arry_^[R]^.Data);
             break;
           end;
         i := L;
@@ -1029,11 +1020,7 @@ begin
           if i <= j then
             begin
               if i <> j then
-                begin
-                  tmp := Arry_^[i]^.Data;
-                  Arry_^[i]^.Data := Arry_^[j]^.Data;
-                  Arry_^[j]^.Data := tmp;
-                end;
+                  TSwap<T_>.Do_(Arry_^[i]^.Data, Arry_^[j]^.Data);
               inc(i);
               Dec(j);
             end;
@@ -1054,11 +1041,11 @@ begin
     end;
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_P(OnSort: TSort_P);
+procedure TZR_BL<T_>.Sort_P(OnSort: TSort_P);
 var
   tmp: PQueueArrayStruct;
 begin
-  if (Num > 1) and (Assigned(OnSort)) then
+  if (FAccept_Sort) and (Num > 1) and (Assigned(OnSort)) then
     begin
       tmp := BuildArrayMemory;
       Sort_P(tmp, 0, Num - 1, OnSort);
@@ -1066,7 +1053,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.BuildArrayMemory: PQueueArrayStruct;
+function TZR_BL<T_>.BuildArrayMemory: PQueueArrayStruct;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -1090,7 +1077,7 @@ begin
     end;
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.CheckList: PQueueArrayStruct;
+function TZR_BL<T_>.CheckList: PQueueArrayStruct;
 begin
   // check change
   if FChanged then
@@ -1109,7 +1096,7 @@ begin
   Result := PQueueArrayStruct(FList);
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.GetList(const Index: NativeInt): PQueueStruct;
+function TZR_BL<T_>.GetList(const Index: NativeInt): PQueueStruct;
 begin
   if (index >= 0) and (index < FNum) then
     begin
@@ -1119,7 +1106,7 @@ begin
       raiseInfo('error');
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.SetList(const Index: NativeInt; const Value: PQueueStruct);
+procedure TZR_BL<T_>.SetList(const Index: NativeInt; const Value: PQueueStruct);
 begin
   if (index >= 0) and (index < FNum) then
     begin
@@ -1129,7 +1116,7 @@ begin
       raiseInfo('error');
 end;
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.GetItems(const Index: NativeInt): T_;
+function TZR_BL<T_>.GetItems(const Index: NativeInt): T_;
 begin
   if (index >= 0) and (index < FNum) then
     begin
@@ -1139,7 +1126,7 @@ begin
       raiseInfo('error');
 end;
 
-procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.SetItems(const Index: NativeInt; const Value: T_);
+procedure TZR_BL<T_>.SetItems(const Index: NativeInt; const Value: T_);
 begin
   if (index >= 0) and (index < FNum) then
     begin
@@ -1149,7 +1136,7 @@ begin
       raiseInfo('error');
 end;
 
-class function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Null_Data: T_;
+class function TZR_BL<T_>.Null_Data: T_;
 begin
   FillPtr(@Result, SizeOf(T_), 0);
 end;
@@ -1157,7 +1144,7 @@ end;
 {$IFDEF DEBUG}
 
 
-function TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Test_Check__: Boolean;
+function TZR_BL<T_>.Test_Check__: Boolean;
 var
   arry: PQueueArrayStruct;
   i: Integer;
@@ -1204,9 +1191,9 @@ begin
   System.FreeMemory(arry);
 end;
 
-class procedure TZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Test;
+class procedure TZR_BL<T_>.Test;
 type
-  TTest_BigList = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<Integer>;
+  TTest_BigList = TZR_BL<Integer>;
 var
   L: TTest_BigList;
   i, j: Integer;
@@ -1265,7 +1252,7 @@ end;
 
 // *****************************************************************************************************************
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Init_(Instance_: T___);
+procedure TCritical_ZR_BL<T_>.TRepeat___.Init_(Instance_: T___);
 begin
   // Begin Index
   BI___ := 0;
@@ -1283,7 +1270,7 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
+procedure TCritical_ZR_BL<T_>.TRepeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
 begin
   // Begin Index
   BI___ := BI_;
@@ -1291,7 +1278,7 @@ begin
   EI___ := EI_;
   // check
   if BI___ > EI___ then
-      Swap(BI___, BI___);
+      TSwap<NativeInt>.Do_(BI___, BI___);
   // Current index
   I___ := 0;
   Instance___ := Instance_;
@@ -1304,12 +1291,12 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Discard;
+procedure TCritical_ZR_BL<T_>.TRepeat___.Discard;
 begin
   Is_Discard___ := True;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TRepeat___.Next: Boolean;
+function TCritical_ZR_BL<T_>.TRepeat___.Next: Boolean;
 begin
   Result := False;
   if I___ > EI___ then
@@ -1329,7 +1316,7 @@ begin
       inc(I___);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Init_(Instance_: T___);
+procedure TCritical_ZR_BL<T_>.TInvert_Repeat___.Init_(Instance_: T___);
 begin
   // Begin Index
   BI___ := Instance_.Num - 1;
@@ -1347,7 +1334,7 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
+procedure TCritical_ZR_BL<T_>.TInvert_Repeat___.Init_(Instance_: T___; BI_, EI_: NativeInt);
 begin
   // Begin Index
   BI___ := BI_;
@@ -1355,7 +1342,7 @@ begin
   EI___ := EI_;
   // check
   if BI___ < EI___ then
-      Swap(BI___, EI___);
+      TSwap<NativeInt>.Do_(BI___, EI___);
   // Current index
   I___ := Instance_.Num - 1;
   Instance___ := Instance_;
@@ -1368,12 +1355,12 @@ begin
   Is_Discard___ := False;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Discard;
+procedure TCritical_ZR_BL<T_>.TInvert_Repeat___.Discard;
 begin
   Is_Discard___ := True;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.TInvert_Repeat___.Prev: Boolean;
+function TCritical_ZR_BL<T_>.TInvert_Repeat___.Prev: Boolean;
 begin
   Result := False;
   if I___ < EI___ then
@@ -1392,7 +1379,7 @@ begin
   Dec(I___);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoInternalFree(p: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.DoInternalFree(p: PQueueStruct);
 begin
 {$IFDEF DEBUG}
   if p^.Instance___ <> Self then
@@ -1405,55 +1392,66 @@ begin
   end;
 end;
 
-constructor TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Create;
+function TCritical_ZR_BL<T_>.Get_Critical__: TCritical;
+begin
+  if FCritical__ = nil then
+      FCritical__ := TCritical.Create;
+  Result := FCritical__;
+end;
+
+constructor TCritical_ZR_BL<T_>.Create;
 begin
   inherited Create;
-  FCritical__ := TCritical.Create;
+  FCritical__ := nil;
   FRecycle_Pool__ := nil;
   FFirst := nil;
   FLast := nil;
   FNum := 0;
   FOnAdd := nil;
   FOnFree := nil;
+  FOnFree_For_Pair_Tool := nil;
+  FAccept_Sort := True;
   FChanged := False;
   FList := nil;
 end;
 
-destructor TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Destroy;
+destructor TCritical_ZR_BL<T_>.Destroy;
 begin
   Clear;
-  FCritical__.Free;
+  DisposeObjectAndNil(FCritical__);
   inherited Destroy;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoFree(var Data: T_);
+procedure TCritical_ZR_BL<T_>.DoFree(var Data: T_);
 begin
+  if Assigned(FOnFree_For_Pair_Tool) then
+      FOnFree_For_Pair_Tool(Data);
   if Assigned(FOnFree) then
       FOnFree(Data);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoAdd(var Data: T_);
+procedure TCritical_ZR_BL<T_>.DoAdd(var Data: T_);
 begin
   if Assigned(FOnAdd) then
       FOnAdd(Data);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.CompareData(const Data_1, Data_2: T_): Boolean;
+function TCritical_ZR_BL<T_>.CompareData(const Data_1, Data_2: T_): Boolean;
 begin
   Result := CompareMemory(@Data_1, @Data_2, SizeOf(T_));
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Lock;
+procedure TCritical_ZR_BL<T_>.Lock;
 begin
-  FCritical__.Lock;
+  Critical__.Lock;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.UnLock;
+procedure TCritical_ZR_BL<T_>.UnLock;
 begin
-  FCritical__.UnLock;
+  Critical__.UnLock;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Get_Recycle_Pool_Num: NativeInt;
+function TCritical_ZR_BL<T_>.Get_Recycle_Pool_Num: NativeInt;
 begin
   if FRecycle_Pool__ <> nil then
       Result := FRecycle_Pool__.Num
@@ -1461,7 +1459,7 @@ begin
       Result := 0;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Push_To_Recycle_Pool(p: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.Push_To_Recycle_Pool(p: PQueueStruct);
 begin
 {$IFDEF DEBUG}
   if p^.Instance___ <> Self then
@@ -1477,13 +1475,13 @@ begin
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Free_Recycle_Pool;
+procedure TCritical_ZR_BL<T_>.Free_Recycle_Pool(Lock_: Boolean);
 begin
   if FRecycle_Pool__ <> nil then
     begin
       while FRecycle_Pool__.Num > 0 do
         begin
-          Remove_P(FRecycle_Pool__.First^.Data, False); // Remove_P is UnLock
+          Remove_P(FRecycle_Pool__.First^.Data, Lock_);
           FRecycle_Pool__.Next;
         end;
       FRecycle_Pool__.Free;
@@ -1491,7 +1489,12 @@ begin
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Clear;
+procedure TCritical_ZR_BL<T_>.Free_Recycle_Pool;
+begin
+  Free_Recycle_Pool(False);
+end;
+
+procedure TCritical_ZR_BL<T_>.Clear;
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -1501,7 +1504,7 @@ begin
       FRecycle_Pool__.Free;
       FRecycle_Pool__ := nil;
     end;
-  FCritical__.Lock;
+  Critical__.Lock;
   if FNum > 0 then
     begin
       i := 0;
@@ -1523,26 +1526,26 @@ begin
   FFirst := nil;
   FLast := nil;
   FChanged := True;
-  FCritical__.UnLock;
+  Critical__.UnLock;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Next(Lock_: Boolean);
+procedure TCritical_ZR_BL<T_>.Next(Lock_: Boolean);
 begin
   if FFirst <> nil then
       Remove_P(FFirst, Lock_);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Next;
+procedure TCritical_ZR_BL<T_>.Next;
 begin
   if FFirst <> nil then
       Remove_P(FFirst);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Add(const Data: T_): PQueueStruct;
+function TCritical_ZR_BL<T_>.Add(const Data: T_): PQueueStruct;
 var
   p: PQueueStruct;
 begin
-  FCritical__.Lock;
+  Critical__.Lock;
 
   new(p);
   p^.Data := Data;
@@ -1573,12 +1576,12 @@ begin
   p^.Recycle___ := False;
   inc(FNum);
   FChanged := True;
-  FCritical__.UnLock;
+  Critical__.UnLock;
   Result := p;
   DoAdd(p^.Data);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.AddL(L_: T___);
+procedure TCritical_ZR_BL<T_>.AddL(L_: T___);
 begin
   L_.Lock;
   if L_.Num > 0 then
@@ -1589,12 +1592,12 @@ begin
   L_.UnLock;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Add_Null(Lock_: Boolean): PQueueStruct;
+function TCritical_ZR_BL<T_>.Add_Null(Lock_: Boolean): PQueueStruct;
 var
   p: PQueueStruct;
 begin
   if Lock_ then
-      FCritical__.Lock;
+      Critical__.Lock;
   new(p);
   if (FFirst = nil) or (FLast = nil) then
     begin
@@ -1624,17 +1627,17 @@ begin
   inc(FNum);
   FChanged := True;
   if Lock_ then
-      FCritical__.UnLock;
+      Critical__.UnLock;
   Result := p;
   DoAdd(p^.Data);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Add_Null(): PQueueStruct;
+function TCritical_ZR_BL<T_>.Add_Null(): PQueueStruct;
 begin
   Result := Add_Null(True);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Insert(const Data: T_; To_: PQueueStruct): PQueueStruct;
+function TCritical_ZR_BL<T_>.Insert(const Data: T_; To_: PQueueStruct): PQueueStruct;
 var
   p: PQueueStruct;
   P_P: PQueueStruct;
@@ -1643,7 +1646,7 @@ begin
   if To_^.Instance___ <> Self then
       raiseInfo('error');
 {$ENDIF DEBUG}
-  FCritical__.Lock;
+  Critical__.Lock;
   new(p);
   p^.Data := Data;
 
@@ -1661,12 +1664,12 @@ begin
   p^.Recycle___ := False;
   inc(FNum);
   FChanged := True;
-  FCritical__.UnLock;
+  Critical__.UnLock;
   Result := p;
   DoAdd(p^.Data);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.CopyFrom(Source_: T___): NativeInt;
+function TCritical_ZR_BL<T_>.CopyFrom(Source_: T___): NativeInt;
 begin
   Result := Source_.Num;
   if Result > 0 then
@@ -1676,7 +1679,7 @@ begin
       until not Next;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_P(p: PQueueStruct; Lock_: Boolean);
+procedure TCritical_ZR_BL<T_>.Remove_P(p: PQueueStruct; Lock_: Boolean);
 var
   P_P, N_P: PQueueStruct;
 begin
@@ -1685,7 +1688,7 @@ begin
       raiseInfo('error');
 {$ENDIF DEBUG}
   if Lock_ then
-      FCritical__.Lock;
+      Critical__.Lock;
 
   P_P := p^.Prev;
   N_P := p^.Next;
@@ -1708,22 +1711,22 @@ begin
   FChanged := True;
 
   if Lock_ then
-      FCritical__.UnLock;
+      Critical__.UnLock;
 
   DoInternalFree(p);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_P(p: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.Remove_P(p: PQueueStruct);
 begin
   Remove_P(p, True);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_T(const Data: T_);
+procedure TCritical_ZR_BL<T_>.Remove_T(const Data: T_);
 begin
   Remove_Data(Data);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Move_Before(p, To_: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.Move_Before(p, To_: PQueueStruct);
 var
   P_P, N_P: PQueueStruct;
   tmp: T_;
@@ -1737,7 +1740,7 @@ begin
   if p = To_ then
       exit;
 
-  FCritical__.Lock;
+  Critical__.Lock;
   // step 1: remove
   P_P := p^.Prev;
   N_P := p^.Next;
@@ -1769,15 +1772,15 @@ begin
   p^.Next := To_;
 
   FChanged := True;
-  FCritical__.UnLock;
+  Critical__.UnLock;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.MoveToFirst(p: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.MoveToFirst(p: PQueueStruct);
 begin
   Move_Before(p, First);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.MoveToLast(p: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.MoveToLast(p: PQueueStruct);
 var
   P_P, N_P: PQueueStruct;
   tmp: T_;
@@ -1789,7 +1792,7 @@ begin
   if p = Last then
       exit;
 
-  FCritical__.Lock;
+  Critical__.Lock;
   // step 1: remove
   P_P := p^.Prev;
   N_P := p^.Next;
@@ -1834,10 +1837,10 @@ begin
     end;
 
   FChanged := True;
-  FCritical__.UnLock;
+  Critical__.UnLock;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Exchange(p1, p2: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.Exchange(p1, p2: PQueueStruct);
 var
   tmp: T_;
 begin
@@ -1849,20 +1852,20 @@ begin
 {$ENDIF DEBUG}
   if p1 = p2 then
       exit;
-  FCritical__.Lock;
+  Critical__.Lock;
   tmp := p1^.Data;
   p1^.Data := p2^.Data;
   p2^.Data := tmp;
-  FCritical__.UnLock;
+  Critical__.UnLock;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Found(p1: PQueueStruct): NativeInt;
+function TCritical_ZR_BL<T_>.Found(p1: PQueueStruct): NativeInt;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
   Result := -1;
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     if FNum > 0 then
       begin
@@ -1877,17 +1880,17 @@ begin
           end;
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Find_Data(const Data: T_): PQueueStruct;
+function TCritical_ZR_BL<T_>.Find_Data(const Data: T_): PQueueStruct;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
   Result := nil;
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     if FNum > 0 then
       begin
@@ -1902,17 +1905,17 @@ begin
           end;
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Find_Data_Ptr(const Data_Ptr: P_): PQueueStruct;
+function TCritical_ZR_BL<T_>.Find_Data_Ptr(const Data_Ptr: P_): PQueueStruct;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
   Result := nil;
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     if FNum > 0 then
       begin
@@ -1927,11 +1930,11 @@ begin
           end;
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Search_Data_As_Array(const Data: T_): TArray_T_;
+function TCritical_ZR_BL<T_>.Search_Data_As_Array(const Data: T_): TArray_T_;
 var
   L: TOrder_Data_Pool;
   i: Integer;
@@ -1947,13 +1950,13 @@ begin
   DisposeObject(L);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Search_Data_As_Order(const Data: T_): TOrder_Data_Pool;
+function TCritical_ZR_BL<T_>.Search_Data_As_Order(const Data: T_): TOrder_Data_Pool;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
   Result := TOrder_Data_Pool.Create;
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     if FNum > 0 then
       begin
@@ -1968,16 +1971,16 @@ begin
           end;
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Remove_Data(const Data: T_): Integer;
+function TCritical_ZR_BL<T_>.Remove_Data(const Data: T_): Integer;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     if FNum > 0 then
       begin
@@ -1994,39 +1997,39 @@ begin
     Result := FRecycle_Pool__.Num;
     Free_Recycle_Pool();
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Repeat_(): TRepeat___;
+function TCritical_ZR_BL<T_>.Repeat_(): TRepeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Repeat_(BI_, EI_: NativeInt): TRepeat___;
+function TCritical_ZR_BL<T_>.Repeat_(BI_, EI_: NativeInt): TRepeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self, BI_, EI_);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Invert_Repeat_(): TInvert_Repeat___;
+function TCritical_ZR_BL<T_>.Invert_Repeat_(): TInvert_Repeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self);
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Invert_Repeat_(BI_, EI_: NativeInt): TInvert_Repeat___;
+function TCritical_ZR_BL<T_>.Invert_Repeat_(BI_, EI_: NativeInt): TInvert_Repeat___;
 begin
   if Num <= 0 then
       raiseInfo('List is Null');
   Result.Init_(Self, BI_, EI_);
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_C(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_C);
+procedure TCritical_ZR_BL<T_>.For_C(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_C);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -2038,7 +2041,7 @@ begin
   if EP_^.Instance___ <> Self then
       raiseInfo('error');
 {$ENDIF DEBUG}
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     i := 0;
     p := BP_;
@@ -2052,11 +2055,11 @@ begin
     if (p = EP_) and (p <> BP_) then
         OnFor(i, p, Aborted);
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_M(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_M);
+procedure TCritical_ZR_BL<T_>.For_M(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_M);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -2068,7 +2071,7 @@ begin
   if EP_^.Instance___ <> Self then
       raiseInfo('error');
 {$ENDIF DEBUG}
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     i := 0;
     p := BP_;
@@ -2082,11 +2085,11 @@ begin
     if (p = EP_) and (p <> BP_) then
         OnFor(i, p, Aborted);
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_P(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_P);
+procedure TCritical_ZR_BL<T_>.For_P(BP_, EP_: PQueueStruct; OnFor: TQueneStructFor_P);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -2098,7 +2101,7 @@ begin
   if EP_^.Instance___ <> Self then
       raiseInfo('error');
 {$ENDIF DEBUG}
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     i := 0;
     p := BP_;
@@ -2112,11 +2115,11 @@ begin
     if (p = EP_) and (p <> BP_) then
         OnFor(i, p, Aborted);
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_C(OnFor: TQueneStructFor_C);
+procedure TCritical_ZR_BL<T_>.For_C(OnFor: TQueneStructFor_C);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -2124,7 +2127,7 @@ var
 begin
   if FNum > 0 then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       try
         i := 0;
         p := FFirst;
@@ -2137,12 +2140,12 @@ begin
             inc(i);
           end;
       finally
-          FCritical__.UnLock;
+          Critical__.UnLock;
       end;
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_M(OnFor: TQueneStructFor_M);
+procedure TCritical_ZR_BL<T_>.For_M(OnFor: TQueneStructFor_M);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -2150,7 +2153,7 @@ var
 begin
   if FNum > 0 then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       try
         i := 0;
         p := FFirst;
@@ -2163,12 +2166,12 @@ begin
             inc(i);
           end;
       finally
-          FCritical__.UnLock;
+          Critical__.UnLock;
       end;
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.For_P(OnFor: TQueneStructFor_P);
+procedure TCritical_ZR_BL<T_>.For_P(OnFor: TQueneStructFor_P);
 var
   i: NativeInt;
   p, N_P: PQueueStruct;
@@ -2176,7 +2179,7 @@ var
 begin
   if FNum > 0 then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       try
         i := 0;
         p := FFirst;
@@ -2189,17 +2192,17 @@ begin
             inc(i);
           end;
       finally
-          FCritical__.UnLock;
+          Critical__.UnLock;
       end;
     end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.ToArray(): TArray_T_;
+function TCritical_ZR_BL<T_>.ToArray(): TArray_T_;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     SetLength(Result, FNum);
     // copy to order buffer
@@ -2215,17 +2218,17 @@ begin
           end;
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.ToOrder(): TOrder_Data_Pool;
+function TCritical_ZR_BL<T_>.ToOrder(): TOrder_Data_Pool;
 var
   i: NativeInt;
   p: PQueueStruct;
 begin
   Result := TOrder_Data_Pool.Create;
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     // copy to order buffer
     if FNum > 0 then
@@ -2240,14 +2243,14 @@ begin
           end;
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_C(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_C);
+procedure TCritical_ZR_BL<T_>.Sort_C(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_C);
 var
   i, j: NativeInt;
-  p, tmp: T_;
+  p: T_;
 begin
   if L < R then
     begin
@@ -2255,11 +2258,7 @@ begin
         if (R - L) = 1 then
           begin
             if OnSort(Arry_^[L]^.Data, Arry_^[R]^.Data) > 0 then
-              begin
-                tmp := Arry_^[L]^.Data;
-                Arry_^[L]^.Data := Arry_^[R]^.Data;
-                Arry_^[R]^.Data := tmp;
-              end;
+                TSwap<T_>.Do_(Arry_^[L]^.Data, Arry_^[R]^.Data);
             break;
           end;
         i := L;
@@ -2273,11 +2272,7 @@ begin
           if i <= j then
             begin
               if i <> j then
-                begin
-                  tmp := Arry_^[i]^.Data;
-                  Arry_^[i]^.Data := Arry_^[j]^.Data;
-                  Arry_^[j]^.Data := tmp;
-                end;
+                  TSwap<T_>.Do_(Arry_^[i]^.Data, Arry_^[j]^.Data);
               inc(i);
               Dec(j);
             end;
@@ -2298,24 +2293,24 @@ begin
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_C(OnSort: TSort_C);
+procedure TCritical_ZR_BL<T_>.Sort_C(OnSort: TSort_C);
 var
   tmp: PQueueArrayStruct;
 begin
-  if (Num > 1) and (Assigned(OnSort)) then
+  if (FAccept_Sort) and (Num > 1) and (Assigned(OnSort)) then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       tmp := BuildArrayMemory;
       Sort_C(tmp, 0, Num - 1, OnSort);
       System.FreeMemory(tmp);
-      FCritical__.UnLock;
+      Critical__.UnLock;
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_M(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_M);
+procedure TCritical_ZR_BL<T_>.Sort_M(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_M);
 var
   i, j: NativeInt;
-  p, tmp: T_;
+  p: T_;
 begin
   if L < R then
     begin
@@ -2323,11 +2318,7 @@ begin
         if (R - L) = 1 then
           begin
             if OnSort(Arry_^[L]^.Data, Arry_^[R]^.Data) > 0 then
-              begin
-                tmp := Arry_^[L]^.Data;
-                Arry_^[L]^.Data := Arry_^[R]^.Data;
-                Arry_^[R]^.Data := tmp;
-              end;
+                TSwap<T_>.Do_(Arry_^[L]^.Data, Arry_^[R]^.Data);
             break;
           end;
         i := L;
@@ -2341,11 +2332,7 @@ begin
           if i <= j then
             begin
               if i <> j then
-                begin
-                  tmp := Arry_^[i]^.Data;
-                  Arry_^[i]^.Data := Arry_^[j]^.Data;
-                  Arry_^[j]^.Data := tmp;
-                end;
+                  TSwap<T_>.Do_(Arry_^[i]^.Data, Arry_^[j]^.Data);
               inc(i);
               Dec(j);
             end;
@@ -2366,24 +2353,24 @@ begin
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_M(OnSort: TSort_M);
+procedure TCritical_ZR_BL<T_>.Sort_M(OnSort: TSort_M);
 var
   tmp: PQueueArrayStruct;
 begin
-  if (Num > 1) and (Assigned(OnSort)) then
+  if (FAccept_Sort) and (Num > 1) and (Assigned(OnSort)) then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       tmp := BuildArrayMemory;
       Sort_M(tmp, 0, Num - 1, OnSort);
       System.FreeMemory(tmp);
-      FCritical__.UnLock;
+      Critical__.UnLock;
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_P(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_P);
+procedure TCritical_ZR_BL<T_>.Sort_P(Arry_: PQueueArrayStruct; L, R: NativeInt; OnSort: TSort_P);
 var
   i, j: NativeInt;
-  p, tmp: T_;
+  p: T_;
 begin
   if L < R then
     begin
@@ -2391,11 +2378,7 @@ begin
         if (R - L) = 1 then
           begin
             if OnSort(Arry_^[L]^.Data, Arry_^[R]^.Data) > 0 then
-              begin
-                tmp := Arry_^[L]^.Data;
-                Arry_^[L]^.Data := Arry_^[R]^.Data;
-                Arry_^[R]^.Data := tmp;
-              end;
+                TSwap<T_>.Do_(Arry_^[L]^.Data, Arry_^[R]^.Data);
             break;
           end;
         i := L;
@@ -2409,11 +2392,7 @@ begin
           if i <= j then
             begin
               if i <> j then
-                begin
-                  tmp := Arry_^[i]^.Data;
-                  Arry_^[i]^.Data := Arry_^[j]^.Data;
-                  Arry_^[j]^.Data := tmp;
-                end;
+                  TSwap<T_>.Do_(Arry_^[i]^.Data, Arry_^[j]^.Data);
               inc(i);
               Dec(j);
             end;
@@ -2434,21 +2413,21 @@ begin
     end;
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Sort_P(OnSort: TSort_P);
+procedure TCritical_ZR_BL<T_>.Sort_P(OnSort: TSort_P);
 var
   tmp: PQueueArrayStruct;
 begin
-  if (Num > 1) and (Assigned(OnSort)) then
+  if (FAccept_Sort) and (Num > 1) and (Assigned(OnSort)) then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       tmp := BuildArrayMemory;
       Sort_P(tmp, 0, Num - 1, OnSort);
       System.FreeMemory(tmp);
-      FCritical__.UnLock;
+      Critical__.UnLock;
     end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.BuildArrayMemory: PQueueArrayStruct;
+function TCritical_ZR_BL<T_>.BuildArrayMemory: PQueueArrayStruct;
 var
   i: NativeInt;
   p: PQueueStruct;
@@ -2472,10 +2451,10 @@ begin
     end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.CheckList: PQueueArrayStruct;
+function TCritical_ZR_BL<T_>.CheckList: PQueueArrayStruct;
 begin
   // check change
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     if FChanged then
       begin
@@ -2492,41 +2471,41 @@ begin
 
     Result := PQueueArrayStruct(FList);
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.GetList(const Index: NativeInt): PQueueStruct;
+function TCritical_ZR_BL<T_>.GetList(const Index: NativeInt): PQueueStruct;
 begin
   if (index >= 0) and (index < FNum) then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       try
           Result := PPQueueStruct(GetOffset(CheckList(), SizeOf(PQueueStruct) * index))^;
       finally
-          FCritical__.UnLock;
+          Critical__.UnLock;
       end;
     end
   else
       raiseInfo('error');
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.SetList(const Index: NativeInt; const Value: PQueueStruct);
+procedure TCritical_ZR_BL<T_>.SetList(const Index: NativeInt; const Value: PQueueStruct);
 begin
   if (index >= 0) and (index < FNum) then
     begin
-      FCritical__.Lock;
+      Critical__.Lock;
       try
           PPQueueStruct(GetOffset(CheckList(), SizeOf(PQueueStruct) * index))^ := Value;
       finally
-          FCritical__.UnLock;
+          Critical__.UnLock;
       end;
     end
   else
       raiseInfo('error');
 end;
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.GetItems(const Index: NativeInt): T_;
+function TCritical_ZR_BL<T_>.GetItems(const Index: NativeInt): T_;
 begin
   if (index >= 0) and (index < FNum) then
     begin
@@ -2536,7 +2515,7 @@ begin
       raiseInfo('error');
 end;
 
-procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.SetItems(const Index: NativeInt; const Value: T_);
+procedure TCritical_ZR_BL<T_>.SetItems(const Index: NativeInt; const Value: T_);
 begin
   if (index >= 0) and (index < FNum) then
     begin
@@ -2546,7 +2525,7 @@ begin
       raiseInfo('error');
 end;
 
-class function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Null_Data: T_;
+class function TCritical_ZR_BL<T_>.Null_Data: T_;
 begin
   FillPtr(@Result, SizeOf(T_), 0);
 end;
@@ -2554,7 +2533,7 @@ end;
 {$IFDEF DEBUG}
 
 
-function TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Test_Check__: Boolean;
+function TCritical_ZR_BL<T_>.Test_Check__: Boolean;
 var
   arry: PQueueArrayStruct;
   i: Integer;
@@ -2565,7 +2544,7 @@ begin
   if Num = 0 then
       exit;
   arry := BuildArrayMemory();
-  FCritical__.Lock;
+  Critical__.Lock;
   try
     F_P := arry^[0];
     L_P := arry^[Num - 1];
@@ -2601,14 +2580,14 @@ begin
             raiseInfo('error.');
       end;
   finally
-      FCritical__.UnLock;
+      Critical__.UnLock;
   end;
   System.FreeMemory(arry);
 end;
 
-class procedure TCritical_ZR_BL{$IFNDEF FPC}<T_>{$ENDIF FPC}.Test;
+class procedure TCritical_ZR_BL<T_>.Test;
 type
-  TCritical_Test_BigList___ = {$IFDEF FPC}specialize {$ENDIF FPC} TCritical_ZR_BL<Integer>;
+  TCritical_Test_BigList___ = TCritical_ZR_BL<Integer>;
 var
   L: TCritical_Test_BigList___;
   i, j: Integer;
@@ -2666,26 +2645,26 @@ end;
 {$ENDIF DEBUG}
 
 
-constructor TBig_Object_List{$IFNDEF FPC}<T_>{$ENDIF FPC}.Create(AutoFreeObject_: Boolean);
+constructor TBig_Object_List<T_>.Create(AutoFreeObject_: Boolean);
 begin
   inherited Create;
   AutoFreeObject := AutoFreeObject_;
 end;
 
-procedure TBig_Object_List{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoFree(var Data: T_);
+procedure TBig_Object_List<T_>.DoFree(var Data: T_);
 begin
   inherited DoFree(Data);
   if AutoFreeObject then
       DisposeObjectAndNil(Data);
 end;
 
-constructor TCritical_Big_Object_List{$IFNDEF FPC}<T_>{$ENDIF FPC}.Create(AutoFreeObject_: Boolean);
+constructor TCritical_Big_Object_List<T_>.Create(AutoFreeObject_: Boolean);
 begin
   inherited Create;
   AutoFreeObject := AutoFreeObject_;
 end;
 
-procedure TCritical_Big_Object_List{$IFNDEF FPC}<T_>{$ENDIF FPC}.DoFree(var Data: T_);
+procedure TCritical_Big_Object_List<T_>.DoFree(var Data: T_);
 begin
   inherited DoFree(Data);
   if AutoFreeObject then

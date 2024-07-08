@@ -1,0 +1,131 @@
+object StringTranslate_FMX_Form: TStringTranslate_FMX_Form
+  Left = 0
+  Top = 0
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = Single
+  Caption = 'String Translate FMX.'
+  ClientHeight = 457
+  ClientWidth = 1167
+  Position = ScreenCenter
+  StyleBook = StyleDataModule.GlobalStyleBook
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 0
+  object Memo1: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Position.X = 16.000000000000000000
+    Position.Y = 48.000000000000000000
+    Size.Width = 498.000000000000000000
+    Size.Height = 393.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    TabStop = False
+    Viewport.Width = 494.000000000000000000
+    Viewport.Height = 389.000000000000000000
+  end
+  object Memo2: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Position.X = 656.000000000000000000
+    Position.Y = 47.000000000000000000
+    Size.Width = 498.000000000000000000
+    Size.Height = 395.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 11
+    TabStop = False
+    Viewport.Width = 494.000000000000000000
+    Viewport.Height = 391.000000000000000000
+  end
+  object Hex2AsciiButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 78.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'hex 2 ascii ->'
+    OnClick = Hex2AsciiButtonClick
+  end
+  object Ascii2HexButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 47.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    Text = '<- ascii 2 hex'
+    OnClick = Ascii2HexButtonClick
+  end
+  object Ascii2DeclButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 152.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Text = '<- ascii 2 declaration'
+    OnClick = Ascii2DeclButtonClick
+  end
+  object Ascii2PascalDeclButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 183.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = '<- ascii 2 pascal'
+    OnClick = Ascii2PascalDeclButtonClick
+  end
+  object PascalDecl2AsciiButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 214.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 7
+    Text = 'pascal 2 ascii ->'
+    OnClick = PascalDecl2AsciiButtonClick
+  end
+  object Ascii2cButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 287.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Text = '<- ascii 2 c'
+    OnClick = Ascii2cButtonClick
+  end
+  object c2AsciiButton: TButton
+    Position.X = 520.000000000000000000
+    Position.Y = 318.000000000000000000
+    Size.Width = 130.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 9
+    Text = 'c 2 ascii ->'
+    OnClick = c2AsciiButtonClick
+  end
+  object Invert_Memo2_Button: TButton
+    Position.X = 1095.000000000000000000
+    Position.Y = 16.000000000000000000
+    Size.Width = 51.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Invert'
+    OnClick = Invert_Memo2_ButtonClick
+  end
+  object Invert_Memo1_Button: TButton
+    Position.X = 24.000000000000000000
+    Position.Y = 17.000000000000000000
+    Size.Width = 51.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Invert'
+    OnClick = Invert_Memo1_ButtonClick
+  end
+end

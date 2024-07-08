@@ -1,7 +1,7 @@
 program PascalCommentRep;
 
 uses
-  FastMM5 in '..\Common\FastMM5.pas',
+  FastMM5,
   Vcl.Themes,
   Vcl.Styles,
   Vcl.Forms,

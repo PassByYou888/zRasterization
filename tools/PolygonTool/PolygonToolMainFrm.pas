@@ -7,18 +7,16 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   FMX.Objects, FMX.Layouts,
   FMX.Edit, FMX.Controls.Presentation, FMX.StdCtrls, FMX.Colors, System.Actions,
-  FMX.ActnList, FMX.ListBox, FMX.ScrollBox, FMX.Memo,
+  FMX.ActnList, FMX.ListBox, FMX.ScrollBox, FMX.Memo, FMX.Memo.Types,
   FMX.DialogService,
 
   System.IOUtils, System.Math, System.Threading,
 
-  ZR.Core,
-  ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib, ZR.Status,
+  ZR.Core, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib, ZR.Status,
   ZR.TextDataEngine, ZR.ListEngine,
   ZR.DrawEngine.SlowFMX, ZR.DrawEngine, ZR.Geometry2D, ZR.Geometry3D, ZR.Notify,
-  ZR.MemoryRaster,
-  ZR.MemoryStream,
-  ZR.FFMPEG.Reader, FMX.Memo.Types;
+  ZR.MemoryRaster, ZR.MemoryStream,
+  ZR.FFMPEG.Reader;
 
 type
   TOn_PolygonTool_Result = reference to procedure(Polygon_: TDeflectionPolygonListRenderer);
@@ -68,7 +66,6 @@ type
     Layout2: TLayout;
     Apply_Renderer_Options_Button: TButton;
     procedure FormShow(Sender: TObject);
-    procedure FormActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure fpsTimerTimer(Sender: TObject);
     procedure AddGeoButtonClick(Sender: TObject);
@@ -91,7 +88,7 @@ type
     procedure setPictureButtonClick(Sender: TObject);
     procedure SetVideoButtonClick(Sender: TObject);
     procedure SetURLButtonClick(Sender: TObject);
-  public
+  private
     dIntf: TDrawEngineInterface_FMX;
     PolygonList: TDeflectionPolygonListRenderer;
     Activted_Polygon: TDeflectionPolygon;
@@ -115,7 +112,7 @@ type
 
     // result event
     On_Result: TOn_PolygonTool_Result;
-
+  public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
 
@@ -132,7 +129,7 @@ type
   TPolygonToolInstanceList = TGenericsList<TPolygonToolMainForm>;
 
 var
-  PolygonToolMainForm: TPolygonToolMainForm;
+  PolygonToolMainForm: TPolygonToolMainForm = nil;
   PolygonToolInstanceList: TPolygonToolInstanceList;
 
 procedure ClosePolygonToolInstance(ignore: TPolygonToolMainForm);
@@ -165,6 +162,8 @@ var
   f: TPolygonToolMainForm;
 begin
   f := TPolygonToolMainForm.Create(Application);
+  if f <> Application.MainForm then
+      f.Parent := Application.MainForm;
   f.Position := TFormPosition.MainFormCenter;
   f.SwitchAsGeometryEditor;
 
@@ -182,6 +181,8 @@ var
   f: TPolygonToolMainForm;
 begin
   f := TPolygonToolMainForm.Create(Application);
+  if f <> Application.MainForm then
+      f.Parent := Application.MainForm;
   f.Position := TFormPosition.MainFormCenter;
   f.SwitchAsGeometry_Return_Mode_Editor;
   f.On_Result := On_Result;
@@ -198,6 +199,8 @@ begin
         begin
           polygon_stream.Position := 0;
           PolygonList.LoadFromStream(polygon_stream);
+          if backgroundTexture <> nil then
+              PolygonList.Rebuild_From_New_Background_Box(backgroundTexture.BoundsRectV2);
           if PolygonList.Count = 0 then
             begin
               Activted_Polygon := TDeflectionPolygon.Create;
@@ -232,12 +235,6 @@ begin
       SwitchAsDefaultEditor();
 end;
 
-procedure TPolygonToolMainForm.FormActivate(Sender: TObject);
-begin
-  if not Active then
-      EditingCheckBox.IsChecked := False;
-end;
-
 procedure TPolygonToolMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := TCloseAction.caFree;
@@ -249,7 +246,7 @@ procedure TPolygonToolMainForm.fpsTimerTimer(Sender: TObject);
 begin
   if Application.MainForm = Self then
     begin
-      CheckThread;
+      Check_Soft_Thread_Synchronize(0);
       EnginePool.Progress;
     end;
   Invalidate;

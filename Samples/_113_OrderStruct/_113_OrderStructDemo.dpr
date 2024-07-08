@@ -1,6 +1,7 @@
 program _113_OrderStructDemo;
 
 uses
+  FastMM5,
   Vcl.Forms,
   OrderStructFrm in 'OrderStructFrm.pas' {OrderStructForm};
 

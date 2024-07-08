@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.Codec;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -20,8 +21,8 @@ uses
   ZR.Core, ZR.JLS.Global, ZR.JLS.Encoder, ZR.JLS.Decoder;
 
 type
-  PJlsParameters       = ZR.JLS.Global.PJlsParameters;
-  TJlsParameters       = ZR.JLS.Global.TJlsParameters;
+  PJlsParameters = ZR.JLS.Global.PJlsParameters;
+  TJlsParameters = ZR.JLS.Global.TJlsParameters;
   TJlsCustomParameters = ZR.JLS.Global.TJlsCustomParameters;
 
 function jpegls_decompress(SourceStream, OutputStream: TCore_Stream; Info: PJlsParameters): Boolean;

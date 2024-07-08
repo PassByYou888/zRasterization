@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Pixel_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 
@@ -113,7 +114,7 @@ end;
 function var_16x16_pas(pix: uint8_p): UInt32;
 var
   x, y: int32_t;
-  s: uint16_t;  // sum
+  s: uint16_t; // sum
   SS: uint32_t; // sum squared
 begin
   s := 0;

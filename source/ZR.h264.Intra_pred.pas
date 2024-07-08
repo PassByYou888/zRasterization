@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Intra_pred;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -11,7 +12,7 @@ uses
   ZR.h264.Types, ZR.h264.Common, ZR.h264.Util, ZR.h264.Pixel_LIB, ZR.Core;
 
 type
-  TIntraPredictor = class
+  TIntraPredictor = class(TCore_Object_Intermediate)
   private
     mbcmp_16x16, mbcmp_8x8, mbcmp_4x4: mbcmp_func_t;
     pred4_cache: array [0 .. 8] of uint8_p; // cache for 4x4 predicted pixels
@@ -134,8 +135,8 @@ begin
   for y := 0 to 3 do
     for x := 0 to 3 do
         Dst[y * I4x4CACHE_STRIDE + x] := (Src[x + y]
-        + Src[x + y + 1] * 2
-        + Src[x + y + 2] + 2) shr 2;
+          + Src[x + y + 1] * 2
+          + Src[x + y + 2] + 2) shr 2;
   Dst[3 * I4x4CACHE_STRIDE + 3] := (Src[6] + 3 * Src[7] + 2) shr 2
 end;
 
@@ -156,44 +157,44 @@ begin
     for x := 0 to 3 do
       if x > y then
           Dst[y * I4x4CACHE_STRIDE + x] := (Src[x - y - 2 - sstride]
-          + Src[x - y - 1 - sstride] * 2
-          + Src[x - y - sstride] + 2) shr 2
+            + Src[x - y - 1 - sstride] * 2
+            + Src[x - y - sstride] + 2) shr 2
       else if x < y then
           Dst[y * I4x4CACHE_STRIDE + x] := (Src[-1 + (y - x - 2) * sstride]
-          + Src[-1 + (y - x - 1) * sstride] * 2
-          + Src[-1 + (y - x) * sstride] + 2) shr 2
+            + Src[-1 + (y - x - 1) * sstride] * 2
+            + Src[-1 + (y - x) * sstride] + 2) shr 2
       else { x = y }
           Dst[y * I4x4CACHE_STRIDE + x] := (Src[-sstride]
-          + Src[-1 - sstride] * 2
-          + Src[-1] + 2) shr 2
+            + Src[-1 - sstride] * 2
+            + Src[-1] + 2) shr 2
 end;
 
 (* vertical right *)
 procedure predict_vr4(Src, Dst: uint8_p; stride: int32_t);
 var
-  z, x, y, i: int32_t;
+  Z, x, y, i: int32_t;
 begin
   for x := 0 to 3 do
     for y := 0 to 3 do
       begin
-        z := 2 * x - y;
-        if z >= 0 then
+        Z := 2 * x - y;
+        if Z >= 0 then
           begin
             i := x - (y div 2) - stride;
-            if (z and 1) = 0 then
+            if (Z and 1) = 0 then
                 Dst[x + y * I4x4CACHE_STRIDE] := (Src[i - 1]
-                + Src[i] + 1) div 2
+                  + Src[i] + 1) div 2
             else
                 Dst[x + y * I4x4CACHE_STRIDE] := (Src[i - 2]
-                + Src[i - 1] * 2
-                + Src[i] + 2) div 4
+                  + Src[i - 1] * 2
+                  + Src[i] + 2) div 4
           end
-        else if z = -1 then
+        else if Z = -1 then
             Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1] + Src[-1 - stride] * 2 + Src[-stride] + 2) div 4
         else
             Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1 + (y - x - 1) * stride]
-            + Src[-1 + (y - x - 2) * stride] * 2
-            + Src[-1 + (y - x - 3) * stride] + 2) div 4;
+              + Src[-1 + (y - x - 2) * stride] * 2
+              + Src[-1 + (y - x - 3) * stride] + 2) div 4;
       end;
 end;
 
@@ -211,21 +212,21 @@ end;
 
 procedure predict_hd4(Src, Dst: uint8_p; stride: int32_t);
 var
-  z, x, y, i: int32_t;
+  Z, x, y, i: int32_t;
 begin
   for x := 0 to 3 do
     for y := 0 to 3 do
       begin
-        z := 2 * y - x;
-        if z >= 0 then
+        Z := 2 * y - x;
+        if Z >= 0 then
           begin
             i := y - (x div 2);
-            if (z and 1) = 0 then
+            if (Z and 1) = 0 then
                 Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1 + (i - 1) * stride] + Src[-1 + i * stride] + 1) div 2
             else
                 Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1 + (i - 2) * stride] + Src[-1 + (i - 1) * stride] * 2 + Src[-1 + i * stride] + 2) div 4
           end
-        else if z = -1 then
+        else if Z = -1 then
             Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1] + Src[-1 - stride] * 2 + Src[-stride] + 2) div 4
         else
           begin
@@ -249,21 +250,21 @@ end;
 }
 procedure predict_hu4(Src, Dst: uint8_p; stride: int32_t);
 var
-  z, x, y, i: int32_t;
+  Z, x, y, i: int32_t;
 begin
   for x := 0 to 3 do
     for y := 0 to 3 do
       begin
-        z := x + 2 * y;
-        if (z >= 0) and (z < 5) then
+        Z := x + 2 * y;
+        if (Z >= 0) and (Z < 5) then
           begin
             i := y + (x div 2);
-            if (z and 1) = 0 then
+            if (Z and 1) = 0 then
                 Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1 + i * stride] + Src[-1 + (i + 1) * stride] + 1) shr 1
             else
                 Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1 + i * stride] + Src[-1 + (i + 1) * stride] * 2 + Src[-1 + (i + 2) * stride] + 2) shr 2
           end
-        else if z = 5 then
+        else if Z = 5 then
             Dst[x + y * I4x4CACHE_STRIDE] := (Src[-1 + 2 * stride] + Src[-1 + 3 * stride] * 3 + 2) shr 2
         else
             Dst[x + y * I4x4CACHE_STRIDE] := Src[-1 + 3 * stride];
@@ -646,10 +647,10 @@ end;
 
 function TIntraPredictor.Analyse_4x4(const ref: uint8_p; const mbx, mby, n: int32_t): int32_t;
 const
-  TopMask = 65484;        { !(n in [0, 1, 4, 5]) }
-  LeftMask = 64250;       { !(n in [0, 2, 8, 10]) }
-  TopLeftMask = 64200;    { n in [3, 6, 7, 9, 11, 12, 13, 14, 15] }
-  InsideTTRMask = 22340;  { top/topright,      n in [2, 6, 8, 9, 10, 12, 14] }
+  TopMask = 65484; { !(n in [0, 1, 4, 5]) }
+  LeftMask = 64250; { !(n in [0, 2, 8, 10]) }
+  TopLeftMask = 64200; { n in [3, 6, 7, 9, 11, 12, 13, 14, 15] }
+  InsideTTRMask = 22340; { top/topright,      n in [2, 6, 8, 9, 10, 12, 14] }
   InsideLTTRMask = 21056; { left/top/topright, n in [6, 9, 12, 14] }
   OutsideTTRMask = 22391; { top/topright,      !(n in [3, 7, 11, 13, 15]) }
 var
@@ -819,6 +820,7 @@ procedure predict_left16_ssse3(Src, Dst: uint8_p); external name 'predict_left16
 procedure predict_plane16_sse2(Src, Dst: uint8_p); external name 'predict_plane16_sse2';
 {$IFEND}
 
+
 procedure intra_pred_init;
 begin
   predict_top16 := @predict_top16_pas;
@@ -826,9 +828,9 @@ begin
   predict_plane16 := @predict_plane16_pas;
 
 {$IF Defined(WIN64)}
-      predict_top16   := @predict_top16_sse2;
-      predict_plane16 := @predict_plane16_sse2;
-      predict_left16  := @predict_left16_ssse3;
+  predict_top16 := @predict_top16_sse2;
+  predict_plane16 := @predict_plane16_sse2;
+  predict_left16 := @predict_left16_ssse3;
 {$IFEND}
 end;
 

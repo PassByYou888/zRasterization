@@ -4,6 +4,7 @@
 
 unit ZR.Cadencer;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -38,7 +39,7 @@ type
     CurrentTime being either manually or automatically updated using
     TimeReference (setting CurrentTime does NOT trigger progression).
   }
-  TCadencer = class(TCore_Object)
+  TCadencer = class(TCore_Object_Intermediate)
   private
     { Private Declarations }
     FTimeMultiplier: Double;

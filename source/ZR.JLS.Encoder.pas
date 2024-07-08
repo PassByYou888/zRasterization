@@ -12,6 +12,7 @@
 }
 unit ZR.JLS.Encoder;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -27,9 +28,9 @@ type
   private
     FOwnStreams: Boolean;
     application_header: Int; { application bytes written in the header }
-    all_header: Int;         { all bytes of the header, including application bytes and JPEG-LS bytes }
-    Shift: Int;              { Shift value for sparse images }
-    palete: Int;             { for paletized images }
+    all_header: Int; { all bytes of the header, including application bytes and JPEG-LS bytes }
+    Shift: Int; { Shift value for sparse images }
+    palete: Int; { for paletized images }
     { close the line buffers }
     function closebuffers: Int;
     { Initialize the buffers for each line }
@@ -127,7 +128,7 @@ constructor TJLSEncoder.Create;
 begin
   FOwnStreams := False;
   inherited Create;
-  Shift := 0;  { Shift value for sparse images }
+  Shift := 0; { Shift value for sparse images }
   palete := 0; { for paletized images }
   Init;
 end;
@@ -329,9 +330,9 @@ begin
     end;
 
   head_frame^._near := FImageInfo._near; { Not needed, scan information }
-  head_frame^.need_lse := need_lse;      { Not needed, for commpletness }
-  head_frame^.color_mode := color_mode;  { Not needed, scan information }
-  head_frame^.Shift := Shift;            { Not needed, scan information }
+  head_frame^.need_lse := need_lse; { Not needed, for commpletness }
+  head_frame^.color_mode := color_mode; { Not needed, scan information }
+  head_frame^.Shift := Shift; { Not needed, scan information }
 
   for n_s := 0 to pred(number_of_scans) do
     begin

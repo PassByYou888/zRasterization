@@ -82,7 +82,7 @@
         <AUP_READ_CALENDAR>true</AUP_READ_CALENDAR>
         <AUP_CAMERA>true</AUP_CAMERA>
         <AUP_ACCESS_COARSE_LOCATION>true</AUP_ACCESS_COARSE_LOCATION>
-        <DCC_DcuOutput>.\$(Platform)\$(Config)</DCC_DcuOutput>
+        <DCC_DcuOutput>..\Binary\$(Platform)\$(Config)</DCC_DcuOutput>
         <DCC_ExeOutput>..\Binary</DCC_ExeOutput>
         <DCC_E>false</DCC_E>
         <DCC_N>false</DCC_N>

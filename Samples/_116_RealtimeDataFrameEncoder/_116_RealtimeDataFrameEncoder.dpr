@@ -1,7 +1,7 @@
 program _116_RealtimeDataFrameEncoder;
 
 uses
-  FastMM5 in '..\..\Tools\Common\FastMM5.pas',
+  FastMM5,
   Vcl.Forms,
   RealtimeDataFrameEncoderFrm in 'RealtimeDataFrameEncoderFrm.pas' {RealtimeDataFrameEncoderForm};
 

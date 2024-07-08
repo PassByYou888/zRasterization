@@ -4,6 +4,9 @@
 
 unit ZR.MemoryRaster.JPEG.ColorTransforms;
 
+{$DEFINE FPC_DELPHI_MODE}
+{$I ZR.Define.inc}
+
 interface
 
 uses ZR.Core, ZR.MemoryRaster.JPEG.Type_LIB;

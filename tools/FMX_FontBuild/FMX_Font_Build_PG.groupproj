@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{F12CDFF4-7A33-4E1E-8419-2727D885D435}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="FMX_FontBuild.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="FMX_FONTConsoleBuild.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="FMX_FontBuild">
+        <MSBuild Projects="FMX_FontBuild.dproj"/>
+    </Target>
+    <Target Name="FMX_FontBuild:Clean">
+        <MSBuild Projects="FMX_FontBuild.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMX_FontBuild:Make">
+        <MSBuild Projects="FMX_FontBuild.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="FMX_FONTConsoleBuild">
+        <MSBuild Projects="FMX_FONTConsoleBuild.dproj"/>
+    </Target>
+    <Target Name="FMX_FONTConsoleBuild:Clean">
+        <MSBuild Projects="FMX_FONTConsoleBuild.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="FMX_FONTConsoleBuild:Make">
+        <MSBuild Projects="FMX_FONTConsoleBuild.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="FMX_FontBuild;FMX_FONTConsoleBuild"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="FMX_FontBuild:Clean;FMX_FONTConsoleBuild:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="FMX_FontBuild:Make;FMX_FONTConsoleBuild:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

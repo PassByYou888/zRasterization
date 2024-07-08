@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.Sound;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -16,7 +17,7 @@ uses
   ZR.Core, ZR.MemoryStream, ZR.UnicodeMixedLib, ZR.Cadencer, ZR.ZDB, ZR.ZDB.HashField_LIB, ZR.PascalStrings, ZR.UPascalStrings, ZR.ListEngine;
 
 type
-  TzSound = class(TCore_InterfacedObject, ICadencerProgressInterface)
+  TzSound = class(TCore_InterfacedObject_Intermediate, ICadencerProgressInterface)
   protected
     FCadEng: TCadencer;
     FSearchDB: TCore_Object;

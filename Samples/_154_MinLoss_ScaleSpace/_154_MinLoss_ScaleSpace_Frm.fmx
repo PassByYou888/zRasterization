@@ -1,0 +1,27 @@
+object _154_MinLoss_ScaleSpace_Form: T_154_MinLoss_ScaleSpace_Form
+  Left = 0
+  Top = 0
+  Caption = 'Minimize Loss Scale-space'
+  ClientHeight = 367
+  ClientWidth = 478
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnMouseUp = FormMouseUp
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object fpsTimer: TTimer
+    Interval = 1
+    OnTimer = fpsTimerTimer
+    Left = 64
+    Top = 40
+  end
+  object rendererTimer: TTimer
+    Interval = 15
+    OnTimer = rendererTimerTimer
+    Left = 64
+    Top = 104
+  end
+end

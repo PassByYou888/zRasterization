@@ -5,8 +5,8 @@ object EncodingConverForm: TEncodingConverForm
   BorderStyle = bsDialog
   BorderWidth = 10
   Caption = 'Encoding convert.'
-  ClientHeight = 938
-  ClientWidth = 1101
+  ClientHeight = 937
+  ClientWidth = 1097
   Color = clBtnFace
   DoubleBuffered = True
   Font.Charset = DEFAULT_CHARSET
@@ -14,8 +14,10 @@ object EncodingConverForm: TEncodingConverForm
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
+  OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  PixelsPerInch = 96
   TextHeight = 13
   object Label1: TLabel
     Left = 0
@@ -108,7 +110,7 @@ object EncodingConverForm: TEncodingConverForm
     Width = 89
     Height = 21
     EditLabel.Width = 126
-    EditLabel.Height = 21
+    EditLabel.Height = 13
     EditLabel.Caption = 'Wildcard expression (*,?):'
     LabelPosition = lpLeft
     TabOrder = 2

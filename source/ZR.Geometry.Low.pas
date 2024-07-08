@@ -4,6 +4,7 @@
 
 unit ZR.Geometry.Low;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

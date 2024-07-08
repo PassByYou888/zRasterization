@@ -2,6 +2,14 @@
 { * memory Rasterization API                                                   * }
 { ****************************************************************************** }
 
+procedure Raster_Global_Parallel(parallel_: Boolean);
+begin
+  TMZR.Parallel := parallel_;
+  TZRVertex.Parallel := parallel_;
+  TMorphomatics.Parallel := parallel_;
+  TMorphologyBinaryzation.Parallel := parallel_;
+end;
+
 function ClampInt(const Value, IMin, IMax: Integer): Integer;
 begin
   if Value > IMax then
@@ -115,12 +123,12 @@ var
   SrcP, DstP: PRColor;
   sp, DP: PRColor;
   mc: TRColor;
-  w, i, Dsty: Integer;
+  W, i, Dsty: Integer;
   BL: TBlendLine;
   ble: TBlendLineEx;
 begin
   { Internal routine }
-  w := dstRect.Right - dstRect.Left;
+  W := dstRect.Right - dstRect.Left;
   SrcP := Src.PixelPtr[Srcx, Srcy];
   DstP := Dst.PixelPtr[dstRect.Left, dstRect.Top];
 
@@ -129,7 +137,7 @@ begin
       begin
         for Dsty := dstRect.Top to dstRect.Bottom - 1 do
           begin
-            CopyRColor(SrcP^, DstP^, w);
+            CopyRColor(SrcP^, DstP^, W);
             inc(SrcP, Src.width);
             inc(DstP, Dst.width);
           end;
@@ -138,12 +146,12 @@ begin
       if Src.MasterAlpha >= $FF then
         begin
           if Src.CombineMode = cmBlend then
-              BL := {$IFDEF FPC}@{$ENDIF FPC}BlendLine
+              BL := BlendLine
           else
-              BL := {$IFDEF FPC}@{$ENDIF FPC}MergeLine;
+              BL := MergeLine;
           for Dsty := dstRect.Top to dstRect.Bottom - 1 do
             begin
-              BL(SrcP, DstP, w);
+              BL(SrcP, DstP, W);
               inc(SrcP, Src.width);
               inc(DstP, Dst.width);
             end
@@ -151,12 +159,12 @@ begin
       else
         begin
           if Src.CombineMode = cmBlend then
-              ble := {$IFDEF FPC}@{$ENDIF FPC}BlendLineEx
+              ble := BlendLineEx
           else
-              ble := {$IFDEF FPC}@{$ENDIF FPC}MergeLineEx;
+              ble := MergeLineEx;
           for Dsty := dstRect.Top to dstRect.Bottom - 1 do
             begin
-              ble(SrcP, DstP, w, Src.MasterAlpha);
+              ble(SrcP, DstP, W, Src.MasterAlpha);
               inc(SrcP, Src.width);
               inc(DstP, Dst.width);
             end
@@ -169,7 +177,7 @@ begin
             sp := SrcP;
             DP := DstP;
             { TODO: Write an optimized routine for fast masked transfers. }
-            for i := 0 to w - 1 do
+            for i := 0 to W - 1 do
               begin
                 if mc <> sp^ then
                     DP^ := sp^;
@@ -373,6 +381,16 @@ end;
 function ZRColor2Vector3(const C: TZRColor): TVector3;
 begin
   ZRColor2F(C, Result.Buff[0], Result.Buff[1], Result.Buff[2]);
+end;
+
+function RasterColor2FastGray(const C: TZRColor): Byte;
+const
+  B_WT = 29;
+  G_WT = 150;
+  R_WT = 77;
+begin
+  with TZRColorEntry(C) do
+      Result := Integer(Integer(R) * R_WT + Integer(G) * G_WT + Integer(B) * B_WT) shr 8;
 end;
 
 function ZRColor2Gray(const C: TZRColor): Byte;
@@ -588,6 +606,16 @@ begin
   RColor2F(C, Result.Buff[0], Result.Buff[1], Result.Buff[2]);
 end;
 
+function RColor2FastGray(const C: TZRColor): Byte;
+const
+  B_WT = 29;
+  G_WT = 150;
+  R_WT = 77;
+begin
+  with TZRColorEntry(C) do
+      Result := Integer(Integer(R) * R_WT + Integer(G) * G_WT + Integer(B) * B_WT) shr 8;
+end;
+
 function RColor2Gray(const C: TRColor): Byte;
 begin
   with TRColorEntry(C) do
@@ -668,20 +696,20 @@ end;
 
 function RColorGradient(C: TRColor; level: Byte): TRColor;
 var
-  f: TGeoFloat;
+  F: TGeoFloat;
   G: Byte;
 begin
-  f := $FF / umlMax(level, 1);
-  G := Round(Trunc(RColor2Gray(C) / f) * f);
+  F := $FF / umlMax(level, 1);
+  G := Round(Trunc(RColor2Gray(C) / F) * F);
   Result := RColor(G, G, G);
 end;
 
 function RColorGrayGradient(C: TRColor; level: Byte): Byte;
 var
-  f: TGeoFloat;
+  F: TGeoFloat;
 begin
-  f := $FF / umlMax(level, 1);
-  Result := ClampByte(Round(Trunc(RColor2Gray(C) / f) * f));
+  F := $FF / umlMax(level, 1);
+  Result := ClampByte(Round(Trunc(RColor2Gray(C) / F) * F));
 end;
 
 function RGBA2BGRA(const sour: TRColor): TRColor;
@@ -708,7 +736,7 @@ end;
 function RGBA2BGR(const sour: TRColor): TRGB;
 begin
   Result := PRGB(@sour)^;
-  Swap(Result[0], Result[2]);
+  TSwap<Byte>.Do_(Result[0], Result[2]);
 end;
 
 function RGB2BGR(const sour: TRGB): TRGB;
@@ -733,12 +761,12 @@ end;
 
 procedure SwapBR(var sour: TRGB);
 begin
-  Swap(sour[0], sour[2]);
+  TSwap<Byte>.Do_(sour[0], sour[2]);
 end;
 
 procedure SwapBR(var sour: TRColor);
 begin
-  Swap(TRColorEntry(sour).R, TRColorEntry(sour).B);
+  TSwap<Byte>.Do_(TRColorEntry(sour).R, TRColorEntry(sour).B);
 end;
 
 function MaxRGBComponent(sour: TRColor): Byte;
@@ -1060,6 +1088,175 @@ begin
 
   width := Trunc(width * Result);
   height := Trunc(height * Result);
+end;
+
+function Compute_Diff_Area(sour, dest: TMZR; var Box: TRect): Boolean;
+var
+  X, Y, K: Integer;
+begin
+  Result := False;
+  if (sour.width <> dest.width) or (sour.height <> dest.height) then
+      Exit;
+  sour.ReadyBits;
+  dest.ReadyBits;
+  Y := 0;
+  X := 0;
+  while Y < sour.height do
+    begin
+      while X < sour.width do
+        begin
+          K := X + Y * sour.width;
+          if sour.FBits^[K] <> dest.FBits^[K] then
+            begin
+              if not Result then
+                begin
+                  Box.Left := X;
+                  Box.Right := X;
+                  Box.Top := Y;
+                  Box.Bottom := Y;
+                  Result := True;
+                end
+              else
+                begin
+                  if X < Box.Left then
+                      Box.Left := X
+                  else if X > Box.Right then
+                      Box.Right := X;
+                  if Y < Box.Top then
+                      Box.Top := Y
+                  else if Y > Box.Bottom then
+                      Box.Bottom := Y;
+                end;
+            end;
+          inc(X, 8);
+        end;
+      inc(Y, 8);
+      X := 0;
+    end;
+  if Result then
+    begin
+      Box.Left := ClampInt(Box.Left - 8, 0, sour.width - 1);
+      Box.Top := ClampInt(Box.Top - 8, 0, sour.height - 1);
+      Box.Right := ClampInt(Box.Right + 8, 0, sour.width - 1);
+      Box.Bottom := ClampInt(Box.Bottom + 8, 0, sour.height - 1);
+    end;
+end;
+
+procedure Build_NULL_Diff_Data(dest: TMZR; Output: TMS64);
+var
+  head: TDiff_Area_Head;
+begin
+  head.full := False;
+  head.W := dest.width;
+  head.H := dest.height;
+  head.X1 := 0;
+  head.Y1 := 0;
+  head.X2 := 0;
+  head.Y2 := 0;
+  Output.Size := SizeOf(TDiff_Area_Head);
+  Output.Position := 0;
+  Output.WritePtr(@head, SizeOf(TDiff_Area_Head));
+end;
+
+function Build_Diff_Data(sour, dest: TMZR; Output: TMS64): Boolean;
+var
+  R: TRect;
+  head: TDiff_Area_Head;
+  X, Y: Integer;
+  p: PBGR;
+begin
+  if sour.IsEmpty or (sour.width <> dest.width) or (sour.height <> dest.height) then
+    begin
+      head.full := True;
+      head.W := dest.width;
+      head.H := dest.height;
+      head.X1 := 0;
+      head.Y1 := 0;
+      head.X2 := dest.width;
+      head.Y2 := dest.height;
+      Output.Size := SizeOf(TDiff_Area_Head) + head.W * head.H * SizeOf(TBGR);
+      Output.Position := 0;
+      Output.WritePtr(@head, SizeOf(TDiff_Area_Head));
+      p := Output.PosAsPtr;
+      dest.ReadyBits;
+      for Y := 0 to head.H - 1 do
+        for X := 0 to head.W - 1 do
+          begin
+            p^ := PRColorEntry(@dest.FBits^[X + Y * head.W])^.BGR;
+            inc(p);
+          end;
+      Result := True;
+    end
+  else if Compute_Diff_Area(sour, dest, R) then
+    begin
+      head.full := False;
+      head.W := dest.width;
+      head.H := dest.height;
+      head.X1 := R.Left;
+      head.Y1 := R.Top;
+      head.X2 := R.Right;
+      head.Y2 := R.Bottom;
+      Output.Size := SizeOf(TDiff_Area_Head) + (head.X2 - head.X1 + 1) * (head.Y2 - head.Y1 + 1) * SizeOf(TBGR);
+      Output.Position := 0;
+      Output.WritePtr(@head, SizeOf(TDiff_Area_Head));
+      p := Output.PosAsPtr;
+      for Y := head.Y1 to head.Y2 do
+        for X := head.X1 to head.X2 do
+          begin
+            p^ := PRColorEntry(@dest.FBits^[X + Y * head.W])^.BGR;
+            inc(p);
+          end;
+      Result := True;
+    end
+  else
+    begin
+      Build_NULL_Diff_Data(dest, Output);
+      Result := False;
+    end;
+end;
+
+procedure Extract_Diff_Data(sour: TMS64; dest: TMZR);
+var
+  head: TDiff_Area_Head;
+  X, Y: Integer;
+  p: PBGR;
+begin
+  sour.Position := 0;
+  sour.ReadPtr(@head, SizeOf(TDiff_Area_Head));
+  dest.SetSize(head.W, head.H);
+  p := sour.PosAsPtr;
+  if head.full then
+    begin
+      // full diff
+      for Y := 0 to head.H - 1 do
+        for X := 0 to head.W - 1 do
+          begin
+            with PRColorEntry(@dest.FBits^[X + Y * head.W])^ do
+              begin
+                BGR := p^;
+                BGR_Alpha := $FF;
+              end;
+            inc(p);
+          end;
+    end
+  else if (head.X2 > 0) and (head.Y2 > 0) then
+    begin
+      // area diff
+      for Y := head.Y1 to head.Y2 do
+        for X := head.X1 to head.X2 do
+          begin
+            with PRColorEntry(@dest.FBits^[X + Y * head.W])^ do
+              begin
+                BGR := p^;
+                BGR_Alpha := $FF;
+              end;
+            inc(p);
+          end;
+    end
+  else
+    begin
+      // no diff
+    end;
 end;
 
 procedure FastBlur(Source, dest: TMZR; radius: Double; const Bounds: TRect);
@@ -1668,19 +1865,10 @@ var
   LSum: Cardinal;
   p: PRColor;
 begin
-  if (not Assigned(mr)) or
-    (mr.width <= 0) or
-    (mr.height <= 0) then
-    begin
+  if (not Assigned(mr)) or (mr.width <= 0) or (mr.height <= 0) then
       Exit;
-    end;
-
   for i := 0 to $FF do
-    begin
       LHistogram[i] := 0;
-      LHistogram[i] := 0;
-      LHistogram[i] := 0;
-    end;
 
   LPixelCount := mr.width * mr.height;
 
@@ -1837,17 +2025,17 @@ end;
 procedure RemoveRedEyes(const mr: TMZR);
 var
   X, Y: Integer;
-  w, H: Integer;
+  W, H: Integer;
   pixptr: PRColorEntry;
   nrv, bluf, redq: TGeoFloat;
   powr, powb, powg: TGeoFloat;
 begin
-  w := mr.width;
+  W := mr.width;
   H := mr.height;
 
   for Y := 0 to (H - 1) do
     begin
-      for X := 0 to (w - 1) do
+      for X := 0 to (W - 1) do
         begin
           pixptr := PRColorEntry(mr.PixelPtr[X, Y]);
           nrv := pixptr^.G + pixptr^.B;
@@ -2271,7 +2459,7 @@ procedure IntensityToAlpha(Src: TMZR);
 var
   i: Integer;
   C: PRColorEntry;
-  f: TGeoFloat;
+  F: TGeoFloat;
 begin
   Src.ReadyBits();
   for i := (Src.width * Src.height) - 1 downto 0 do
@@ -2458,16 +2646,16 @@ begin
   Result := Rect(colIdx * Width_, rowIdx * Height_, (colIdx + 1) * Width_, (rowIdx + 1) * Height_);
 end;
 
-procedure GetSequenceFrameOutput(bmp: TMZR; Total, Column, index: Integer; output: TMZR);
+procedure GetSequenceFrameOutput(bmp: TMZR; Total, Column, index: Integer; Output: TMZR);
 var
   R: TRect;
-  w, H: Integer;
+  W, H: Integer;
 begin
   R := GetSequenceFrameRect(bmp, Total, Column, index);
-  w := R.Right - R.Left;
+  W := R.Right - R.Left;
   H := R.Bottom - R.Top;
-  output.SetSize(w, H);
-  BlockTransfer(output, 0, 0, output.BoundsRect, bmp, R, dmOpaque);
+  Output.SetSize(W, H);
+  BlockTransfer(Output, 0, 0, Output.BoundsRect, bmp, R, dmOpaque);
 end;
 
 function AnalysisColors(mr: TMZR; ignoreColors: TRColors; MaxCount: Integer): TRColors;
@@ -2494,9 +2682,9 @@ begin
     end;
 end;
 
-function BlendReg(f, B: TRColor): TRColor;
+function BlendReg(F, B: TRColor): TRColor;
 var
-  FX: TRColorEntry absolute f;
+  FX: TRColorEntry absolute F;
   BX: TRColorEntry absolute B;
   AF, AB: PByteArray;
   FA: Byte;
@@ -2511,7 +2699,7 @@ begin
 
   if FA = $FF then
     begin
-      Result := f;
+      Result := F;
       Exit;
     end;
 
@@ -2526,9 +2714,9 @@ begin
   Result := B;
 end;
 
-procedure BlendMem(f: TRColor; var B: TRColor);
+procedure BlendMem(F: TRColor; var B: TRColor);
 var
-  FX: TRColorEntry absolute f;
+  FX: TRColorEntry absolute F;
   BX: TRColorEntry absolute B;
   AF, AB: PByteArray;
   FA: Byte;
@@ -2540,7 +2728,7 @@ begin
 
   if FA = $FF then
     begin
-      B := f;
+      B := F;
       Exit;
     end;
 
@@ -2554,9 +2742,9 @@ begin
     end;
 end;
 
-function BlendRegEx(f, B, M: TRColor): TRColor;
+function BlendRegEx(F, B, M: TRColor): TRColor;
 var
-  FX: TRColorEntry absolute f;
+  FX: TRColorEntry absolute F;
   BX: TRColorEntry absolute B;
   AF, AB: PByteArray;
 begin
@@ -2572,7 +2760,7 @@ begin
 
   if M = $FF then
     begin
-      Result := f;
+      Result := F;
       Exit;
     end;
 
@@ -2587,9 +2775,9 @@ begin
   Result := B;
 end;
 
-procedure BlendMemEx(const f: TRColor; var B: TRColor; M: TRColor);
+procedure BlendMemEx(const F: TRColor; var B: TRColor; M: TRColor);
 var
-  FX: TRColorEntry absolute f;
+  FX: TRColorEntry absolute F;
   BX: TRColorEntry absolute B;
   AF, AB: PByteArray;
 begin
@@ -2604,7 +2792,7 @@ begin
 
   if M >= $FF then
     begin
-      B := f;
+      B := F;
       Exit;
     end;
 
@@ -2640,19 +2828,19 @@ begin
     end;
 end;
 
-function CombineReg(X, Y, w: TRColor): TRColor;
+function CombineReg(X, Y, W: TRColor): TRColor;
 var
   XE: TRColorEntry absolute X;
   YE: TRColorEntry absolute Y;
   AF, AB: PByteArray;
 begin
-  if w = 0 then
+  if W = 0 then
     begin
       Result := Y;
       Exit;
     end;
 
-  if w >= $FF then
+  if W >= $FF then
     begin
       Result := X;
       Exit;
@@ -2660,8 +2848,8 @@ begin
 
   with XE do
     begin
-      AF := @DivTable[w];
-      AB := @DivTable[$FF - w];
+      AF := @DivTable[W];
+      AB := @DivTable[$FF - W];
       R := AB^[YE.R] + AF^[R];
       G := AB^[YE.G] + AF^[G];
       B := AB^[YE.B] + AF^[B];
@@ -2669,18 +2857,18 @@ begin
   Result := X;
 end;
 
-procedure CombineMem(X: TRColor; var Y: TRColor; w: TRColor);
+procedure CombineMem(X: TRColor; var Y: TRColor; W: TRColor);
 var
   XE: TRColorEntry absolute X;
   YE: TRColorEntry absolute Y;
   AF, AB: PByteArray;
 begin
-  if w = 0 then
+  if W = 0 then
     begin
       Exit;
     end;
 
-  if w >= $FF then
+  if W >= $FF then
     begin
       Y := X;
       Exit;
@@ -2688,8 +2876,8 @@ begin
 
   with XE do
     begin
-      AF := @DivTable[w];
-      AB := @DivTable[$FF - w];
+      AF := @DivTable[W];
+      AB := @DivTable[$FF - W];
       R := AB^[YE.R] + AF^[R];
       G := AB^[YE.G] + AF^[G];
       B := AB^[YE.B] + AF^[B];
@@ -2697,33 +2885,33 @@ begin
   Y := X;
 end;
 
-procedure CombineLine(Src, Dst: PRColor; Count: Integer; w: TRColor);
+procedure CombineLine(Src, Dst: PRColor; Count: Integer; W: TRColor);
 begin
   while Count > 0 do
     begin
-      CombineMem(Src^, Dst^, w);
+      CombineMem(Src^, Dst^, W);
       inc(Src);
       inc(Dst);
       dec(Count);
     end;
 end;
 
-function MergeReg(f, B: TRColor): TRColor;
+function MergeReg(F, B: TRColor): TRColor;
 var
   FA, BA, WA: TRColor;
   FW, BW: PByteArray;
-  FX: TRColorEntry absolute f;
+  FX: TRColorEntry absolute F;
   BX: TRColorEntry absolute B;
   RX: TRColorEntry absolute Result;
 begin
-  FA := f shr 24;
+  FA := F shr 24;
   BA := B shr 24;
   if FA = $FF then
-      Result := f
+      Result := F
   else if FA = $0 then
       Result := B
   else if BA = $0 then
-      Result := f
+      Result := F
   else
     begin
       RX.A := DivTable[FA xor $FF, BA xor $FF] xor $FF;
@@ -2736,19 +2924,19 @@ begin
     end;
 end;
 
-function MergeRegEx(f, B, M: TRColor): TRColor;
+function MergeRegEx(F, B, M: TRColor): TRColor;
 begin
-  Result := MergeReg(DivTable[M, f shr 24] shl 24 or f and $00FFFFFF, B);
+  Result := MergeReg(DivTable[M, F shr 24] shl 24 or F and $00FFFFFF, B);
 end;
 
-procedure MergeMem(f: TRColor; var B: TRColor);
+procedure MergeMem(F: TRColor; var B: TRColor);
 begin
-  B := MergeReg(f, B);
+  B := MergeReg(F, B);
 end;
 
-procedure MergeMemEx(f: TRColor; var B: TRColor; M: TRColor);
+procedure MergeMemEx(F: TRColor; var B: TRColor; M: TRColor);
 begin
-  B := MergeReg(DivTable[M, f shr 24] shl 24 or f and $00FFFFFF, B);
+  B := MergeReg(DivTable[M, F shr 24] shl 24 or F and $00FFFFFF, B);
 end;
 
 procedure MergeLine(Src, Dst: PRColor; Count: Integer);
@@ -2881,7 +3069,7 @@ begin
   end;
 end;
 
-procedure jls_RawToZR(const AStream: TMS64; var Info: TJlsParameters; const output: TMZR);
+procedure jls_RawToZR(const AStream: TMS64; var Info: TJlsParameters; const Output: TMZR);
 var
   j, i: Integer;
   Src: PByte;
@@ -2892,40 +3080,40 @@ begin
     1: case Info.BitsPerSample of
         8:
           begin
-            output.SetSize(Info.width, Info.height);
+            Output.SetSize(Info.width, Info.height);
 
             Src := AStream.Memory;
-            for j := 0 to output.height - 1 do
+            for j := 0 to Output.height - 1 do
               for i := 0 to Info.width - 1 do
                 begin
-                  output.PixelGray[i, j] := Src^;
+                  Output.PixelGray[i, j] := Src^;
                   inc(Src);
                 end;
           end;
         10, 12, 15:
           begin
-            output.SetSize(Info.width, Info.height);
+            Output.SetSize(Info.width, Info.height);
             srcword := AStream.Memory;
 
-            for j := 0 to output.height - 1 do
+            for j := 0 to Output.height - 1 do
               for i := 0 to Info.width - 1 do
                 begin
-                  output.PixelGray[i, j] := srcword^;
+                  Output.PixelGray[i, j] := srcword^;
                   inc(srcword);
                 end;
           end;
         16:
           begin
-            output.SetSize(Info.width, Info.height);
+            Output.SetSize(Info.width, Info.height);
             srcword := AStream.Memory;
 
-            for j := 0 to output.height - 1 do
+            for j := 0 to Output.height - 1 do
               for i := 0 to Info.width - 1 do
                 begin
                   R := Word(((srcword^ and $F800) shr 8)); // to rgb888
                   G := Word(((srcword^ and $07E0) shr 3));
                   B := Word(((srcword^ and $001F) shl 3));
-                  output.PixelGray[i, j] := ((R shl 1) + (G shl 2) + G + B) shr 3;
+                  Output.PixelGray[i, j] := ((R shl 1) + (G shl 2) + G + B) shr 3;
                   inc(srcword);
                 end;
           end;
@@ -2935,10 +3123,10 @@ begin
     3:
       if Info.BitsPerSample = 8 then
         begin
-          output.SetSize(Info.width, Info.height);
+          Output.SetSize(Info.width, Info.height);
 
           Src := AStream.Memory;
-          for j := 0 to output.height - 1 do
+          for j := 0 to Output.height - 1 do
             for i := 0 to Info.width - 1 do
               begin
                 R := Src^;
@@ -2947,7 +3135,7 @@ begin
                 inc(Src);
                 B := Src^;
                 inc(Src);
-                output.Pixel[i, j] := RColor(R, G, B, $FF);
+                Output.Pixel[i, j] := RColor(R, G, B, $FF);
               end;
         end
       else
@@ -3032,7 +3220,7 @@ type
     AlphaSteps, AccumulatorSize, AccumulatedCounts: Integer;
     HoughAccumulator: array of Integer;
     PageWidth, PageHeight: Integer;
-    box: TRect;
+    Box: TRect;
 
     // compute final angle for given angle step.
     function GetFinalAngle(StepIndex: Integer): TGeoFloat;
@@ -3139,10 +3327,10 @@ begin
   with Processor do
     begin
       AlphaStep := AlphaStep_;
-      box := Rect(0, 0, morph_.width - 1, morph_.height - 1);
-      PageWidth := box.Right - box.Left;
-      PageHeight := box.Bottom - box.Top;
-      if (box.Bottom = morph_.height - 1) then
+      Box := Rect(0, 0, morph_.width - 1, morph_.height - 1);
+      PageWidth := Box.Right - Box.Left;
+      PageHeight := Box.Bottom - Box.Top;
+      if (Box.Bottom = morph_.height - 1) then
           dec(PageHeight);
       AlphaStart := -MaxAngle_;
       AlphaSteps := Ceil(2 * MaxAngle_ / AlphaStep);
@@ -3152,7 +3340,7 @@ begin
       // computeulate Hough transform
       for j := 0 to PageHeight - 1 do
         for i := 0 to PageWidth - 1 do
-          if (morph_[box.Left + i, box.Top + j] < Treshold_) and (morph_[box.Left + i, box.Top + j + 1] >= Treshold_) then
+          if (morph_[Box.Left + i, Box.Top + j] < Treshold_) and (morph_[Box.Left + i, Box.Top + j + 1] >= Treshold_) then
               computeLines(i, j);
       // Get the best lines with most votes
       Result := GetBestLines(BestLinesCount_);
@@ -3168,10 +3356,10 @@ begin
   with Processor do
     begin
       AlphaStep := AlphaStep_;
-      box := Rect(0, 0, bin_.width - 1, bin_.height - 1);
-      PageWidth := box.Right - box.Left;
-      PageHeight := box.Bottom - box.Top;
-      if (box.Bottom = bin_.height - 1) then
+      Box := Rect(0, 0, bin_.width - 1, bin_.height - 1);
+      PageWidth := Box.Right - Box.Left;
+      PageHeight := Box.Bottom - Box.Top;
+      if (Box.Bottom = bin_.height - 1) then
           dec(PageHeight);
       AlphaStart := -MaxAngle_;
       AlphaSteps := Ceil(2 * MaxAngle_ / AlphaStep);
@@ -3181,7 +3369,7 @@ begin
       // computeulate Hough transform
       for j := 0 to PageHeight - 1 do
         for i := 0 to PageWidth - 1 do
-          if (bin_[box.Left + i, box.Top + j]) and (not bin_[box.Left + i, box.Top + j + 1]) then
+          if (bin_[Box.Left + i, Box.Top + j]) and (not bin_[Box.Left + i, Box.Top + j + 1]) then
               computeLines(i, j);
       // Get the best lines with most votes
       Result := GetBestLines(BestLinesCount_);
@@ -3241,7 +3429,7 @@ var
   needFree: Boolean;
   memsiz: NativeUInt;
   luma_ptr, u_ptr, v_ptr: PByte;
-  stride, stride_c: Integer;
+  Stride, stride_c: Integer;
 begin
   if sour.read(head, SizeOf(head)) <> SizeOf(head) then
       Exit;
@@ -3274,9 +3462,9 @@ begin
   inc(u_ptr, head.width * head.height);
   v_ptr := u_ptr;
   inc(v_ptr, (head.width * head.height) shr 2);
-  stride := head.width;
+  Stride := head.width;
   stride_c := head.width shr 1;
-  YV12ToZR(luma_ptr, u_ptr, v_ptr, head.width, head.height, stride, stride_c, dest, False, False);
+  YV12ToZR(luma_ptr, u_ptr, v_ptr, head.width, head.height, Stride, stride_c, dest, False, False);
 
   if needFree then
       FreeMemory(luma_ptr);
@@ -3380,52 +3568,52 @@ end;
 
 procedure SaveByteZRToStream(raster: TByteZR; stream: TCore_Stream);
 var
-  i, w, H: Integer;
+  i, W, H: Integer;
 begin
   H := length(raster);
   if H > 0 then
-      w := length(raster[0])
+      W := length(raster[0])
   else
-      w := 0;
-  stream.write(w, 4);
+      W := 0;
+  stream.write(W, 4);
   stream.write(H, 4);
   for i := 0 to H - 1 do
-      stream.write(raster[i, 0], w);
+      stream.write(raster[i, 0], W);
 end;
 
 procedure LoadByteZRFromStream(var raster: TByteZR; stream: TCore_Stream);
 var
-  i, w, H: Integer;
+  i, W, H: Integer;
 begin
-  stream.read(w, 4);
+  stream.read(W, 4);
   stream.read(H, 4);
-  SetLength(raster, H, w);
+  SetLength(raster, H, W);
   for i := 0 to H - 1 do
-      stream.read(raster[i, 0], w);
+      stream.read(raster[i, 0], W);
 end;
 
 procedure SaveWordZRToStream(raster: TWordZR; stream: TCore_Stream);
 var
-  i, w, H: Integer;
+  i, W, H: Integer;
 begin
   H := length(raster);
   if H > 0 then
-      w := length(raster[0])
+      W := length(raster[0])
   else
-      w := 0;
-  stream.write(w, 4);
+      W := 0;
+  stream.write(W, 4);
   stream.write(H, 4);
   for i := 0 to H - 1 do
-      stream.write(raster[i, 0], w * 2);
+      stream.write(raster[i, 0], W * 2);
 end;
 
 procedure LoadWordZRFromStream(var raster: TWordZR; stream: TCore_Stream);
 var
-  i, w, H: Integer;
+  i, W, H: Integer;
 begin
-  stream.read(w, 4);
+  stream.read(W, 4);
   stream.read(H, 4);
-  SetLength(raster, H, w);
+  SetLength(raster, H, W);
   for i := 0 to H - 1 do
-      stream.read(raster[i, 0], w * 2);
+      stream.read(raster[i, 0], W * 2);
 end;

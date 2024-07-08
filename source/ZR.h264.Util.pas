@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Util;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -16,7 +17,7 @@ procedure fev_free(PTR: Pointer);
 function Min(const a, b: int32_t): int32_t;
 function Max(const a, b: int32_t): int32_t;
 function clip3(const a, b, c: int32_t): int32_t; // lower bound, value, upper bound
-function Median(const x, y, z: int32_t): int16_t;
+function Median(const x, y, Z: int32_t): int16_t;
 function num2log2(n: int32_t): uint8_t;
 procedure swap_ptr(var a, b: Pointer); overload;
 procedure swap_ptr(var a, b: uint8_p); overload;
@@ -30,7 +31,7 @@ type
   mc_chroma_func_t = procedure(Src, Dst: uint8_p; const stride: int32_t; coef: uint8_p);
 
   { TDsp }
-  TDSP = class(TCore_Object)
+  TDSP = class(TCore_Object_Intermediate)
   public
     sad_16x16, sad_8x8, sad_4x4, ssd_16x16, ssd_8x8, satd_4x4, satd_8x8, satd_16x16: mbcmp_func_t;
     var_16x16: mbstat_func_t;
@@ -102,9 +103,9 @@ begin
       Result := b;
 end;
 
-function Median(const x, y, z: int32_t): int16_t;
+function Median(const x, y, Z: int32_t): int16_t;
 begin
-  Result := x + y + z - Min(x, Min(y, z)) - Max(x, Max(y, z));
+  Result := x + y + Z - Min(x, Min(y, Z)) - Max(x, Max(y, Z));
 end;
 
 function num2log2(n: int32_t): uint8_t;

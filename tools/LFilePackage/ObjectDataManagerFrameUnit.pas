@@ -215,7 +215,7 @@ procedure TObjectDataManagerFrame.ActionImportDirectoryExecute(Sender: TObject);
         FResourceData.CreateField(DBPath, '');
     fPos := FResourceData.GetPathFieldPos(DBPath);
 
-    fAry := umlGetFileListWithFullPath(ImpPath);
+    fAry := umlGet_File_Full_Array(ImpPath);
     for n in fAry do
       begin
         longName := FResourceData.Handle^.IOHnd.CheckFixedStringLoss(umlGetFileName(n));
@@ -238,7 +238,7 @@ procedure TObjectDataManagerFrame.ActionImportDirectoryExecute(Sender: TObject);
         DisposeObject(itmStream);
       end;
 
-    fAry := umlGetDirListPath(ImpPath);
+    fAry := umlGet_Path_Array(ImpPath);
     for n in fAry do
         ImpFromPath(umlCombinePath(ImpPath, n), umlCombinePath(DBPath, n));
   end;

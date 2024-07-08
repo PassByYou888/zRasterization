@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Frame;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -15,7 +16,7 @@ const
   FRAME_EDGE_W = FRAME_PADDING_W div 2;
 
 type
-  TFrameManager = class
+  TFrameManager = class(TCore_Object_Intermediate)
   private
     listL0: array of TFrame;
     ifree: int32_t;
@@ -28,12 +29,12 @@ type
     destructor Destroy; override;
   end;
 
-procedure frame_new(var frame: TFrame; const mb_width, mb_height: int32_t);
-procedure frame_free(var frame: TFrame);
+procedure frame_new(var Frame: TFrame; const mb_width, mb_height: int32_t);
+procedure frame_free(var Frame: TFrame);
 
-procedure frame_img2frame_copy(var frame: TFrame; const img: TPlanarImage);
-procedure frame_paint_edges(var frame: TFrame);
-procedure frame_hpel_interpolate(var frame: TFrame);
+procedure frame_img2frame_copy(var Frame: TFrame; const img: TPlanarImage);
+procedure frame_paint_edges(var Frame: TFrame);
+procedure frame_hpel_interpolate(var Frame: TFrame);
 
 implementation
 
@@ -117,14 +118,14 @@ begin
   inherited Destroy;
 end;
 
-procedure frame_new(var frame: TFrame; const mb_width, mb_height: int32_t);
+procedure frame_new(var Frame: TFrame; const mb_width, mb_height: int32_t);
 var
   padded_height, padded_width,
     frame_mem_offset, frame_mem_offset_cr: int32_t; // frame memory to image data start offset
-  pfsize, pfsize_cr: int32_t;                       // padded frame luma / chroma plane size
+  pfsize, pfsize_cr: int32_t; // padded frame luma / chroma plane size
   i: int32_t;
 begin
-  with frame do
+  with Frame do
     begin
       mbw := mb_width;
       mbh := mb_height;
@@ -136,52 +137,52 @@ begin
       padded_height := h + FRAME_PADDING_W * 2;
     end;
 
-  frame.pw := padded_width;
-  frame.ph := padded_height;
-  frame.stride := padded_width;
-  frame.stride_c := padded_width div 2;
+  Frame.pw := padded_width;
+  Frame.ph := padded_height;
+  Frame.stride := padded_width;
+  Frame.stride_c := padded_width div 2;
 
   pfsize := padded_width * padded_height;
   pfsize_cr := pfsize div 4;
   frame_mem_offset := FRAME_PADDING_W * padded_width + FRAME_PADDING_W;
   frame_mem_offset_cr := FRAME_PADDING_W * padded_width div 4 + FRAME_PADDING_W div 2;
 
-  frame.mbs := fev_malloc(mb_width * mb_height * SizeOf(TMacroblock));
-  frame.aq_table := fev_malloc(mb_width * mb_height);
-  frame.qp := 0;
-  frame.qp_avg := 0;
-  frame.Num := 0;
+  Frame.mbs := fev_malloc(mb_width * mb_height * SizeOf(TMacroblock));
+  Frame.aq_table := fev_malloc(mb_width * mb_height);
+  Frame.qp := 0;
+  Frame.qp_avg := 0;
+  Frame.Num := 0;
 
-  frame.frame_mem_offset := frame_mem_offset;
-  frame.frame_mem_offset_cr := frame_mem_offset_cr;
+  Frame.frame_mem_offset := frame_mem_offset;
+  Frame.frame_mem_offset_cr := frame_mem_offset_cr;
 
   // luma plane
-  frame.mem[0] := fev_malloc(pfsize + pfsize_cr * 2);
-  frame.plane[0] := frame.mem[0] + frame_mem_offset;
+  Frame.mem[0] := fev_malloc(pfsize + pfsize_cr * 2);
+  Frame.plane[0] := Frame.mem[0] + frame_mem_offset;
   // chroma planes
-  frame.mem[1] := frame.mem[0] + pfsize;
-  frame.mem[2] := frame.mem[1] + pfsize_cr;
-  frame.plane[1] := frame.mem[1] + frame_mem_offset_cr;
-  frame.plane[2] := frame.mem[2] + frame_mem_offset_cr;
+  Frame.mem[1] := Frame.mem[0] + pfsize;
+  Frame.mem[2] := Frame.mem[1] + pfsize_cr;
+  Frame.plane[1] := Frame.mem[1] + frame_mem_offset_cr;
+  Frame.plane[2] := Frame.mem[2] + frame_mem_offset_cr;
   // decoded planes + interpolated planes
-  frame.mem[3] := fev_malloc(pfsize * 4 + pfsize_cr * 2);
-  frame.plane_dec[0] := frame.mem[3] + frame_mem_offset;
+  Frame.mem[3] := fev_malloc(pfsize * 4 + pfsize_cr * 2);
+  Frame.plane_dec[0] := Frame.mem[3] + frame_mem_offset;
   for i := 0 to 3 do
-      frame.luma_mc[i] := frame.plane_dec[0] + pfsize * i;
+      Frame.luma_mc[i] := Frame.plane_dec[0] + pfsize * i;
   for i := 0 to 3 do
-      frame.luma_mc_qpel[i] := frame.luma_mc[i];
-  frame.luma_mc_qpel[4] := frame.luma_mc[0] + 1;
-  frame.luma_mc_qpel[5] := frame.luma_mc[2] + 1;
-  frame.luma_mc_qpel[6] := frame.luma_mc[0] + padded_width;
-  frame.luma_mc_qpel[7] := frame.luma_mc[1] + padded_width;
+      Frame.luma_mc_qpel[i] := Frame.luma_mc[i];
+  Frame.luma_mc_qpel[4] := Frame.luma_mc[0] + 1;
+  Frame.luma_mc_qpel[5] := Frame.luma_mc[2] + 1;
+  Frame.luma_mc_qpel[6] := Frame.luma_mc[0] + padded_width;
+  Frame.luma_mc_qpel[7] := Frame.luma_mc[1] + padded_width;
 
-  frame.mem[4] := frame.mem[3] + pfsize * 4;
-  frame.mem[5] := frame.mem[4] + pfsize_cr;
-  frame.plane_dec[1] := frame.mem[4] + frame_mem_offset_cr;
-  frame.plane_dec[2] := frame.mem[5] + frame_mem_offset_cr;
+  Frame.mem[4] := Frame.mem[3] + pfsize * 4;
+  Frame.mem[5] := Frame.mem[4] + pfsize_cr;
+  Frame.plane_dec[1] := Frame.mem[4] + frame_mem_offset_cr;
+  Frame.plane_dec[2] := Frame.mem[5] + frame_mem_offset_cr;
 
   // 4x4 block offsets
-  with frame do
+  with Frame do
     begin
       blk_offset[0] := 0;
       blk_offset[1] := 4;
@@ -210,32 +211,32 @@ begin
     end;
 
   // other
-  frame.filter_hv_temp := fev_malloc(padded_width * 2);
-  frame.bs_buf := fev_malloc(frame.w * frame.h * 3);
+  Frame.filter_hv_temp := fev_malloc(padded_width * 2);
+  Frame.bs_buf := fev_malloc(Frame.w * Frame.h * 3);
 
-  frame.stats := TFrameStats.Create;
+  Frame.Stats := TFrameStats.Create;
 end;
 
-procedure frame_free(var frame: TFrame);
+procedure frame_free(var Frame: TFrame);
 begin
-  fev_free(frame.mbs);
-  fev_free(frame.aq_table);
-  fev_free(frame.mem[0]);
-  fev_free(frame.mem[3]);
-  fev_free(frame.filter_hv_temp);
-  fev_free(frame.bs_buf);
-  frame.stats.Free;
+  fev_free(Frame.mbs);
+  fev_free(Frame.aq_table);
+  fev_free(Frame.mem[0]);
+  fev_free(Frame.mem[3]);
+  fev_free(Frame.filter_hv_temp);
+  fev_free(Frame.bs_buf);
+  Frame.Stats.Free;
 
-  frame.plane[0] := nil;
-  frame.plane[1] := nil;
-  frame.plane[2] := nil;
-  frame.filter_hv_temp := nil;
+  Frame.plane[0] := nil;
+  Frame.plane[1] := nil;
+  Frame.plane[2] := nil;
+  Frame.filter_hv_temp := nil;
 
-  frame.stride := 0;
-  frame.stride_c := 0;
+  Frame.stride := 0;
+  Frame.stride_c := 0;
 
-  frame.w := 0;
-  frame.h := 0;
+  Frame.w := 0;
+  Frame.h := 0;
 end;
 
 procedure frame_swap(var a, b: TFrame);
@@ -251,7 +252,7 @@ end;
   frame_setup_adapt_q
   adjust mb quant according to variance
 *)
-procedure frame_setup_adapt_q(var frame: TFrame; pixbuffer: uint8_p; const base_qp: uint8_t);
+procedure frame_setup_adapt_q(var Frame: TFrame; pixbuffer: uint8_p; const base_qp: uint8_t);
 const
   QP_RANGE = 10;
   QP_MIN = 15;
@@ -266,29 +267,29 @@ var
   stride, Avg: int32_t;
 
 begin
-  stride := frame.mbw;
+  stride := Frame.mbw;
   pix := pixbuffer;
 
   // derive qp from variance
   Avg := 0;
-  for y := 0 to (frame.mbh - 1) do
+  for y := 0 to (Frame.mbh - 1) do
     begin
-      pfenc := frame.plane[0] + y * 16 * frame.stride;
+      pfenc := Frame.plane[0] + y * 16 * Frame.stride;
 
-      for x := 0 to (frame.mbw - 1) do
+      for x := 0 to (Frame.mbw - 1) do
         begin
-          pixel_load_16x16(pix, pfenc, frame.stride);
+          pixel_load_16x16(pix, pfenc, Frame.stride);
           vari := DSP.var_16x16(pix);
           inc(pfenc, 16);
           qp := base_qp - QP_RANGE;
           qp := clip3(QP_MIN, qp + Min(vari shr VAR_SHIFT, QP_RANGE * 2), QP_MAX);
           inc(Avg, qp);
-          frame.aq_table[y * stride + x] := qp;
+          Frame.aq_table[y * stride + x] := qp;
         end;
     end;
 
-  frame.aq_table[0] := base_qp;
-  frame.qp_avg := Avg / (frame.mbw * frame.mbh);
+  Frame.aq_table[0] := base_qp;
+  Frame.qp_avg := Avg / (Frame.mbw * Frame.mbh);
 end;
 
 { skopirovanie dat do zarovnanej oblasti pamate spolu s vyplnou na okrajoch
@@ -317,7 +318,7 @@ begin
     end;
 end;
 
-procedure frame_img2frame_copy(var frame: TFrame; const img: TPlanarImage);
+procedure frame_img2frame_copy(var Frame: TFrame; const img: TPlanarImage);
 var
   w, h, i, j: int32_t;
   dstride, sstride, edge_width: int32_t;
@@ -326,9 +327,9 @@ begin
   w := img.width;
   h := img.height;
   // y
-  dstride := frame.stride;
+  dstride := Frame.stride;
   sstride := img.stride;
-  d := frame.plane[0];
+  d := Frame.plane[0];
   s := img.plane[0];
   for i := 0 to h - 1 do
     begin
@@ -337,11 +338,11 @@ begin
       inc(d, dstride);
     end;
   // u/v
-  dstride := frame.stride_c;
+  dstride := Frame.stride_c;
   sstride := img.stride_c;
   for j := 1 to 2 do
     begin
-      d := frame.plane[j];
+      d := Frame.plane[j];
       s := img.plane[j];
       for i := 0 to h div 2 - 1 do
         begin
@@ -355,16 +356,16 @@ begin
   if (w and $F) > 0 then
     begin
       edge_width := 16 - (img.width and $F);
-      paint_edge_vert(frame.plane[0] + w - 1, frame.plane[0] + w, frame.stride, frame.h, edge_width);
+      paint_edge_vert(Frame.plane[0] + w - 1, Frame.plane[0] + w, Frame.stride, Frame.h, edge_width);
       for i := 1 to 2 do
-          paint_edge_vert(frame.plane[i] + w div 2 - 1, frame.plane[i] + w div 2, frame.stride_c, frame.h_cr, edge_width div 2);
+          paint_edge_vert(Frame.plane[i] + w div 2 - 1, Frame.plane[i] + w div 2, Frame.stride_c, Frame.h_cr, edge_width div 2);
     end;
   if (h and $F) > 0 then
     begin
       edge_width := 16 - (img.height and $F);
-      paint_edge_horiz(frame.plane[0] - 16 + frame.stride * (h - 1), frame.plane[0] - 16 + frame.stride * h, frame.stride, edge_width);
+      paint_edge_horiz(Frame.plane[0] - 16 + Frame.stride * (h - 1), Frame.plane[0] - 16 + Frame.stride * h, Frame.stride, edge_width);
       for i := 1 to 2 do
-          paint_edge_horiz(frame.plane[i] - 8 + frame.stride_c * (h div 2 - 1), frame.plane[i] - 8 + frame.stride_c * h div 2, frame.stride_c, edge_width);
+          paint_edge_horiz(Frame.plane[i] - 8 + Frame.stride_c * (h div 2 - 1), Frame.plane[i] - 8 + Frame.stride_c * h div 2, Frame.stride_c, edge_width);
     end;
 end;
 
@@ -380,13 +381,13 @@ begin
   paint_edge_horiz(p - edge_width + stride * (h - 1), p - edge_width + stride * h, stride, edge_width);
 end;
 
-procedure frame_paint_edges(var frame: TFrame);
+procedure frame_paint_edges(var Frame: TFrame);
 var
   i: int32_t;
 begin
-  plane_paint_edges(frame.plane_dec[0], frame.w, frame.h, frame.stride, 16);
+  plane_paint_edges(Frame.plane_dec[0], Frame.w, Frame.h, Frame.stride, 16);
   for i := 1 to 2 do
-      plane_paint_edges(frame.plane_dec[i], frame.w_cr, frame.h_cr, frame.stride_c, 8);
+      plane_paint_edges(Frame.plane_dec[i], Frame.w_cr, Frame.h_cr, Frame.stride_c, 8);
 end;
 
 (* ******************************************************************************
@@ -401,7 +402,7 @@ procedure filter_hvtemp_line_sse2(Src: psmallint; Dst: pbyte; width: integer); e
 {$POINTERMATH ON}
 
 
-procedure frame_hpel_interpolate(var frame: TFrame);
+procedure frame_hpel_interpolate(var Frame: TFrame);
 
   procedure filter_asm(tmp: psmallint);
   var
@@ -412,13 +413,13 @@ procedure frame_hpel_interpolate(var frame: TFrame);
     y, i: integer;
     edge_offset: integer;
   begin
-    width := frame.w;
-    height := frame.h;
-    stride := frame.stride;
+    width := Frame.w;
+    height := Frame.h;
+    stride := Frame.stride;
     edge_offset := FRAME_EDGE_W + FRAME_EDGE_W * stride;
-    Src := frame.plane_dec[0] - edge_offset;
+    Src := Frame.plane_dec[0] - edge_offset;
     for i := 0 to 2 do
-        Dst[i] := frame.luma_mc[i + 1] - edge_offset;
+        Dst[i] := Frame.luma_mc[i + 1] - edge_offset;
 
     for y := -FRAME_EDGE_W to height - 1 + FRAME_EDGE_W do
       begin
@@ -438,13 +439,13 @@ procedure frame_hpel_interpolate(var frame: TFrame);
   end;
 
 begin
-  filter_asm(frame.filter_hv_temp + 2)
+  filter_asm(Frame.filter_hv_temp + 2)
 end;
 
 {$ELSE}
 
 
-procedure frame_hpel_interpolate(var frame: TFrame);
+procedure frame_hpel_interpolate(var Frame: TFrame);
 var
   width, height: int32_t;
   stride: int32_t;
@@ -465,13 +466,13 @@ var
   end;
 
 begin
-  width := frame.w;
-  height := frame.h;
-  stride := frame.stride;
+  width := Frame.w;
+  height := Frame.h;
+  stride := Frame.stride;
   edge_offset := FRAME_EDGE_W + FRAME_EDGE_W * stride;
-  Src := frame.plane_dec[0] - edge_offset;
+  Src := Frame.plane_dec[0] - edge_offset;
   for i := 0 to 2 do
-      Dst[i] := frame.luma_mc[i + 1] - edge_offset;
+      Dst[i] := Frame.luma_mc[i + 1] - edge_offset;
 
   // horizontal
   for y := 0 to height - 1 + FRAME_EDGE_W * 2 do
@@ -488,7 +489,7 @@ begin
     end;
 
   // vertical + hv
-  Src := frame.plane_dec[0] - edge_offset;
+  Src := Frame.plane_dec[0] - edge_offset;
   for i := -2 to 3 do
       Row[i] := Src + i * stride;
 

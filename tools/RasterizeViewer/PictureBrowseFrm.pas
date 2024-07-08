@@ -140,7 +140,7 @@ begin
           PathEdit.Enabled := False;
         end);
 
-      dAry := umlGetFileListWithFullPath(Path);
+      dAry := umlGet_File_Full_Array(Path);
       imgFil := TBitmapCodecManager.GetFileTypes+';*.seq';
       umlGetSplitArray(imgFil, imgFAry, ';');
 

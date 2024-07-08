@@ -1,7 +1,7 @@
 program FontBuild;
 
 uses
-  FastMM5 in '..\Common\FastMM5.pas',
+  FastMM5,
   Vcl.Forms,
   FontBuildFrm in 'FontBuildFrm.pas' {FontBuildForm},
   Vcl.Themes,

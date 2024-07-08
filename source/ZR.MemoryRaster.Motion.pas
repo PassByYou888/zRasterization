@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.Motion;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -20,7 +21,7 @@ uses ZR.Core,
   ZR.DrawEngine;
 
 type
-  TMotion = class
+  TMotion = class(TCore_Object_Intermediate)
   protected
     FWidth: Integer;
     FHeight: Integer;
@@ -51,7 +52,7 @@ type
   end;
 
   PMotionData = ^TMotionData;
-  TMotionDataPool_Decl = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<PMotionData>;
+  TMotionDataPool_Decl = TGenericsList<PMotionData>;
 
   TMotionEncrypt = (meColor255, meGrayscale, meYUV422, meOptiYUV422);
 
@@ -153,7 +154,7 @@ procedure TMotion.BuildBlockZR(raster: TZR; buff: TMorphomatics);
 begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(FLocalParallel, @Nested_ParallelFor, 0, FHeight - 1);
+  FPCParallelFor(FLocalParallel, Nested_ParallelFor, 0, FHeight - 1);
 {$ELSE FPC}
   DelphiParallelFor(FLocalParallel, 0, FHeight - 1, procedure(pass: Integer)
     var
@@ -212,7 +213,7 @@ procedure TMotion.ExtractBlock(BlockBuff_: TMorphomatics; Output: TZR);
 begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(FLocalParallel, @Nested_ParallelFor, 0, FHeight - 1);
+  FPCParallelFor(FLocalParallel, Nested_ParallelFor, 0, FHeight - 1);
 {$ELSE FPC}
   DelphiParallelFor(FLocalParallel, 0, FHeight - 1, procedure(pass: Integer)
     var
@@ -274,7 +275,7 @@ procedure TMotion.ExtractMotionDiff(MotionDiff: TMorphologyBinaryzation; Color: 
 begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(FLocalParallel, @Nested_ParallelFor, 0, FHeight - 1);
+  FPCParallelFor(FLocalParallel, Nested_ParallelFor, 0, FHeight - 1);
 {$ELSE FPC}
   DelphiParallelFor(FLocalParallel, 0, FHeight - 1, procedure(pass: Integer)
     var
@@ -455,7 +456,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(FLocalParallel, @Nested_ParallelFor, 0, Length(XYCoord) - 1);
+  FPCParallelFor(FLocalParallel, Nested_ParallelFor, 0, Length(XYCoord) - 1);
 {$ELSE FPC}
   DelphiParallelFor(FLocalParallel, 0, Length(XYCoord) - 1, procedure(pass: Integer)
     begin
@@ -519,7 +520,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(FLocalParallel, @Nested_ParallelFor, 0, Count - 1);
+  FPCParallelFor(FLocalParallel, Nested_ParallelFor, 0, Count - 1);
 {$ELSE FPC}
   DelphiParallelFor(FLocalParallel, 0, Count - 1, procedure(pass: Integer)
     var

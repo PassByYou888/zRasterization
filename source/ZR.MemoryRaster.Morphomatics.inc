@@ -213,7 +213,7 @@ begin
   DisposeObject(rnd);
 end;
 
-procedure TMorphomatics.FillValueFromPolygon(Polygon: TVec2List; InsideValue, OutsideValue: TMorphomaticsValue);
+procedure TMorphomatics.FillValueFromPolygon(Polygon: TV2L; InsideValue, OutsideValue: TMorphomaticsValue);
 {$IFDEF Parallel}
 {$IFDEF FPC}
   procedure Nested_ParallelFor(Y: Integer);
@@ -250,7 +250,7 @@ procedure TMorphomatics.FillValueFromPolygon(Polygon: TVec2List; InsideValue, Ou
 begin
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -663,7 +663,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -757,7 +757,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -836,7 +836,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -920,7 +920,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1016,7 +1016,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1120,7 +1120,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1236,7 +1236,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1359,7 +1359,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1454,7 +1454,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1533,7 +1533,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1612,7 +1612,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -1690,7 +1690,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(Y: Integer)
     var
@@ -2019,7 +2019,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(sY: Integer)
     var
@@ -2129,7 +2129,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, 0, Height - 1);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, 0, Height - 1);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, 0, Height - 1, procedure(sY: Integer)
     var
@@ -2446,7 +2446,7 @@ begin
 
 {$IFDEF Parallel}
 {$IFDEF FPC}
-  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, @Nested_ParallelFor, R, Height - 1 - R);
+  FPCParallelFor(TMorphomatics.Parallel and LocalParallel, Nested_ParallelFor, R, Height - 1 - R);
 {$ELSE FPC}
   DelphiParallelFor(TMorphomatics.Parallel and LocalParallel, R, Height - 1 - R, procedure(pass: Integer)
     var

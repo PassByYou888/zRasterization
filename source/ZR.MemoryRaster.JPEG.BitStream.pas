@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.BitStream;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface

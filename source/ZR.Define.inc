@@ -61,14 +61,14 @@
 
   // With SMALL_RASTER_FONT_Build_In and LARGE_RASTER_FONT_Build_In, boot-time memory usage increase by 100M-200M and start-up time to be delay 100ms
   {$DEFINE SMALL_RASTER_FONT_Build_In}
-  // {$DEFINE LARGE_RASTER_FONT_Build_In}
+  {$UNDEF LARGE_RASTER_FONT_Build_In}
 
   // ZDB_BACKUP is automatically made and replica caching is enabled.
   // usage ZDB_BACKUP so slows the open of large size ZDB file, after time, but does is high performance.
-  // {$DEFINE ZDB_BACKUP}
+  {$UNDEF ZDB_BACKUP}
 
   // ZDB Flush() uses physical IO as the temp storage device
-  // {$DEFINE ZDB_PHYSICAL_FLUSH}
+  {$UNDEF ZDB_PHYSICAL_FLUSH}
 
   // used Critical Simulate Atomic with TMonitor.Enter(obj) and TMonitor.Exit(obj)
   // CriticalSimulateAtomic defined so performance to be reduced
@@ -76,8 +76,8 @@
 
   // used soft Simulate Critical(ring)
   // SoftCritical defined so performance to be reduced
-  // {$DEFINE SoftCritical}
-  // {$DEFINE ANTI_DEAD_ATOMIC_LOCK}
+  {$UNDEF SoftCritical}
+  {$UNDEF ANTI_DEAD_ATOMIC_LOCK}
 
   {$UNDEF debug}
   {$DEFINE release}
@@ -145,21 +145,27 @@
     {$UNDEF FirstCharInZero}
   {$ENDIF VER350}
 
-  // delphi 11.x
+  // delphi 12.x
   {$IFDEF VER360}
     {$DEFINE InstallMT19937CoreToDelphi}
     {$UNDEF FirstCharInZero}
   {$ENDIF VER360}
 
+  // delphi 12.x
+  {$IFDEF VER370}
+    {$DEFINE InstallMT19937CoreToDelphi}
+    {$UNDEF FirstCharInZero}
+  {$ENDIF VER370}
+
   // MT19937 of seed in the startup TCompute is 0
   {$DEFINE MT19937SeedOnTComputeThreadIs0}
 
   // automated loading common AI datasets on boot-time
-  // {$DEFINE Z_AI_Dataset_Build_In}
+  {$UNDEF Z_AI_Dataset_Build_In}
 
   // With SMALL_RASTER_FONT_Build_In and LARGE_RASTER_FONT_Build_In, boot-time memory usage increase by 100M-200M and start-up time to be delay 100ms
-  // {$DEFINE SMALL_RASTER_FONT_Build_In}
-  // {$DEFINE LARGE_RASTER_FONT_Build_In}
+  {$UNDEF SMALL_RASTER_FONT_Build_In}
+  {$UNDEF LARGE_RASTER_FONT_Build_In}
 
   {$IF Defined(Android) or Defined(IOS)}
     {$DEFINE SMALL_RASTER_FONT_Build_In}
@@ -167,20 +173,19 @@
 
   // ZDB_BACKUP is automatically made and replica caching is enabled.
   // usage ZDB_BACKUP so slows the open of large size ZDB file, after time, but does is high performance.
-  // {$DEFINE ZDB_BACKUP}
+  {$UNDEF ZDB_BACKUP}
 
   // ZDB Flush() uses physical IO as the temp storage device
-  // {$DEFINE ZDB_PHYSICAL_FLUSH}
+  {$UNDEF ZDB_PHYSICAL_FLUSH}
 
   // used Critical Simulate Atomic with TMonitor.Enter(obj) and TMonitor.Exit(obj)
   // CriticalSimulateAtomic defined so performance to be reduced
-  // {$DEFINE CriticalSimulateAtomic}
   {$UNDEF CriticalSimulateAtomic}
 
   // used soft Simulate Critical(ring)
   // SoftCritical defined so performance to be reduced
-  // {$DEFINE SoftCritical}
-  // {$DEFINE ANTI_DEAD_ATOMIC_LOCK}
+  {$UNDEF SoftCritical}
+  {$UNDEF ANTI_DEAD_ATOMIC_LOCK}
 
   // It only slows down Delphi strings, doesn't help C++Builder migration and is finally gone in XE+
   {$STRINGCHECKS OFF}
@@ -203,6 +208,8 @@
       {$O+} { open optimization }
       {$INLINE ON} { inline }
     {$IFEND}
+    {$STRINGCHECKS OFF}
+    {$W-}
   {$ELSE release}
     {$UNDEF INLINE_ASM}
     {$O-} { close optimization }
@@ -224,15 +231,32 @@
   {$ELSE}
     // PhysicsIO interface
     // {$DEFINE PhysicsIO_On_ICS}
+    // {$DEFINE PhysicsIO_On_ICS9}
     {$DEFINE PhysicsIO_On_CrossSocket}
     // {$DEFINE PhysicsIO_On_DIOCP}
     // {$DEFINE PhysicsIO_On_Indy}
-    // {$DEFINE PhysicsIO_On_Synapse}
+    //  {$DEFINE PhysicsIO_On_Synapse}
   {$IFEND}
 
-  {$X+} { Extended syntax }
   {$Z1} { Minimum enum size }
+
+  // SSE Optimzied for distance
+  {$IF Defined(MSWINDOWS)}
+  {$DEFINE SSE_Optimize_Distance_Compute}
+  {$ENDIF Defined(MSWINDOWS)}
+
 {$ENDIF FPC}
+
+// Intermediate_Instance_Tool is used to trace activity instances, which can affect performance after startup.
+// Intermediate_Instance_Tool help debug and analyze the state of large programs
+{$DEFINE Intermediate_Instance_Tool}
+
+// Core_Thread_Soft_Synchronize is use software to solve atomic hardware synchronization waiting.
+// When using a DLL or library program, "Core_Thread_Soft_Synchronize" should be used.
+{$DEFINE Core_Thread_Soft_Synchronize}
+
+// tracking delay free object for debug
+{$DEFINE Tracking_Dealy_Free_Object}
 
 {$IFDEF NO_FS}
   // Disable file system for ZNet-DoubleIO
@@ -285,6 +309,17 @@
 // the fault repair time can only last for 4 hours. If it exceeds this time, it will be considered a failure
 // this "ZNet_C4_Auto_Repair_First_BuildDependNetwork_Fault" is effective for IoT device deployment and large-scale server groups.
 {$DEFINE ZNet_C4_Auto_Repair_First_BuildDependNetwork_Fault}
+
+// Safe flush is a power-off protection technology
+// ZDB2-HPC support system defaults to using Safe Flush.
+// Safe flush can effectively solve the problem of data loss during power outages, and on the other hand, it can reduce IO performance
+{$DEFINE ZDB2_Thread_Engine_Safe_Flush}
+
+// When using the ZDB2 engine in the ZNet-C4 framework Safe Flush technology, prioritize the use of Safe Flush technology
+{$DEFINE C4_Safe_Flush}
+
+// Print the structure and debugging information of OPCode
+{$UNDEF Print_OPCode_Debug}
 
 {$IFDEF DEBUG}
   // initialization status prompt
@@ -350,6 +385,8 @@
 {$Q-} { Overflow checking }
 {$B-} { Complete boolean evaluation }
 {$J-} { Writeable typed constants }
+{$T-} { Type-checked Pointers }
+{$X+} { Extended Syntax with Pointers }
 
 (*
   Pointer math is simply treating any given typed pointer in some narrow,

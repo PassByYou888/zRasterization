@@ -1,0 +1,171 @@
+object ProjectionForm: TProjectionForm
+  Left = 0
+  Top = 0
+  Caption = 'Projection, create by.qq600585'
+  ClientHeight = 728
+  ClientWidth = 1333
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object ScrollBox1: TScrollBox
+    Align = Client
+    Size.Width = 636.000000000000000000
+    Size.Height = 728.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Viewport.Width = 636.000000000000000000
+    Viewport.Height = 728.000000000000000000
+    object d_Image: TImage
+      MultiResBitmap = <
+        item
+        end>
+      Align = Client
+      Size.Width = 636.000000000000000000
+      Size.Height = 728.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object d_RightTop: TCircle
+      Position.X = 472.000000000000000000
+      Position.Y = 192.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object d_LeftTop: TCircle
+      Position.X = 240.000000000000000000
+      Position.Y = 192.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object d_LeftBottom: TCircle
+      Position.X = 240.000000000000000000
+      Position.Y = 464.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object d_RightBottom: TCircle
+      Position.X = 472.000000000000000000
+      Position.Y = 464.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object TriangleCheckBox: TCheckBox
+      StyledSettings = [Family, Size]
+      Position.X = 8.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 81.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      Text = 'Triangle'
+      TextSettings.Font.StyleExt = {00070000000000000004000000}
+      TextSettings.FontColor = claWhite
+      OnChange = TriangleCheckBoxChange
+    end
+    object ModeComboBox: TComboBox
+      Items.Strings = (
+        'Rastermization'
+        'Morphomatics'
+        'Binaryzation')
+      ItemIndex = 0
+      Position.X = 208.000000000000000000
+      Position.Y = 5.000000000000000000
+      TabOrder = 6
+      OnChange = ModeComboBoxChange
+    end
+    object Label1: TLabel
+      StyledSettings = [Family, Size]
+      Position.X = 144.000000000000000000
+      Position.Y = 8.000000000000000000
+      Size.Width = 57.000000000000000000
+      Size.Height = 17.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.Font.StyleExt = {00070000000000000004000000}
+      TextSettings.FontColor = claWhite
+      Text = 'Mode'
+      TabOrder = 7
+    end
+  end
+  object ScrollBox2: TScrollBox
+    Align = Left
+    Size.Width = 697.000000000000000000
+    Size.Height = 728.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Viewport.Width = 697.000000000000000000
+    Viewport.Height = 728.000000000000000000
+    object s_Image: TImage
+      MultiResBitmap = <
+        item
+        end>
+      Size.Width = 697.000000000000000000
+      Size.Height = 728.000000000000000000
+      Size.PlatformDefault = False
+    end
+    object s_LeftTop: TCircle
+      Position.X = 48.000000000000000000
+      Position.Y = 128.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object s_RightTop: TCircle
+      Position.X = 408.000000000000000000
+      Position.Y = 128.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object s_LeftBottom: TCircle
+      Position.X = 48.000000000000000000
+      Position.Y = 472.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+    object s_RightBottom: TCircle
+      Position.X = 408.000000000000000000
+      Position.Y = 472.000000000000000000
+      Size.Width = 50.000000000000000000
+      Size.Height = 50.000000000000000000
+      Size.PlatformDefault = False
+      OnMouseDown = cMouseDown
+      OnMouseMove = cMouseMove
+      OnMouseUp = cMouseUp
+      OnPaint = cPaint
+    end
+  end
+end

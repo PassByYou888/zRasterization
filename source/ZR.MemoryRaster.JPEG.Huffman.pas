@@ -4,6 +4,7 @@
 
 unit ZR.MemoryRaster.JPEG.Huffman;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -50,7 +51,7 @@ type
     procedure GenerateLookupTables(Table: THuffmanTable); override;
   end;
 
-  THuffmanNode = class
+  THuffmanNode = class(TCore_Object_Intermediate)
   private
     FBitCount: Integer;
     FCount: Integer;
@@ -143,8 +144,7 @@ begin
   Result := TEntropyCoder(inherited Items[Index]);
 end;
 
-procedure TEntropyCoderList.SetItems(Index: Integer;
-  const Value: TEntropyCoder);
+procedure TEntropyCoderList.SetItems(Index: Integer; const Value: TEntropyCoder);
 begin
   if Index >= Count then
       Count := Index + 1;

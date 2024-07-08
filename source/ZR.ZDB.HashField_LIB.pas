@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB.HashField_LIB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -10,7 +11,7 @@ interface
 uses ZR.ZDB, ZR.ZDB.HashItem_LIB, ZR.Core, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib;
 
 type
-  TObjectDataHashField = class(TCore_Object)
+  TObjectDataHashField = class(TCore_Object_Intermediate)
   private
     FList: TCore_ListForObj;
     FDBEngine: TObjectDataManager;

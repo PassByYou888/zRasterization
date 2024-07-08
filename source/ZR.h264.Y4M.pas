@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Y4M;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -10,7 +11,7 @@ interface
 uses SysUtils, ZR.Core, ZR.PascalStrings, ZR.UPascalStrings, ZR.UnicodeMixedLib, ZR.MemoryRaster, ZR.h264.Image_LIB, ZR.h264.Types;
 
 type
-  TY4MReader = class
+  TY4MReader = class(TCore_Object_Intermediate)
   private
     FWidth, FHeight: uint16_t;
     FFrameCount: uint32_t;
@@ -39,7 +40,7 @@ type
     property FrameRate: Single read FFrameRate;
   end;
 
-  TY4MWriter = class
+  TY4MWriter = class(TCore_Object_Intermediate)
   private
     ioHandle: TIOHnd;
     FPerSecondFrame: uint16_t;

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.VLC;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 {$POINTERMATH ON}
 
@@ -250,13 +251,13 @@ var
   i: int32_t;
   coef: int32_t;
   run_before, zeros_left, total_zeros: int32_t;
-  Nz,              // TotalCoeff( coeff_token )
+  Nz, // TotalCoeff( coeff_token )
   t0, t1: int32_t; // trailing 0, TrailingOnes( coeff_token )
   t1_signs: int32_t;
 
   tab: uint8_t;
   suffix_length: uint8_t;
-  vlc: vlc_bits_len;
+  VLC: vlc_bits_len;
 begin
   t0 := blok.t0;
   t1 := blok.t1;
@@ -315,13 +316,13 @@ begin
       if res <> RES_DC then
         begin
           if Nz < 8 then
-              vlc := tab_total_zeros0[Nz, total_zeros]
+              VLC := tab_total_zeros0[Nz, total_zeros]
           else
-              vlc := tab_total_zeros1[Nz, total_zeros];
+              VLC := tab_total_zeros1[Nz, total_zeros];
         end
       else
-          vlc := tab_total_zeros_chroma_dc[Nz, total_zeros];
-      bs.write(vlc[0], vlc[1]);
+          VLC := tab_total_zeros_chroma_dc[Nz, total_zeros];
+      bs.write(VLC[0], VLC[1]);
     end;
 
   // run_before
@@ -399,11 +400,11 @@ var
   i: int32_t;
   coef: int32_t;
   run_before, zeros_left, total_zeros: int32_t;
-  Nz: int32_t;     // TotalCoeff( coeff_token )
+  Nz: int32_t; // TotalCoeff( coeff_token )
   t0, t1: int32_t; // trailing 0, TrailingOnes( coeff_token )
   tab: uint8_t;
   suffix_length: uint8_t;
-  vlc: vlc_bits_len;
+  VLC: vlc_bits_len;
 begin
   Result := 0;
   t0 := blok.t0;
@@ -461,13 +462,13 @@ begin
       if res <> RES_DC then
         begin
           if Nz < 8 then
-              vlc := tab_total_zeros0[Nz, total_zeros]
+              VLC := tab_total_zeros0[Nz, total_zeros]
           else
-              vlc := tab_total_zeros1[Nz, total_zeros];
+              VLC := tab_total_zeros1[Nz, total_zeros];
         end
       else
-          vlc := tab_total_zeros_chroma_dc[Nz, total_zeros];
-      inc(Result, vlc[1]);
+          VLC := tab_total_zeros_chroma_dc[Nz, total_zeros];
+      inc(Result, VLC[1]);
     end;
 
   // run_before

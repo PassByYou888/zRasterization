@@ -1,7 +1,7 @@
 object DPRCodeSortForm: TDPRCodeSortForm
   Left = 0
   Top = 0
-  Caption = 'DPR Source Sort tool. create by.qq600585'
+  Caption = 'DPR Source Sort tool.'
   ClientHeight = 469
   ClientWidth = 761
   Position = ScreenCenter

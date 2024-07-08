@@ -1,0 +1,28 @@
+object _149_Seg_Text_Expression_Form: T_149_Seg_Text_Expression_Form
+  Left = 0
+  Top = 0
+  Caption = 'Segmentation Text Expression'
+  ClientHeight = 448
+  ClientWidth = 1347
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnMouseMove = FormMouseMove
+  OnMouseUp = FormMouseUp
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object fpsTimer: TTimer
+    Interval = 1
+    OnTimer = fpsTimerTimer
+    Left = 328
+    Top = 192
+  end
+  object rendererTimer: TTimer
+    Interval = 15
+    OnTimer = rendererTimerTimer
+    Left = 328
+    Top = 256
+  end
+end

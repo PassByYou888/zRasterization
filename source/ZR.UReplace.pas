@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.UReplace;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -32,7 +33,7 @@ type
     dest_bPos, dest_ePos: Integer;
   end;
 
-  TU_BatchInfoList = {$IFDEF FPC}specialize {$ENDIF FPC} TGenericsList<TU_BatchInfo>;
+  TU_BatchInfoList = TGenericsList<TU_BatchInfo>;
 
 {$IFDEF FPC}
   TOnUBatchProc = procedure(bPos, ePos: Integer; sour, dest: PUPascalString; var Accept: Boolean) is nested;
@@ -74,7 +75,7 @@ procedure TU_Batch.Swap_(var inst: TU_Batch);
 begin
   sour.SwapInstance(inst.sour);
   dest.SwapInstance(inst.dest);
-  swap(sum, inst.sum);
+  TSwap<Integer>.Do_(sum, inst.sum);
 end;
 
 function U_BuildBatch(L: THashStringList): TU_ArrayBatch;

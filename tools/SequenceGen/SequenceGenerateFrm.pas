@@ -7,14 +7,15 @@ uses
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs,
   FMX.StdCtrls, FMX.Controls.Presentation, FMX.ScrollBox, FMX.Memo,
   FMX.Layouts, FMX.ListBox, FMX.Objects,
-  FMX.Edit, FMX.EditBox, FMX.SpinBox, FMX.TabControl,
+  FMX.Edit, FMX.EditBox, FMX.TabControl,
+  FMX.Colors, FMX.Memo.Types,
 
   System.Math, System.IOUtils,
   System.Generics.Collections, System.Generics.Defaults,
 
   ZR.Parsing, ZR.UnicodeMixedLib, ZR.PascalStrings, ZR.UPascalStrings, ZR.Core,
-  ZR.DrawEngine, ZR.DrawEngine.FMX, ZR.MemoryRaster, ZR.Geometry2D,
-  ZR.Cadencer, FMX.Colors, FMX.Memo.Types;
+  ZR.DrawEngine, ZR.DrawEngine.FMX, ZR.MemoryRaster, ZR.Geometry2D, ZR.Expression,
+  ZR.Cadencer;
 
 type
   TFileItm = record
@@ -29,7 +30,7 @@ type
     clientLayout: TLayout;
     ListBox: TListBox;
     PaintBox: TPaintBox;
-    ColumnSpinBox: TSpinBox;
+    ColumnSpinBox: TEdit;
     Layout1: TLayout;
     Label1: TLabel;
     DrawTimer: TTimer;
@@ -53,10 +54,10 @@ type
     ImportEdit: TEdit;
     ImportBrowseButton: TButton;
     Layout6: TLayout;
-    ImportColumnSpinBox: TSpinBox;
+    ImportColumnSpinBox: TEdit;
     Label3: TLabel;
     Layout7: TLayout;
-    ImportTotalSpinBox: TSpinBox;
+    ImportTotalSpinBox: TEdit;
     Label4: TLabel;
     BuildImportAsSequenceButton: TButton;
     ImportFileBrowseDialog: TOpenDialog;
@@ -202,7 +203,7 @@ begin
     begin
       FSequenceBmp.LoadFromFile(OpenSequenceDialog.FileName);
       BuildSequenceFrameList(FSequenceBmp, 0, FSequenceBmp.Total);
-      ColumnSpinBox.Value := FSequenceBmp.Column;
+      ColumnSpinBox.Text := IntToStr(FSequenceBmp.Column);
     end
   else
     begin
@@ -427,8 +428,8 @@ procedure TSequenceGenerateForm.BuildImportAsSequenceButtonClick(Sender: TObject
 begin
   FSequenceBmp.ReleaseGPUMemory;
   LoadMemoryBitmap(ImportEdit.Text, FSequenceBmp);
-  FSequenceBmp.Total := Round(ImportTotalSpinBox.Value);
-  FSequenceBmp.Column := Round(ImportColumnSpinBox.Value);
+  FSequenceBmp.Total := EStrToInt(ImportTotalSpinBox.Text);
+  FSequenceBmp.Column := EStrToInt(ImportColumnSpinBox.Text);
   BuildSequenceFrameList(FSequenceBmp, 0, FSequenceBmp.Total);
   BuildSequenceFrameImage;
 end;
@@ -471,7 +472,7 @@ begin
     end;
 
   FSequenceBmp.ReleaseGPUMemory;
-  output := BuildSequenceFrame(lst, Round(ColumnSpinBox.Value), TransparentCheckBox.IsChecked);
+  output := BuildSequenceFrame(lst, EStrToInt(ColumnSpinBox.Text), TransparentCheckBox.IsChecked);
   FSequenceBmp.Assign(output);
   FSequenceBmp.Total := output.Total;
   FSequenceBmp.Column := output.Column;

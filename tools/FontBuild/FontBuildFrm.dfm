@@ -2,9 +2,10 @@ object FontBuildForm: TFontBuildForm
   Left = 0
   Top = 0
   AutoSize = True
-  BorderStyle = bsDialog
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsSingle
   BorderWidth = 10
-  Caption = 'Font Build. create by qq.600585'
+  Caption = 'Font Build.'
   ClientHeight = 761
   ClientWidth = 1335
   Color = clBtnFace

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.ZDB;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -65,13 +66,13 @@ type
     Field_Pos, Item_Pos: Int64;
   end;
 
-  TItem_Pos_Info_List = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TItem_Pos_Info>;
+  TItem_Pos_Info_List = TZR_BL<TItem_Pos_Info>;
 
   TPair_Item_Pos_Info = record
     info1, info2: TItem_Pos_Info;
   end;
 
-  TPair_Item_Pos_Info_List = {$IFDEF FPC}specialize {$ENDIF FPC} TZR_BL<TPair_Item_Pos_Info>;
+  TPair_Item_Pos_Info_List = TZR_BL<TPair_Item_Pos_Info>;
 
 {$IFDEF FPC}
   TZDB_Import_Proc = procedure(Sender: TObjectDataManager; sourFile: SystemString; Field_Pos, Item_Pos: Int64) is nested;
@@ -80,9 +81,9 @@ type
   TZDB_Import_Proc = reference to procedure(Sender: TObjectDataManager; sourFile: SystemString; Field_Pos, Item_Pos: Int64);
   TZDB_Export_Proc = reference to procedure(Sender: TObjectDataManager; Field_Pos, Item_Pos: Int64; destFile: SystemString);
 {$ENDIF FPC}
-  TObjectDataManager_Struct_Hash_Info = {$IFDEF FPC}specialize {$ENDIF FPC} TString_Big_Hash_Pair_Pool<Int64>;
+  TObjectDataManager_Struct_Hash_Info = TString_Big_Hash_Pair_Pool<Int64>;
 
-  TObjectDataManager = class(TCore_Object)
+  TObjectDataManager = class(TCore_Object_Intermediate)
   protected
     FStreamEngine: TCore_Stream;
     FDB_HND: TObjectDataHandle;
@@ -136,12 +137,15 @@ type
 
     // export to stream
     procedure SaveToStream(stream: TCore_Stream);
+    procedure SaveToFile(FileName_: U_String);
 
     // export to ZLib Compressor for stream
     procedure SaveToZLibStream(stream: TCore_Stream);
+    procedure SaveToZLibFile(FileName_: U_String);
 
     // export to parallel Compressor for stream
     procedure SaveToParallelCompressionStream(stream: TCore_Stream);
+    procedure SaveToParallelCompressionFile(FileName_: U_String);
 
     // export to ZDB2 tream
     procedure Save_To_ZDB2_Stream(Cipher_: IZDB2_Cipher; stream: TCore_Stream); overload;
@@ -362,7 +366,7 @@ type
     function CacheStatus: SystemString;
   end;
 
-  TObjectDataMarshal = class(TCore_Object)
+  TObjectDataMarshal = class(TCore_Object_Intermediate)
   protected
     FID: Byte;
     FLibList: TCore_Strings;
@@ -700,7 +704,7 @@ function TObjectDataManager.NewHandle(FixedStringL: Byte; Stream_: TCore_Stream;
 begin
   Close;
   Init_TTMDB(FDB_HND, FixedStringL);
-  FDB_HND.OnError := {$IFDEF FPC}@{$ENDIF FPC}DBErrorProc;
+  FDB_HND.OnError := DBErrorProc;
 
   FStreamEngine := Stream_;
   FObjectName := dbFile;
@@ -957,13 +961,25 @@ end;
 
 procedure TObjectDataManager.SaveToStream(stream: TCore_Stream);
 var
-  E: TObjectDataManager;
+  Eng_: TObjectDataManager;
 begin
-  E := TObjectDataManager.CreateAsStream(Handle^.IOHnd.FixedStringL, stream, ObjectName, DefaultItemID, False, True, False);
-  E.Reserved := Reserved;
-  E.OverWriteItem := False;
-  CopyTo(E);
-  DisposeObject(E);
+  Eng_ := TObjectDataManager.CreateAsStream(Handle^.IOHnd.FixedStringL, stream, ObjectName, DefaultItemID, False, True, False);
+  Eng_.Reserved := Reserved;
+  Eng_.OverWriteItem := False;
+  CopyTo(Eng_);
+  DisposeObject(Eng_);
+end;
+
+procedure TObjectDataManager.SaveToFile(FileName_: U_String);
+var
+  f: TCore_FileStream;
+begin
+  try
+    f := TCore_FileStream.Create(FileName_, fmCreate);
+    SaveToStream(f);
+    DisposeObject(f);
+  except
+  end;
 end;
 
 procedure TObjectDataManager.SaveToZLibStream(stream: TCore_Stream);
@@ -977,6 +993,18 @@ begin
   DisposeObject(m64);
 end;
 
+procedure TObjectDataManager.SaveToZLibFile(FileName_: U_String);
+var
+  f: TCore_FileStream;
+begin
+  try
+    f := TCore_FileStream.Create(FileName_, fmCreate);
+    SaveToZLibStream(f);
+    DisposeObject(f);
+  except
+  end;
+end;
+
 procedure TObjectDataManager.SaveToParallelCompressionStream(stream: TCore_Stream);
 var
   m64: TMS64;
@@ -986,6 +1014,18 @@ begin
   m64.Position := 0;
   ParallelCompressMemory(TSelectCompressionMethod.scmZLIB_Max, m64, stream);
   DisposeObject(m64);
+end;
+
+procedure TObjectDataManager.SaveToParallelCompressionFile(FileName_: U_String);
+var
+  f: TCore_FileStream;
+begin
+  try
+    f := TCore_FileStream.Create(FileName_, fmCreate);
+    SaveToParallelCompressionStream(f);
+    DisposeObject(f);
+  except
+  end;
 end;
 
 procedure TObjectDataManager.Save_To_ZDB2_Stream(Cipher_: IZDB2_Cipher; stream: TCore_Stream);
@@ -1052,7 +1092,7 @@ begin
       CreateField(Path_, '');
   fPos := GetPathFieldPos(Path_);
 
-  fAry := umlGetFileListWithFullPath(ImpPath);
+  fAry := umlGet_File_Full_Array(ImpPath);
   for n in fAry do
     begin
       fs := TCore_FileStream.Create(n, fmOpenRead or fmShareDenyNone);
@@ -1073,7 +1113,7 @@ begin
 
   if IncludeSub then
     begin
-      fAry := umlGetDirListWithFullPath(ImpPath);
+      fAry := umlGet_Path_Full_Array(ImpPath);
       for n in fAry do
           ImpFromPathP(n, umlCombineUnixPath(Path_, umlGetLastStr(n, '\/')).Text, IncludeSub, Notify);
     end;
@@ -2674,11 +2714,11 @@ begin
   FPrepareWritePool.AutoFreeData := True;
   FPrepareWritePool.AccessOptimization := True;
 
-  FHeaderCache.OnFreePtr := {$IFDEF FPC}@{$ENDIF FPC}HeaderCache_DataFreeProc;
-  FItemBlockCache.OnFreePtr := {$IFDEF FPC}@{$ENDIF FPC}ItemBlockCache_DataFreeProc;
-  FItemCache.OnFreePtr := {$IFDEF FPC}@{$ENDIF FPC}ItemCache_DataFreeProc;
-  FFieldCache.OnFreePtr := {$IFDEF FPC}@{$ENDIF FPC}FieldCache_DataFreeProc;
-  FPrepareWritePool.OnObjectFreeProc := {$IFDEF FPC}@{$ENDIF FPC}PrepareWritePool_DataFreeProc;
+  FHeaderCache.OnFreePtr := HeaderCache_DataFreeProc;
+  FItemBlockCache.OnFreePtr := ItemBlockCache_DataFreeProc;
+  FItemCache.OnFreePtr := ItemCache_DataFreeProc;
+  FFieldCache.OnFreePtr := FieldCache_DataFreeProc;
+  FPrepareWritePool.OnObjectFreeProc := PrepareWritePool_DataFreeProc;
 
   BuildDBCacheIntf;
 end;
@@ -2692,35 +2732,35 @@ end;
 
 procedure TObjectDataManagerOfCache.BuildDBCacheIntf;
 begin
-  FDB_HND.OnDeleteHeader := {$IFDEF FPC}@{$ENDIF FPC}DeleteHeaderProc;
+  FDB_HND.OnDeleteHeader := DeleteHeaderProc;
 
-  FDB_HND.OnPrepareWriteHeader := {$IFDEF FPC}@{$ENDIF FPC}PrepareHeaderWriteProc;
-  FDB_HND.OnWriteHeader := {$IFDEF FPC}@{$ENDIF FPC}HeaderWriteProc;
-  FDB_HND.OnReadHeader := {$IFDEF FPC}@{$ENDIF FPC}HeaderReadProc;
+  FDB_HND.OnPrepareWriteHeader := PrepareHeaderWriteProc;
+  FDB_HND.OnWriteHeader := HeaderWriteProc;
+  FDB_HND.OnReadHeader := HeaderReadProc;
 
-  FDB_HND.OnPrepareWriteItemBlock := {$IFDEF FPC}@{$ENDIF FPC}PrepareItemBlockWriteProc;
-  FDB_HND.OnWriteItemBlock := {$IFDEF FPC}@{$ENDIF FPC}ItemBlockWriteProc;
-  FDB_HND.OnReadItemBlock := {$IFDEF FPC}@{$ENDIF FPC}ItemBlockReadProc;
+  FDB_HND.OnPrepareWriteItemBlock := PrepareItemBlockWriteProc;
+  FDB_HND.OnWriteItemBlock := ItemBlockWriteProc;
+  FDB_HND.OnReadItemBlock := ItemBlockReadProc;
 
-  FDB_HND.OnPrepareWriteItem := {$IFDEF FPC}@{$ENDIF FPC}PrepareItemWriteProc;
-  FDB_HND.OnWriteItem := {$IFDEF FPC}@{$ENDIF FPC}ItemWriteProc;
-  FDB_HND.OnReadItem := {$IFDEF FPC}@{$ENDIF FPC}ItemReadProc;
+  FDB_HND.OnPrepareWriteItem := PrepareItemWriteProc;
+  FDB_HND.OnWriteItem := ItemWriteProc;
+  FDB_HND.OnReadItem := ItemReadProc;
 
-  FDB_HND.OnPrepareOnlyWriteItemRec := {$IFDEF FPC}@{$ENDIF FPC}PrepareOnlyItemRecWriteProc;
-  FDB_HND.OnOnlyWriteItemRec := {$IFDEF FPC}@{$ENDIF FPC}OnlyItemRecWriteProc;
-  FDB_HND.OnOnlyReadItemRec := {$IFDEF FPC}@{$ENDIF FPC}OnlyItemRecReadProc;
+  FDB_HND.OnPrepareOnlyWriteItemRec := PrepareOnlyItemRecWriteProc;
+  FDB_HND.OnOnlyWriteItemRec := OnlyItemRecWriteProc;
+  FDB_HND.OnOnlyReadItemRec := OnlyItemRecReadProc;
 
-  FDB_HND.OnPrepareWriteField := {$IFDEF FPC}@{$ENDIF FPC}PrepareFieldWriteProc;
-  FDB_HND.OnWriteField := {$IFDEF FPC}@{$ENDIF FPC}FieldWriteProc;
-  FDB_HND.OnReadField := {$IFDEF FPC}@{$ENDIF FPC}FieldReadProc;
+  FDB_HND.OnPrepareWriteField := PrepareFieldWriteProc;
+  FDB_HND.OnWriteField := FieldWriteProc;
+  FDB_HND.OnReadField := FieldReadProc;
 
-  FDB_HND.OnPrepareOnlyWriteFieldRec := {$IFDEF FPC}@{$ENDIF FPC}PrepareOnlyFieldRecWriteProc;
-  FDB_HND.OnOnlyWriteFieldRec := {$IFDEF FPC}@{$ENDIF FPC}OnlyFieldRecWriteProc;
-  FDB_HND.OnOnlyReadFieldRec := {$IFDEF FPC}@{$ENDIF FPC}OnlyFieldRecReadProc;
+  FDB_HND.OnPrepareOnlyWriteFieldRec := PrepareOnlyFieldRecWriteProc;
+  FDB_HND.OnOnlyWriteFieldRec := OnlyFieldRecWriteProc;
+  FDB_HND.OnOnlyReadFieldRec := OnlyFieldRecReadProc;
 
-  FDB_HND.OnPrepareWriteTMDB := {$IFDEF FPC}@{$ENDIF FPC}PrepareTMDBWriteProc;
-  FDB_HND.OnWriteTMDB := {$IFDEF FPC}@{$ENDIF FPC}TMDBWriteProc;
-  FDB_HND.OnReadTMDB := {$IFDEF FPC}@{$ENDIF FPC}TMDBReadProc;
+  FDB_HND.OnPrepareWriteTMDB := PrepareTMDBWriteProc;
+  FDB_HND.OnWriteTMDB := TMDBWriteProc;
+  FDB_HND.OnReadTMDB := TMDBReadProc;
 end;
 
 procedure TObjectDataManagerOfCache.FreeDBCacheIntf;

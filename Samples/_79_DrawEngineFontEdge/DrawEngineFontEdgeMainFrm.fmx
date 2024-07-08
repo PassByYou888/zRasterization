@@ -1,0 +1,19 @@
+object DrawEngineFontEdgeMainForm: TDrawEngineFontEdgeMainForm
+  Left = 0
+  Top = 0
+  Caption = 'DrawEngine font edge demo.'
+  ClientHeight = 489
+  ClientWidth = 988
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object Timer1: TTimer
+    Interval = 10
+    OnTimer = Timer1Timer
+    Left = 216
+    Top = 96
+  end
+end

@@ -3,6 +3,7 @@
 { ****************************************************************************** }
 unit ZR.h264.Motion_comp;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
 
 interface
@@ -11,7 +12,7 @@ uses
   ZR.h264.Common, ZR.h264.Util, ZR.h264.Frame, ZR.h264.Types, ZR.Core;
 
 type
-  TMotionCompensation = class
+  TMotionCompensation = class(TCore_Object_Intermediate)
   public
     procedure Compensate(const fref: PFrame; mv: TMotionvec; mbx, mby: int32_t; Dst: uint8_p);
     procedure CompensateQPelXY(const fref: PFrame; QX, qy: int32_t; Dst: uint8_p);
@@ -66,7 +67,7 @@ const
 var
   stride: int32_t;
   fx, fy: int32_t; // fullpel
-  dx, dy: int8_t;  // delta: qpelx/y - fpelx/y * 4
+  dx, dy: int8_t; // delta: qpelx/y - fpelx/y * 4
   p1, p2: uint8_p;
   i: int32_t;
 
@@ -142,6 +143,7 @@ end;
 {$L motion_comp_x64.obj}
 procedure mc_chroma_8x8_sse2(Src, Dst: pbyte; const stride: integer; coef: pbyte); external name 'mc_chroma_8x8_sse2';
 {$IFEND}
+
 
 procedure motion_compensate_init;
 begin

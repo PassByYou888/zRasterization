@@ -1,0 +1,89 @@
+object RasterFontBoundBoxForm: TRasterFontBoundBoxForm
+  Left = 0
+  Top = 0
+  Caption = 'Rasterization Font Bound Box. create by.qq600585'
+  ClientHeight = 426
+  ClientWidth = 907
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnMouseDown = FormMouseDown
+  OnMouseMove = FormMouseMove
+  OnMouseUp = FormMouseUp
+  OnMouseWheel = FormMouseWheel
+  OnPaint = FormPaint
+  DesignerMasterStyle = 0
+  object Timer1: TTimer
+    Interval = 10
+    OnTimer = Timer1Timer
+    Left = 352
+    Top = 224
+  end
+  object Layout1: TLayout
+    Anchors = [akTop, akRight]
+    Position.X = 696.000000000000000000
+    Position.Y = 8.000000000000000000
+    Size.Width = 209.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    object Label1: TLabel
+      Align = Left
+      StyledSettings = [Family, Size, Style]
+      Size.Width = 57.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.FontColor = claRed
+      Text = #23383#31526#38388#36317
+      TabOrder = 0
+    end
+    object xSpecTrackBar: TTrackBar
+      Align = VertCenter
+      CanParentFocus = True
+      Frequency = 1.000000000000000000
+      Max = 50.000000000000000000
+      Orientation = Horizontal
+      Position.X = 57.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 152.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnChange = SpecTrackBarChange
+    end
+  end
+  object Layout2: TLayout
+    Anchors = [akTop, akRight]
+    Position.X = 696.000000000000000000
+    Position.Y = 32.000000000000000000
+    Size.Width = 209.000000000000000000
+    Size.Height = 25.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object Label2: TLabel
+      Align = Left
+      StyledSettings = [Family, Size, Style]
+      Size.Width = 57.000000000000000000
+      Size.Height = 25.000000000000000000
+      Size.PlatformDefault = False
+      TextSettings.FontColor = claRed
+      Text = #34892#38388#36317
+      TabOrder = 0
+    end
+    object ySpecTrackBar: TTrackBar
+      Align = VertCenter
+      CanParentFocus = True
+      Frequency = 1.000000000000000000
+      Max = 200.000000000000000000
+      Orientation = Horizontal
+      Position.X = 57.000000000000000000
+      Position.Y = 3.000000000000000000
+      Size.Width = 152.000000000000000000
+      Size.Height = 19.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      OnChange = SpecTrackBarChange
+    end
+  end
+end

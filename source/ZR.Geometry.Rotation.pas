@@ -4,11 +4,8 @@
 
 unit ZR.Geometry.Rotation;
 
+{$DEFINE FPC_DELPHI_MODE}
 {$I ZR.Define.inc}
-
-{
-  create by,passbyyou
-}
 
 interface
 
